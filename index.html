@@ -1,0 +1,1345 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AURUM PRO AGNT · XAUUSD · ICT/SMC</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080A0E;--bg2:#0D1018;--bg3:#111520;
+  --gold:#C9A027;--gold2:#F0C040;
+  --cyan:#00E5FF;--green:#00E676;--red:#FF3D3D;
+  --purple:#B44FFF;--blue:#4488FF;
+  --dim:#2A3045;--muted:#5A6070;--text:#E8E6DE;
+  --border:rgba(201,160,39,0.18);--bcyan:rgba(0,229,255,0.2);
+}
+body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.025) 2px,rgba(0,0,0,0.025) 4px);pointer-events:none;z-index:999}
+
+/* ── FULL WIDTH SINGLE COLUMN ── */
+.wrap{padding:14px;max-width:1600px;margin:0 auto}
+
+/* HEADER */
+.header{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 20px;margin-bottom:10px;position:relative;overflow:hidden}
+.header::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.h-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.brand{font-size:12px;color:var(--gold);letter-spacing:3px;font-family:'Rajdhani',sans-serif;font-weight:700}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block;margin-right:6px;animation:blink 1.5s infinite}
+@keyframes blink{0%,100%{opacity:1;box-shadow:0 0 6px var(--green)}50%{opacity:.2;box-shadow:none}}
+.api-badge{font-size:9px;padding:3px 10px;border-radius:3px;background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.25);color:var(--cyan);letter-spacing:2px;font-family:'Rajdhani',sans-serif;font-weight:600}
+.pair-row{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.price-big{font-size:38px;font-weight:700;color:var(--gold2);font-family:'Rajdhani',sans-serif;letter-spacing:1px;text-shadow:0 0 24px rgba(240,192,64,0.3)}
+.chg{font-size:14px;padding:4px 12px;border-radius:4px;font-family:'Rajdhani',sans-serif;font-weight:600;letter-spacing:1px}
+.chg.pos{background:rgba(0,230,118,0.12);color:var(--green);border:1px solid rgba(0,230,118,0.2)}
+.chg.neg{background:rgba(255,61,61,0.12);color:var(--red);border:1px solid rgba(255,61,61,0.2)}
+.sub{font-size:10px;color:var(--muted);margin-top:4px;letter-spacing:1px}
+
+/* TF + ZOOM CONTROLS */
+.controls-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.tf-row{display:flex;gap:6px}
+.tf{font-size:11px;padding:7px 16px;border-radius:5px;border:1px solid var(--dim);background:transparent;color:var(--muted);cursor:pointer;letter-spacing:2px;font-family:'Rajdhani',sans-serif;font-weight:600;transition:all .15s}
+.tf:hover{border-color:var(--gold);color:var(--gold)}
+.tf.on{background:var(--gold);color:#000;border-color:var(--gold);box-shadow:0 0 8px rgba(201,160,39,0.3)}
+.zoom-group{display:flex;gap:5px;margin-left:auto;align-items:center}
+.zoom-lbl{font-size:9px;color:var(--muted);letter-spacing:2px;font-family:'Share Tech Mono',monospace}
+.zoom-btn{width:32px;height:32px;border-radius:5px;border:1px solid var(--dim);background:var(--bg2);color:var(--muted);cursor:pointer;font-size:16px;font-weight:700;display:flex;align-items:center;justify-content:center;transition:all .15s;user-select:none}
+.zoom-btn:hover{border-color:var(--cyan);color:var(--cyan)}
+.zoom-pct{font-size:11px;color:var(--gold);font-family:'Share Tech Mono',monospace;min-width:44px;text-align:center}
+.reset-btn{font-size:9px;padding:5px 12px;border-radius:5px;border:1px solid var(--dim);background:transparent;color:var(--muted);cursor:pointer;letter-spacing:2px;font-family:'Rajdhani',sans-serif;font-weight:600;transition:all .15s}
+.reset-btn:hover{border-color:var(--gold);color:var(--gold)}
+
+/* CHART */
+.chart-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:10px;margin-bottom:10px;overflow:hidden;position:relative}
+.chart-top{display:flex;align-items:center;justify-content:space-between;padding:7px 14px;border-bottom:1px solid rgba(255,255,255,0.04)}
+.ct-label{font-size:10px;color:var(--gold);letter-spacing:2px;font-family:'Rajdhani',sans-serif;font-weight:600}
+.ct-info{font-size:9px;color:var(--muted)}
+.chart-hint{font-size:8px;color:var(--dim);font-family:'Share Tech Mono',monospace;position:absolute;bottom:6px;left:50%;transform:translateX(-50%);pointer-events:none;opacity:.6}
+canvas#cvs{display:block;width:100%;cursor:grab}
+canvas#cvs.dragging{cursor:grabbing}
+
+/* STATS */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:linear-gradient(180deg,var(--gold),transparent)}
+.stat-lbl{font-size:8px;color:var(--muted);letter-spacing:2px;margin-bottom:4px;font-family:'Rajdhani',sans-serif;font-weight:600}
+.stat-val{font-size:18px;font-weight:700;font-family:'Rajdhani',sans-serif}
+
+/* QUERY */
+.query-card{background:var(--bg2);border:1px solid var(--bcyan);border-radius:10px;padding:14px;margin-bottom:10px}
+.q-title{font-size:10px;color:var(--cyan);letter-spacing:3px;margin-bottom:10px;font-family:'Rajdhani',sans-serif;font-weight:700}
+.quick-btns{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px}
+.qbtn{font-size:12px;padding:10px 8px;border-radius:6px;border:1px solid var(--dim);background:var(--bg3);color:var(--muted);cursor:pointer;text-align:center;line-height:1.3;transition:all .2s;font-family:'Rajdhani',sans-serif;font-weight:600;letter-spacing:1px}
+.qbtn:hover{border-color:var(--cyan);color:var(--cyan);background:rgba(0,229,255,0.05)}
+.input-row{display:flex;gap:7px}
+.q-input{flex:1;background:#0A0C12;border:1px solid var(--dim);border-radius:6px;padding:10px 14px;font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--text);outline:none}
+.q-input:focus{border-color:var(--cyan);box-shadow:0 0 0 2px rgba(0,229,255,0.08)}
+.send-btn{background:linear-gradient(135deg,var(--cyan),#0099CC);color:#000;border:none;border-radius:6px;padding:10px 20px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Rajdhani',sans-serif;letter-spacing:1px}
+.send-btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* THINKING */
+.thinking{display:flex;align-items:center;gap:12px;padding:16px;color:var(--muted);font-size:12px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;margin-bottom:10px}
+.dots span{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--cyan);margin:0 3px;animation:dp 1.2s infinite}
+.dots span:nth-child(2){animation-delay:.2s}.dots span:nth-child(3){animation-delay:.4s}
+@keyframes dp{0%,80%,100%{opacity:.2;transform:scale(.8)}40%{opacity:1;transform:scale(1.2)}}
+
+/* ANALYSIS */
+.analysis-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:10px;position:relative;animation:fadeIn .4s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.analysis-card::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.a-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.a-ico{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,rgba(201,160,39,0.3),rgba(201,160,39,0.1));border:1px solid rgba(201,160,39,0.3);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--gold2);flex-shrink:0;font-family:'Rajdhani',sans-serif}
+.a-name{font-size:11px;color:var(--gold);letter-spacing:1px;font-family:'Rajdhani',sans-serif;font-weight:700}
+.a-sub{font-size:9px;color:var(--muted)}
+.a-time{font-size:9px;color:var(--muted);margin-left:auto}
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px}
+.chip{font-size:9px;padding:3px 10px;border-radius:3px;letter-spacing:1px;font-weight:700;font-family:'Rajdhani',sans-serif}
+.c-bull{background:rgba(0,230,118,0.12);color:var(--green);border:1px solid rgba(0,230,118,0.25)}
+.c-bear{background:rgba(255,61,61,0.12);color:var(--red);border:1px solid rgba(255,61,61,0.25)}
+.c-gold{background:rgba(201,160,39,0.12);color:var(--gold2);border:1px solid rgba(201,160,39,0.25)}
+.c-blue{background:rgba(68,136,255,0.12);color:var(--blue);border:1px solid rgba(68,136,255,0.25)}
+.a-text{font-size:12px;color:var(--text);line-height:1.85;margin-bottom:12px;white-space:pre-wrap}
+.lvl-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+.lvl-box{border-radius:7px;padding:12px;text-align:center}
+.lv-e{background:rgba(68,136,255,0.08);border:1px solid rgba(68,136,255,0.3)}
+.lv-sl{background:rgba(255,61,61,0.07);border:1px solid rgba(255,61,61,0.25)}
+.lv-t1{background:rgba(0,230,118,0.07);border:1px solid rgba(0,230,118,0.22)}
+.lv-t2{background:rgba(0,255,150,0.08);border:1px solid rgba(0,255,150,0.25)}
+.lv-lbl{font-size:8px;letter-spacing:2px;margin-bottom:3px;font-family:'Rajdhani',sans-serif;font-weight:700}
+.lv-e .lv-lbl{color:var(--blue)}.lv-sl .lv-lbl{color:var(--red)}.lv-t1 .lv-lbl,.lv-t2 .lv-lbl{color:var(--green)}
+.lv-val{font-size:20px;font-weight:700;font-family:'Rajdhani',sans-serif}
+.lv-e .lv-val{color:var(--blue)}.lv-sl .lv-val{color:var(--red)}.lv-t1 .lv-val{color:var(--green)}.lv-t2 .lv-val{color:#00FFAA}
+.lv-sub{font-size:9px;color:var(--muted);margin-top:2px}
+.rr-row{display:flex;align-items:center;gap:9px;margin-top:10px;font-size:11px;color:var(--muted);flex-wrap:wrap;font-family:'Rajdhani',sans-serif}
+.rr-badge{background:rgba(180,79,255,0.12);border:1px solid rgba(180,79,255,0.3);color:var(--purple);padding:4px 14px;border-radius:4px;letter-spacing:1px;font-size:13px;font-weight:700}
+.err-box{background:rgba(255,61,61,0.07);border:1px solid rgba(255,61,61,0.2);border-radius:8px;padding:14px;font-size:12px;color:var(--red);margin-bottom:10px;line-height:1.7}
+.rej-card{background:var(--bg2);border:1px solid rgba(255,61,61,0.35);border-radius:10px;padding:16px;margin-bottom:10px;animation:fadeIn .4s ease}
+.qscore-bar{margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.05)}
+.qscore-lbl{font-size:8px;color:var(--muted);letter-spacing:2px;font-family:'Rajdhani',sans-serif;font-weight:700;margin-bottom:6px}
+.qscore-row{display:flex;align-items:center;gap:10px}
+.qscore-track{flex:1;height:7px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden}
+.qscore-fill{height:100%;border-radius:3px;transition:width .5s ease}
+.info-row{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px}
+
+/* ── CHAT BOX ── */
+.chat-box{
+  max-height:380px;overflow-y:auto;
+  display:flex;flex-direction:column;gap:10px;
+  padding:4px 0;
+  scrollbar-width:thin;scrollbar-color:var(--dim) transparent;
+}
+.chat-box::-webkit-scrollbar{width:4px}
+.chat-box::-webkit-scrollbar-thumb{background:var(--dim);border-radius:2px}
+.chat-msg{display:flex;flex-direction:column;gap:3px;animation:fadeIn .3s ease}
+.chat-msg.user{align-items:flex-end}
+.chat-msg.agent{align-items:flex-start}
+.chat-bubble{
+  max-width:88%;padding:10px 14px;border-radius:10px;
+  font-size:13px;line-height:1.7;
+}
+.chat-msg.user .chat-bubble{
+  background:rgba(201,160,39,0.12);
+  border:1px solid rgba(201,160,39,0.25);
+  color:var(--gold2);border-radius:10px 10px 2px 10px;
+  font-family:'Rajdhani',sans-serif;font-weight:600;
+}
+.chat-msg.agent .chat-bubble{
+  background:var(--bg3);
+  border:1px solid var(--border);
+  color:var(--text);border-radius:10px 10px 10px 2px;
+  font-family:'Rajdhani',sans-serif;font-weight:400;
+  white-space:pre-wrap;
+}
+.chat-meta{font-size:9px;color:var(--muted);letter-spacing:1px;font-family:'Share Tech Mono',monospace}
+.chat-typing{
+  display:flex;align-items:center;gap:8px;
+  padding:10px 14px;background:var(--bg3);border:1px solid var(--border);
+  border-radius:10px 10px 10px 2px;color:var(--muted);font-size:12px;
+  font-family:'Rajdhani',sans-serif;
+}
+.chat-welcome{
+  text-align:center;padding:20px 10px;color:var(--muted);
+  font-size:12px;line-height:1.7;font-family:'Rajdhani',sans-serif;
+}
+.chat-welcome span{color:var(--gold);font-weight:700}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <div class="h-top">
+      <div class="brand"><span class="live-dot"></span>AURUM PRO AGNT · XAUUSD · ICT/SMC</div>
+      <span class="api-badge" id="apiBadge">CONECTANDO</span>
+    </div>
+    <div class="pair-row">
+      <span style="font-size:13px;color:var(--gold);font-weight:700;letter-spacing:2px;font-family:'Rajdhani',sans-serif">XAU/USD</span>
+      <span class="price-big" id="livePrice">---</span>
+      <span class="chg pos" id="priceChg">...</span>
+    </div>
+    <div class="sub" id="sessionLbl">Cargando datos...</div>
+  </div>
+
+  <!-- TF + ZOOM CONTROLS -->
+  <div class="controls-row">
+    <div class="tf-row">
+      <button class="tf" onclick="setTF(this,'5min')">5M</button>
+      <button class="tf on" onclick="setTF(this,'15min')">15M</button>
+      <button class="tf" onclick="setTF(this,'1h')">1H</button>
+      <button class="tf" onclick="setTF(this,'4h')">4H</button>
+      <button class="tf" onclick="setTF(this,'1day')">D</button>
+    </div>
+    <div class="zoom-group">
+      <span class="zoom-lbl">ZOOM</span>
+      <div class="zoom-btn" onclick="zoomChart(-1)" title="Zoom out">−</div>
+      <span class="zoom-pct" id="zoomPct">100%</span>
+      <div class="zoom-btn" onclick="zoomChart(1)" title="Zoom in">+</div>
+      <button class="reset-btn" onclick="resetChart()">RESET</button>
+    </div>
+  </div>
+
+  <!-- CHART -->
+  <div class="chart-wrap">
+    <div class="chart-top">
+      <span class="ct-label" id="ctLabel">XAU/USD · 15M</span>
+      <span class="ct-info" id="ctInfo">...</span>
+    </div>
+    <canvas id="cvs"></canvas>
+    <div class="chart-hint">🖱 Rueda: zoom · Click+arrastrar: mover</div>
+  </div>
+
+  <!-- STATS: 4 columnas -->
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-lbl">PRECIO REAL</div><div class="stat-val" id="s1" style="color:var(--gold2)">---</div></div>
+    <div class="stat-card"><div class="stat-lbl">ATR (14)</div><div class="stat-val" id="s2" style="color:var(--cyan)">---</div></div>
+    <div class="stat-card"><div class="stat-lbl">ZONA P/D</div><div class="stat-val" id="s3" style="font-size:15px">---</div></div>
+    <div class="stat-card"><div class="stat-lbl">SESION AST</div><div class="stat-val" id="s4" style="font-size:14px">---</div></div>
+  </div>
+
+  <!-- QUERY -->
+  <div class="query-card">
+    <div class="q-title">◈ AURUM PRO AGNT · CHAT ABIERTO</div>
+    <div class="quick-btns">
+      <div class="qbtn" onclick="quickAsk('Dame el mejor setup de compra ahora con entry TP1 TP2 y SL')">▲ Setup COMPRA</div>
+      <div class="qbtn" onclick="quickAsk('Dame el mejor setup de venta ahora con entry TP1 TP2 y SL')">▼ Setup VENTA</div>
+      <div class="qbtn" onclick="quickAsk('Donde estan los pools de liquidez mas importantes ahora?')">◉ Liquidez</div>
+      <div class="qbtn" onclick="quickAsk('Hay Fair Value Gap valido para entrar ahora?')">◈ FVG</div>
+      <div class="qbtn" onclick="quickAsk('Dame un analisis completo del mercado del oro ahora mismo')">📊 Analisis</div>
+      <div class="qbtn" onclick="quickAsk('Cual es el bias institucional y en que zona estamos?')">🧭 Bias/Zona</div>
+      <div class="qbtn" onclick="quickAsk('Que dicen los 5 motores cuantitativos sobre el oro ahora?')">🤖 Quant</div>
+      <div class="qbtn" onclick="chatHistory=[];document.getElementById('chatBox').innerHTML='';showWelcome()">🗑 Limpiar</div>
+    </div>
+    <div id="chatBox" class="chat-box"></div>
+    <div class="input-row" style="margin-top:8px">
+      <input class="q-input" id="userQ" placeholder="Pregunta cualquier cosa sobre el Oro..." onkeydown="if(event.key==='Enter')sendChat()">
+      <button class="send-btn" id="sendBtn" onclick="sendChat()">▶</button>
+    </div>
+  </div>
+
+  <div id="analysisArea"></div>
+</div>
+
+<!-- SETUP MODAL -->
+<div id="setupModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;backdrop-filter:blur(6px)">
+  <div style="background:#0D1018;border:1px solid rgba(201,160,39,0.35);border-radius:14px;padding:32px;max-width:480px;width:90%;position:relative">
+    <div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,#C9A027,transparent);border-radius:14px 14px 0 0"></div>
+    <div style="font-family:'Cinzel',serif;font-size:22px;font-weight:900;background:linear-gradient(135deg,#FFD97D,#C9A027);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px">AURUM PRO AGNT</div>
+    <div style="font-size:10px;color:#5A6070;letter-spacing:3px;font-family:'Share Tech Mono',monospace;margin-bottom:24px">CONFIGURACION INICIAL</div>
+
+    <div style="margin-bottom:18px">
+      <div style="font-size:10px;color:#00E5FF;letter-spacing:2px;font-family:'Share Tech Mono',monospace;margin-bottom:8px">API KEY · ANTHROPIC (CLAUDE)</div>
+      <div style="font-size:11px;color:#5A6070;margin-bottom:8px;font-family:'Rajdhani',sans-serif">Obtén tu key gratis en <a href="https://console.anthropic.com" target="_blank" style="color:#C9A027">console.anthropic.com</a> → API Keys</div>
+      <input id="inputClaudeKey" type="password" placeholder="sk-ant-api03-..." style="width:100%;background:#0A0C12;border:1px solid #2A3045;border-radius:7px;padding:11px 14px;font-family:'Share Tech Mono',monospace;font-size:12px;color:#E8E6DE;outline:none;letter-spacing:1px">
+    </div>
+
+    <div style="margin-bottom:24px">
+      <div style="font-size:10px;color:#00E5FF;letter-spacing:2px;font-family:'Share Tech Mono',monospace;margin-bottom:8px">API KEY · TWELVE DATA (OPCIONAL)</div>
+      <div style="font-size:11px;color:#5A6070;margin-bottom:8px;font-family:'Rajdhani',sans-serif">Ya incluida por defecto. Solo cambia si tienes tu propia key en <a href="https://twelvedata.com" target="_blank" style="color:#C9A027">twelvedata.com</a></div>
+      <input id="inputTDKey" type="password" placeholder="Dejar vacío para usar la key por defecto" style="width:100%;background:#0A0C12;border:1px solid #2A3045;border-radius:7px;padding:11px 14px;font-family:'Share Tech Mono',monospace;font-size:12px;color:#E8E6DE;outline:none;letter-spacing:1px">
+    </div>
+
+    <div id="modalError" style="display:none;background:rgba(255,61,61,0.08);border:1px solid rgba(255,61,61,0.25);border-radius:6px;padding:10px 14px;font-size:12px;color:#FF3D3D;margin-bottom:16px;font-family:'Rajdhani',sans-serif"></div>
+
+    <button onclick="saveKeys()" style="width:100%;background:linear-gradient(135deg,#C9A027,#8B6914);color:#000;border:none;border-radius:8px;padding:14px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Rajdhani',sans-serif;letter-spacing:2px">
+      ACTIVAR AURUM PRO AGNT
+    </button>
+
+    <div style="text-align:center;margin-top:14px;font-size:10px;color:#3A4055;font-family:'Share Tech Mono',monospace;line-height:1.6">
+      Las keys se guardan solo en tu navegador (localStorage).<br>Nunca se envían a ningún servidor externo.
+    </div>
+  </div>
+</div>
+
+<script>
+
+var TD_KEY = localStorage.getItem('aurum_td_key') || '55c198220c554394bc4d9475bef8f616';
+var CLAUDE_KEY = localStorage.getItem('aurum_claude_key') || '';
+var CLAUDE_MODEL = 'claude-sonnet-4-20250514';
+var chatHistory = [];
+var candles = [], levels = {}, currentPrice = 0, openPrice = 0;
+var activeTF = '15min', activeLvl = {};
+var MIN_RR = 2.0;
+var dataSource = 'DEMO';
+
+// ── ZOOM & PAN STATE ──
+var viewOffset = 0;   // candles shifted left (pan)
+var viewZoom   = 1.0; // zoom multiplier (1=100%)
+var isDragging = false;
+var dragStartX = 0;
+var dragStartOffset = 0;
+
+function zoomChart(dir){
+  var step = 0.15;
+  viewZoom = Math.max(0.3, Math.min(5.0, viewZoom + dir*step));
+  document.getElementById('zoomPct').textContent = Math.round(viewZoom*100)+'%';
+  clampOffset();
+  if(candles.length) drawChart();
+}
+
+function resetChart(){
+  viewZoom = 1.0; viewOffset = 0;
+  document.getElementById('zoomPct').textContent = '100%';
+  if(candles.length) drawChart();
+}
+
+function clampOffset(){
+  var visible = Math.floor(candles.length / viewZoom);
+  var maxOff  = Math.max(0, candles.length - visible);
+  viewOffset  = Math.max(0, Math.min(maxOff, viewOffset));
+}
+
+function initChartInteraction(){
+  var cv = document.getElementById('cvs');
+
+  // Mouse wheel zoom
+  cv.addEventListener('wheel', function(e){
+    e.preventDefault();
+    var dir = e.deltaY < 0 ? 1 : -1;
+    // Zoom toward mouse X position
+    var rect = cv.getBoundingClientRect();
+    var mx   = (e.clientX - rect.left) / rect.width;
+    var visibleBefore = Math.floor(candles.length / viewZoom);
+    viewZoom = Math.max(0.3, Math.min(5.0, viewZoom + dir*0.12));
+    var visibleAfter  = Math.floor(candles.length / viewZoom);
+    viewOffset = Math.round(viewOffset + (visibleBefore - visibleAfter) * mx);
+    document.getElementById('zoomPct').textContent = Math.round(viewZoom*100)+'%';
+    clampOffset();
+    drawChart();
+  }, {passive:false});
+
+  // Mouse drag pan
+  cv.addEventListener('mousedown', function(e){
+    isDragging    = true;
+    dragStartX    = e.clientX;
+    dragStartOffset = viewOffset;
+    cv.classList.add('dragging');
+  });
+  window.addEventListener('mousemove', function(e){
+    if(!isDragging || !candles.length) return;
+    var cv2  = document.getElementById('cvs');
+    var W    = cv2.clientWidth;
+    var visible = Math.floor(candles.length / viewZoom);
+    var dx   = e.clientX - dragStartX;
+    var dpx  = -(dx / W) * visible;
+    viewOffset = Math.round(dragStartOffset + dpx);
+    clampOffset();
+    drawChart();
+  });
+  window.addEventListener('mouseup', function(){
+    if(isDragging){ isDragging=false; document.getElementById('cvs').classList.remove('dragging'); }
+  });
+
+  // Touch support
+  var touchStartX=0, touchStartOffset=0;
+  cv.addEventListener('touchstart', function(e){ touchStartX=e.touches[0].clientX; touchStartOffset=viewOffset; },{passive:true});
+  cv.addEventListener('touchmove', function(e){
+    if(!candles.length) return;
+    var cv2=document.getElementById('cvs'), W=cv2.clientWidth;
+    var visible=Math.floor(candles.length/viewZoom);
+    var dx=e.touches[0].clientX-touchStartX;
+    viewOffset=Math.round(touchStartOffset-(dx/W)*visible);
+    clampOffset(); drawChart();
+  },{passive:true});
+
+  // Pinch zoom
+  var lastPinchDist=0;
+  cv.addEventListener('touchstart',function(e){ if(e.touches.length===2){ lastPinchDist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY); } },{passive:true});
+  cv.addEventListener('touchmove',function(e){
+    if(e.touches.length===2){
+      var d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+      if(lastPinchDist>0){ viewZoom=Math.max(0.3,Math.min(5.0,viewZoom*(d/lastPinchDist))); document.getElementById('zoomPct').textContent=Math.round(viewZoom*100)+'%'; clampOffset(); drawChart(); }
+      lastPinchDist=d;
+    }
+  },{passive:true});
+}
+
+function fmt(n){ return parseFloat(n).toFixed(2); }
+
+function getSJTime(){
+  // UTC-4 San Juan, Puerto Rico
+  var now = new Date();
+  var sj  = new Date(now.getTime() - 4*60*60*1000);
+  var h   = sj.getUTCHours();
+  var m   = sj.getUTCMinutes();
+  var ampm= h>=12?'PM':'AM';
+  var h12 = h%12; if(h12===0) h12=12;
+  var pad = function(v){ return String(v).padStart(2,'0'); };
+  return {
+    h:h, m:m,
+    display: h12+':'+pad(m)+' '+ampm+' AST',
+    date: sj
+  };
+}
+
+function getSession(){
+  // UTC times — San Juan AST = UTC-4
+  // London KZ : 05:00-06:00 UTC  (1:00-2:00 AM AST)
+  // London    : 06:00-09:00 UTC  (2:00-5:00 AM AST)
+  // NY KZ     : 12:00-13:00 UTC  (8:00-9:00 AM AST)
+  // New York  : 13:00-18:00 UTC  (9:00 AM-2:00 PM AST)
+  // Asia      : 20:00-00:00 UTC  (4:00-8:00 PM AST)
+  var t = new Date().getUTCHours()*60 + new Date().getUTCMinutes();
+  if(t>=300&&t<360)   return {name:'LONDON KZ', color:'#4488FF',  ast:'1:00-2:00 AM'};
+  if(t>=360&&t<540)   return {name:'LONDON',    color:'#74A8FF',  ast:'2:00-5:00 AM'};
+  if(t>=720&&t<780)   return {name:'NY KZ',     color:'#B44FFF',  ast:'8:00-9:00 AM'};
+  if(t>=780&&t<1080)  return {name:'NEW YORK',  color:'#D480FF',  ast:'9:00 AM-2:00 PM'};
+  if(t>=1200&&t<1440) return {name:'ASIA',      color:'#FF9100',  ast:'4:00-8:00 PM'};
+  return {name:'OFF SESSION', color:'#5A6070', ast:''};
+}
+
+/* ── FETCH DATA ── */
+function fetchJSON(url){
+  return fetch(url).then(function(r){ return r.json(); });
+}
+
+function syntheticCandles(base, n, mins){
+  var out = [], price = base, now = Date.now();
+  var vol = mins<=5?0.04:mins<=15?0.08:mins<=60?0.15:0.35;
+  for(var i=n; i>=0; i--){
+    var t = new Date(now - i*mins*60000);
+    var pad = function(v){ return String(v).padStart(2,'0'); };
+    var lbl = t.getUTCFullYear()+'-'+pad(t.getUTCMonth()+1)+'-'+pad(t.getUTCDate())+' '+pad(t.getUTCHours())+':'+pad(t.getUTCMinutes())+':00';
+    var chg = (Math.random()-0.495)*price*vol/100;
+    var o = price, c = price+chg;
+    var wick = price*vol/100;
+    var h = Math.max(o,c)+Math.random()*wick;
+    var l = Math.min(o,c)-Math.random()*wick;
+    out.push({o:+o.toFixed(2),h:+h.toFixed(2),l:+l.toFixed(2),c:+c.toFixed(2),t:lbl});
+    price = c;
+  }
+  return out;
+}
+
+function loadData(interval){
+  var badge = document.getElementById('apiBadge');
+  badge.textContent = 'CARGANDO';
+  badge.style.color = '#FF9100';
+
+  var tdUrl = 'https://api.twelvedata.com/time_series?symbol=XAU%2FUSD&interval='+interval+'&outputsize=80&apikey='+TD_KEY;
+  var qtUrl = 'https://api.twelvedata.com/quote?symbol=XAU%2FUSD&apikey='+TD_KEY;
+
+  Promise.all([fetchJSON(tdUrl), fetchJSON(qtUrl)])
+    .then(function(results){
+      var tsData = results[0], qtData = results[1];
+
+      if(tsData && tsData.values && tsData.values.length){
+        candles = tsData.values.slice().reverse().map(function(v){
+          return {o:+v.open, h:+v.high, l:+v.low, c:+v.close, t:v.datetime};
+        });
+        currentPrice = qtData && qtData.close ? +qtData.close : candles[candles.length-1].c;
+        openPrice    = qtData && qtData.open  ? +qtData.open  : candles[0].o;
+        dataSource   = 'TWELVE DATA';
+        badge.textContent = 'TWELVE DATA';
+        badge.style.color = 'var(--green)';
+      } else {
+        throw new Error('No values in response');
+      }
+
+      finishLoad(interval);
+    })
+    .catch(function(err){
+      console.warn('Twelve Data failed:', err.message, '— using synthetic data');
+      currentPrice = 4797;
+      openPrice    = 4834;
+      var mins = interval==='5min'?5:interval==='15min'?15:interval==='1h'?60:interval==='4h'?240:1440;
+      candles      = syntheticCandles(currentPrice, 80, mins);
+      dataSource   = 'DEMO';
+      badge.textContent = 'MODO DEMO';
+      badge.style.color = '#FF9100';
+      finishLoad(interval);
+    });
+}
+
+function finishLoad(interval){
+  levels = computeLevels(candles);
+  var pct = (currentPrice - openPrice) / openPrice * 100;
+  document.getElementById('livePrice').textContent = '$'+fmt(currentPrice);
+  var ce = document.getElementById('priceChg');
+  ce.textContent = (pct>=0?'+':'')+pct.toFixed(2)+'%';
+  ce.className = 'chg '+(pct>=0?'pos':'neg');
+  document.getElementById('ctLabel').textContent = 'XAU/USD · '+interval.toUpperCase()+' · '+dataSource;
+  drawChart();
+  updateUI();
+}
+
+function setTF(el, t){
+  activeTF = t; activeLvl = {};
+  document.querySelectorAll('.tf').forEach(function(b){ b.classList.remove('on'); });
+  el.classList.add('on');
+  loadData(t);
+}
+
+/* ── ICT/SMC ENGINE ── */
+function computeLevels(cd){
+  var n = cd.length;
+  var cl = cd.map(function(d){ return d.c; });
+  var hi = cd.map(function(d){ return d.h; });
+  var lo = cd.map(function(d){ return d.l; });
+
+  // ATR Wilder
+  var atr = hi[1]-lo[1];
+  for(var i=2; i<Math.min(15,n); i++){
+    var tr = Math.max(hi[i]-lo[i], Math.abs(hi[i]-cl[i-1]), Math.abs(lo[i]-cl[i-1]));
+    atr = (atr*13+tr)/14;
+  }
+
+  // EMA
+  function ema(arr, p){
+    var k=2/(p+1), e=0;
+    var slice = arr.slice(0, Math.min(p,arr.length));
+    e = slice.reduce(function(a,b){ return a+b; },0)/slice.length;
+    arr.slice(Math.min(p,arr.length)).forEach(function(v){ e=v*k+e*(1-k); });
+    return e;
+  }
+  var ema20 = ema(cl, Math.min(20,n));
+  var ema50 = ema(cl, Math.min(50,n));
+
+  // Swing High/Low
+  var swings = [];
+  for(var i=2; i<n-2; i++){
+    if(hi[i]>hi[i-1]&&hi[i]>hi[i-2]&&hi[i]>hi[i+1]&&hi[i]>hi[i+2]) swings.push({type:'H',price:hi[i],idx:i});
+    if(lo[i]<lo[i-1]&&lo[i]<lo[i-2]&&lo[i]<lo[i+1]&&lo[i]<lo[i+2]) swings.push({type:'L',price:lo[i],idx:i});
+  }
+  var rs = swings.slice(-10);
+  var shObj = rs.filter(function(s){ return s.type==='H'; }).sort(function(a,b){ return b.price-a.price; })[0];
+  var slObj = rs.filter(function(s){ return s.type==='L'; }).sort(function(a,b){ return a.price-b.price; })[0];
+  var sh = shObj ? shObj.price : Math.max.apply(null, hi.slice(-20));
+  var sl = slObj ? slObj.price : Math.min.apply(null, lo.slice(-20));
+  var eq = (sh+sl)/2;
+
+  // Order Blocks
+  var bullOB = null, bearOB = null;
+  for(var i=n-15; i<n-2; i++){
+    if(cd[i].c<cd[i].o && cd[i+1].c>cd[i+1].o && cd[i+1].c-cd[i+1].o>atr*0.5) bullOB={top:cd[i].o,bot:cd[i].c,idx:i};
+    if(cd[i].c>cd[i].o && cd[i+1].c<cd[i+1].o && cd[i+1].o-cd[i+1].c>atr*0.5) bearOB={top:cd[i].c,bot:cd[i].o,idx:i};
+  }
+
+  // FVG
+  var fvgs = [];
+  for(var i=1; i<n-1; i++){
+    var gap1 = cd[i-1].l - cd[i+1].h;
+    if(gap1>atr*0.3) fvgs.push({type:'bull',top:cd[i-1].l,bot:cd[i+1].h,mid:(cd[i-1].l+cd[i+1].h)/2,idx:i});
+    var gap2 = cd[i+1].l - cd[i-1].h;
+    if(gap2>atr*0.3) fvgs.push({type:'bear',top:cd[i+1].l,bot:cd[i-1].h,mid:(cd[i+1].l+cd[i-1].h)/2,idx:i});
+  }
+  var fvgRecent = fvgs.slice(-6).filter(function(f){
+    var after = cd.slice(f.idx+1);
+    if(f.type==='bull') return !after.some(function(c){ return c.l<=f.bot; });
+    return !after.some(function(c){ return c.h>=f.top; });
+  });
+
+  // BOS
+  var bos = null;
+  var h4 = hi.slice(-4), l4 = lo.slice(-4);
+  if(h4[3]>h4[1]) bos={type:'bull',label:'BOS ALCISTA'};
+  else if(l4[3]<l4[1]) bos={type:'bear',label:'BOS BAJISTA'};
+
+  // Liquidity pools
+  var eqHi=[], eqLo=[];
+  for(var i=2; i<n; i++){
+    if(Math.abs(hi[i]-hi[i-2])<atr*0.15) eqHi.push((hi[i]+hi[i-2])/2);
+    if(Math.abs(lo[i]-lo[i-2])<atr*0.15) eqLo.push((lo[i]+lo[i-2])/2);
+  }
+  var liqH = eqHi.length ? eqHi[eqHi.length-1] : sh;
+  var liqL = eqLo.length ? eqLo[eqLo.length-1] : sl;
+
+  return {sh:sh, sl:sl, eq:eq, atr:atr, ema20:ema20, ema50:ema50,
+    pH:Math.max.apply(null,hi), pL:Math.min.apply(null,lo),
+    bullOB:bullOB, bearOB:bearOB, fvgs:fvgRecent, bos:bos,
+    liqH:liqH, liqL:liqL,
+    atrH:cl[n-1]+atr*1.5, atrL:cl[n-1]-atr*1.5,
+    bias:ema20>ema50?'ALCISTA':'BAJISTA',
+    zone:currentPrice>eq?'PREMIUM':'DISCOUNT'};
+}
+
+/* ── QUANT ENGINE ── */
+function quantAnalysis(){
+  var lv = levels, p = currentPrice, atr = lv.atr, sess = getSession();
+  var n = candles.length;
+  var cl = candles.map(function(d){ return d.c; });
+  var hi = candles.map(function(d){ return d.h; });
+  var lo = candles.map(function(d){ return d.l; });
+  var vol = candles.map(function(d){ return Math.abs(d.h-d.l); });
+
+  // Renaissance — Z-Score & autocorrelation
+  var returns = [];
+  for(var i=1; i<n; i++) returns.push((cl[i]-cl[i-1])/cl[i-1]);
+  var mean = returns.reduce(function(a,b){ return a+b; },0)/returns.length;
+  var variance = returns.reduce(function(a,b){ return a+(b-mean)*(b-mean); },0)/returns.length;
+  var stdDev = Math.sqrt(variance);
+  var zScore = stdDev>0 ? (returns[returns.length-1]-mean)/stdDev : 0;
+  var autocorr = 0;
+  for(var i=1; i<returns.length-1; i++) autocorr+=(returns[i]-mean)*(returns[i-1]-mean);
+  autocorr = variance>0 ? autocorr/(returns.length*variance) : 0;
+  var momentum = zScore>1.5?'SOBREEXTENDIDO_BULL':zScore<-1.5?'SOBREEXTENDIDO_BEAR':autocorr>0.1?'MOMENTUM_CONTINUA':autocorr<-0.1?'REVERSAL_PROBABLE':'NEUTRO';
+  var renaissance = {zScore:+zScore.toFixed(2), autocorr:+autocorr.toFixed(3), momentum:momentum};
+
+  // Citadel — Order flow
+  var recentN = Math.min(20,n), buyP=0, sellP=0, totR=0;
+  for(var i=n-recentN; i<n; i++){
+    var range = candles[i].h-candles[i].l;
+    var cp = range>0?(candles[i].c-candles[i].l)/range:0.5;
+    buyP+=cp*range; sellP+=(1-cp)*range; totR+=range;
+  }
+  var imbalance = totR>0?(buyP-sellP)/totR:0;
+  var flow = imbalance>0.15?'FLUJO_COMPRADOR':imbalance<-0.15?'FLUJO_VENDEDOR':'EQUILIBRADO';
+  var last5avg = vol.slice(-5).reduce(function(a,b){ return a+b; },0)/5;
+  var allAvg   = vol.reduce(function(a,b){ return a+b; },0)/vol.length;
+  var citadel  = {imbalance:+imbalance.toFixed(3), flow:flow, volSpike:last5avg>allAvg*1.4, buyPct:+(buyP/totR*100).toFixed(1)};
+
+  // Two Sigma — Multi-signal score
+  var signals=[], score=0;
+  if(['NY KZ','LONDON KZ'].indexOf(sess.name)>=0){signals.push('KILL ZONE');score+=15;}
+  else if(sess.name==='NEW YORK'||sess.name==='LONDON'){signals.push('SESION ACTIVA');score+=8;}
+  else{signals.push('BAJA LIQUIDEZ');score-=10;}
+  if(p<lv.eq){signals.push('DISCOUNT');score+=12;} else{signals.push('PREMIUM');score-=8;}
+  if(lv.ema20>lv.ema50){signals.push('EMA BULL');score+=10;} else{signals.push('EMA BEAR');score-=10;}
+  if(lv.bos&&lv.bos.type==='bull'){signals.push('BOS BULL');score+=18;}
+  else if(lv.bos&&lv.bos.type==='bear'){signals.push('BOS BEAR');score-=18;}
+  if(lv.fvgs.some(function(f){ return f.type==='bull'; })){signals.push('FVG BULL');score+=15;}
+  if(lv.fvgs.some(function(f){ return f.type==='bear'; })){signals.push('FVG BEAR');score-=15;}
+  if(lv.bullOB&&p>lv.bullOB.bot&&p<lv.bullOB.top+atr){signals.push('EN OB BULL');score+=20;}
+  if(lv.bearOB&&p<lv.bearOB.top&&p>lv.bearOB.bot-atr){signals.push('EN OB BEAR');score-=20;}
+  if(zScore>1.5){signals.push('SOBRECOMPRADO');score-=12;} else if(zScore<-1.5){signals.push('SOBREVENDIDO');score+=12;}
+  var conviction = Math.abs(score)>50?'ALTA':Math.abs(score)>25?'MEDIA':'BAJA';
+  var twoSigma   = {score:score, conviction:conviction, signals:signals.slice(0,5)};
+
+  // JPMorgan LOXM — Execution timing
+  var utcMin = new Date().getUTCHours()*60+new Date().getUTCMinutes();
+  var timing, loxmNote;
+  // Kill zones correctas en UTC / AST San Juan:
+  // London KZ : UTC 05:00-06:00 (1:00-2:00 AM AST)
+  // London    : UTC 06:00-09:00 (2:00-5:00 AM AST)
+  // NY KZ     : UTC 12:00-13:00 (8:00-9:00 AM AST)
+  // New York  : UTC 13:00-18:00 (9:00 AM-2:00 PM AST)
+  // Asia      : UTC 20:00-24:00 (4:00-8:00 PM AST)
+  if(utcMin>=300&&utcMin<360){
+    timing='EJECUTAR';
+    loxmNote='London Kill Zone activa (1:00-2:00 AM AST) — maxima liquidez europea.';
+  } else if(utcMin>=720&&utcMin<780){
+    timing='EJECUTAR';
+    loxmNote='NY Kill Zone activa (8:00-9:00 AM AST) — maxima liquidez americana.';
+  } else if(utcMin>=360&&utcMin<540){
+    timing='FAVORABLE';
+    loxmNote='Sesion London activa (2:00-5:00 AM AST) — buena liquidez, slippage controlado.';
+  } else if(utcMin>=780&&utcMin<1080){
+    timing='FAVORABLE';
+    loxmNote='Sesion New York activa (9:00 AM-2:00 PM AST) — alta liquidez americana.';
+  } else if(utcMin>=1200){
+    timing='PRECAUCION';
+    loxmNote='Sesion Asia (4:00-8:00 PM AST) — liquidez reducida, movimientos erraticos.';
+  } else {
+    timing='ESPERAR';
+    loxmNote='Sin sesion activa — baja liquidez institucional, evita entradas.';
+  }
+  var loxm = {timing:timing, note:loxmNote};
+
+  // DE Shaw — Market regime
+  var range = lv.sh-lv.sl;
+  var distEQ = range>0?Math.abs(p-lv.eq)/range*100:0;
+  var regime = atr>(range*0.04)?'ALTA VOLATILIDAD':atr<(range*0.015)?'COMPRESION':'NORMAL';
+  var halfLife = autocorr<-0.05?'MEAN REVERSION':autocorr>0.05?'MOMENTUM':'RANDOM WALK';
+  var deShaw = {regime:regime, halfLife:halfLife, distEQ:+distEQ.toFixed(1)};
+
+  return {renaissance:renaissance, citadel:citadel, twoSigma:twoSigma, loxm:loxm, deShaw:deShaw};
+}
+
+/* ── SETUP CALCULATOR ── */
+function calcSetup(type){
+  var lv = levels, p = currentPrice, atr = lv.atr;
+  var inDiscount = p<lv.eq, inPremium = p>lv.eq;
+  var bullBias = lv.bias==='ALCISTA';
+  var q = quantAnalysis();
+  var sess = getSession();
+
+  function buildAnalysis(baseText){
+    return baseText+'\n\n'+
+      '📊 RENAISSANCE: Z-Score '+q.renaissance.zScore+' — '+q.renaissance.momentum.replace(/_/g,' ')+'.\n'+
+      '⚡ CITADEL: '+q.citadel.flow.replace(/_/g,' ')+', presion compradora '+q.citadel.buyPct+'%'+(q.citadel.volSpike?' | SPIKE INSTITUCIONAL':'')+'.\n'+
+      '🌐 TWO SIGMA: Score '+(q.twoSigma.score>0?'+':'')+q.twoSigma.score+'/100, conviccion '+q.twoSigma.conviction+'. Senales: '+q.twoSigma.signals.join(' · ')+'.\n'+
+      '🏦 LOXM (JPMorgan): '+q.loxm.timing+' — '+q.loxm.note+'\n'+
+      '📈 DE SHAW: Regimen '+q.deShaw.regime+' | '+q.deShaw.halfLife+' | Distancia EQ: '+q.deShaw.distEQ+'%.';
+  }
+
+  function qChips(){
+    var c=[];
+    if(q.twoSigma.conviction==='ALTA') c.push(q.twoSigma.score>0?'QUANT BULL':'QUANT BEAR');
+    if(q.citadel.flow==='FLUJO_COMPRADOR') c.push('ORDER FLOW+');
+    if(q.citadel.flow==='FLUJO_VENDEDOR') c.push('ORDER FLOW-');
+    if(q.loxm.timing==='EJECUTAR') c.push('LOXM OK');
+    if(q.loxm.timing==='ESPERAR') c.push('LOXM WAIT');
+    if(q.deShaw.regime==='ALTA VOLATILIDAD') c.push('ALTA VOL');
+    return c;
+  }
+
+  if(type==='compra'){
+    var entry=p, entryReason='Precio actual';
+    if(lv.bullOB&&p>lv.bullOB.bot&&p<lv.bullOB.top+atr){entry=lv.bullOB.bot+((lv.bullOB.top-lv.bullOB.bot)*0.5);entryReason='50% OB alcista';}
+    else{var bfvg=lv.fvgs.filter(function(f){ return f.type==='bull'; }).pop();if(bfvg){entry=bfvg.mid;entryReason='50% FVG alcista';}}
+    if(entry===p&&inDiscount){entry=lv.eq-atr*0.3;entryReason='Zona Discount+EQ';}
+    if(entry===p){entry=lv.ema20;entryReason='EMA20 soporte';}
+    var sl=entry-atr*1.2, tp1=entry+atr*1.5, tp2=lv.sh+(lv.sh>entry?atr*0.5:atr*2);
+    var chips=['BUY',bullBias?'BULL BIAS':'CONTRA BIAS',lv.bullOB?'ORDER BLOCK':'',inDiscount?'DISCOUNT':'',lv.bos&&lv.bos.type==='bull'?'BOS BULL':''].filter(Boolean).concat(qChips()).slice(0,7);
+    var base='El precio cotiza a $'+fmt(p)+' en zona '+lv.zone+'. ';
+    if(lv.bullOB) base+='Order Block alcista entre $'+fmt(lv.bullOB.bot)+' y $'+fmt(lv.bullOB.top)+'. ';
+    base+='Bias '+lv.bias+'. Pool de liquidez superior en $'+fmt(lv.liqH)+'. Sesion: '+sess.name+'.';
+    return {direction:'BUY',entry:entry,sl:sl,tp1:tp1,tp2:tp2,entryReason:entryReason,slReason:'Bajo OB/swing',chips:chips,analysis:buildAnalysis(base),management:'50% en TP1, SL a BE, deja correr a TP2',quantScore:q.twoSigma.score,quantConviction:q.twoSigma.conviction};
+  }
+
+  if(type==='venta'){
+    var entry=p, entryReason='Precio actual';
+    if(lv.bearOB&&p<lv.bearOB.top&&p>lv.bearOB.bot-atr){entry=lv.bearOB.top-((lv.bearOB.top-lv.bearOB.bot)*0.5);entryReason='50% OB bajista';}
+    else{var dfvg=lv.fvgs.filter(function(f){ return f.type==='bear'; }).pop();if(dfvg){entry=dfvg.mid;entryReason='50% FVG bajista';}}
+    if(entry===p&&inPremium){entry=lv.eq+atr*0.3;entryReason='Zona Premium+EQ';}
+    if(entry===p){entry=lv.ema20;entryReason='EMA20 resistencia';}
+    var sl=entry+atr*1.2, tp1=entry-atr*1.5, tp2=lv.sl-(lv.sl<entry?atr*0.5:atr*2);
+    var chips=['SELL',!bullBias?'BEAR BIAS':'CONTRA BIAS',lv.bearOB?'ORDER BLOCK':'',inPremium?'PREMIUM':'',lv.bos&&lv.bos.type==='bear'?'BOS BEAR':''].filter(Boolean).concat(qChips()).slice(0,7);
+    var base='El precio cotiza a $'+fmt(p)+' en zona '+lv.zone+'. ';
+    if(lv.bearOB) base+='Order Block bajista entre $'+fmt(lv.bearOB.bot)+' y $'+fmt(lv.bearOB.top)+'. ';
+    base+='Bias '+lv.bias+'. Pool de liquidez inferior en $'+fmt(lv.liqL)+'. Sesion: '+sess.name+'.';
+    return {direction:'SELL',entry:entry,sl:sl,tp1:tp1,tp2:tp2,entryReason:entryReason,slReason:'Sobre OB/swing',chips:chips,analysis:buildAnalysis(base),management:'50% en TP1, SL a BE, deja correr a TP2',quantScore:q.twoSigma.score,quantConviction:q.twoSigma.conviction};
+  }
+
+  if(type==='liquidez'){
+    var dir=bullBias?'BUY':'SELL';
+    var entry=bullBias?lv.liqL+atr*0.5:lv.liqH-atr*0.5;
+    var sl=bullBias?lv.liqL-atr*0.8:lv.liqH+atr*0.8;
+    var tp1=bullBias?entry+atr*1.5:entry-atr*1.5;
+    var tp2=bullBias?lv.liqH:lv.liqL;
+    var chips=['POOL LIQUIDEZ',dir,lv.bos?lv.bos.label:'',lv.zone,'EQUAL HIGHS/LOWS'].filter(Boolean);
+    var base='Equal Highs (BSL) en $'+fmt(lv.liqH)+'. Equal Lows (SSL) en $'+fmt(lv.liqL)+'. Bias '+lv.bias+'. Estrategia: barrido de liquidez en $'+fmt(bullBias?lv.liqL:lv.liqH)+' y entrada inversa.';
+    return {direction:dir,entry:entry,sl:sl,tp1:tp1,tp2:tp2,entryReason:bullBias?'Post-barrido SSL':'Post-barrido BSL',slReason:'Bajo pool',chips:chips,analysis:buildAnalysis(base),management:'Entry tras confirmacion de barrido (wick)',quantScore:q.twoSigma.score,quantConviction:q.twoSigma.conviction};
+  }
+
+  if(type==='fvg'){
+    var bullFVG=lv.fvgs.filter(function(f){ return f.type==='bull'; }).pop();
+    var bearFVG=lv.fvgs.filter(function(f){ return f.type==='bear'; }).pop();
+    var activeFVG=bullBias?bullFVG:bearFVG;
+    if(!activeFVG){
+      return {noSetup:true,analysis:'No hay FVG sin mitigar en '+activeTF+'. Bias: '+lv.bias+'. Precio: $'+fmt(currentPrice)+'. Equilibrium: $'+fmt(lv.eq)+'.'};
+    }
+    var entry=activeFVG.mid;
+    var sl=bullBias?activeFVG.bot-atr*0.5:activeFVG.top+atr*0.5;
+    var tp1=bullBias?entry+atr*1.8:entry-atr*1.8;
+    var tp2=bullBias?lv.sh:lv.sl;
+    var chips=['FVG '+(bullBias?'BULL':'BEAR'),'IMBALANCE',bullBias?'BUY':'SELL',lv.zone,lv.bias];
+    var base='FVG '+(bullBias?'alcista':'bajista')+' sin mitigar entre $'+fmt(activeFVG.bot)+' y $'+fmt(activeFVG.top)+'. CEQ en $'+fmt(activeFVG.mid)+'. Continuacion esperada hacia $'+fmt(bullBias?lv.sh:lv.sl)+'.';
+    return {direction:bullBias?'BUY':'SELL',entry:entry,sl:sl,tp1:tp1,tp2:tp2,entryReason:'50% FVG (CEQ)',slReason:'Fuera del FVG',chips:chips,analysis:buildAnalysis(base),management:'Entry limite en CEQ, confirmar cierre de vela',quantScore:q.twoSigma.score,quantConviction:q.twoSigma.conviction};
+  }
+
+  if(type==='quant'){
+    var q2=quantAnalysis();
+    var text='ANALISIS CUANTITATIVO COMPLETO · XAU/USD $'+fmt(currentPrice)+'\n\n'+
+      '📊 RENAISSANCE TECHNOLOGIES\nZ-Score: '+q2.renaissance.zScore+'. Autocorrelacion: '+q2.renaissance.autocorr+'. Regimen: '+q2.renaissance.momentum.replace(/_/g,' ')+'.\n\n'+
+      '⚡ CITADEL SECURITIES\nFlujo: '+q2.citadel.flow.replace(/_/g,' ')+'. Presion compradora: '+q2.citadel.buyPct+'%.'+(q2.citadel.volSpike?' Spike de actividad institucional detectado.':'')+'\n\n'+
+      '🌐 TWO SIGMA (Multi-señal)\nScore: '+(q2.twoSigma.score>0?'+':'')+q2.twoSigma.score+'/100. Conviccion: '+q2.twoSigma.conviction+'. Senales: '+q2.twoSigma.signals.join(' · ')+'.\n\n'+
+      '🏦 JPMORGAN LOXM\nTiming: '+q2.loxm.timing+'. '+q2.loxm.note+'\n\n'+
+      '📈 DE SHAW\nRegimen: '+q2.deShaw.regime+'. '+q2.deShaw.halfLife+'. Distancia al EQ: '+q2.deShaw.distEQ+'%.';
+    return {noSetup:true, analysis:text};
+  }
+}
+
+/* ── R/R VALIDATOR ── */
+function validateRR(s){
+  var risk   = Math.abs(s.entry-s.sl);
+  var reward = Math.abs(s.tp2-s.entry);
+  var rr     = risk>0?reward/risk:0;
+  if(rr>=MIN_RR) return {valid:true, rr:rr};
+  var reason = 'R/R calculado: 1:'+rr.toFixed(2)+'. ';
+  reason += 'Con SL de '+risk.toFixed(1)+' pts necesitas TP2 minimo de '+(risk*MIN_RR).toFixed(1)+' pts. ';
+  var lv=levels, inP=currentPrice>lv.eq;
+  if(s.direction==='BUY'&&inP) reason+='Precio en PREMIUM — espera retroceso a Discount bajo $'+fmt(lv.eq)+'.';
+  else if(s.direction==='SELL'&&!inP) reason+='Precio en DISCOUNT — espera rally a Premium sobre $'+fmt(lv.eq)+'.';
+  else reason+='Swing objetivo demasiado cerca. Prueba timeframe mayor (4H o D).';
+  return {valid:false, rr:rr, reason:reason};
+}
+
+/* ── QUERY HANDLERS ── */
+function parseQuery(q){
+  q=q.toLowerCase();
+  if(/entry|entrada|donde|setup|operar/.test(q)){ return /vend|short|sell|baj/.test(q)?'venta':'compra'; }
+  if(/fvg|fair value|imbalance|gap/.test(q)) return 'fvg';
+  if(/liquid|pool|equal|bsl|ssl/.test(q)) return 'liquidez';
+  if(/quant|renaissance|citadel|two sigma|jpmorgan|loxm|de shaw|hedge|fondo|algoritm/.test(q)) return 'quant';
+  if(/vend|short|sell|baj/.test(q)) return 'venta';
+  if(/compr|long|buy|alc/.test(q)) return 'compra';
+  if(/zona|premium|discount|equilibri/.test(q)) return 'info_zona';
+  if(/bias|tendencia/.test(q)) return 'info_bias';
+  if(/sesion|session|horario|kill zone/.test(q)) return 'info_sesion';
+  if(/atr|volatil/.test(q)) return 'info_atr';
+  if(/order.?block|ob/.test(q)) return 'info_ob';
+  if(/bos|choch|estructura/.test(q)) return 'info_bos';
+  return 'compra';
+}
+
+function getInfoText(type){
+  var lv=levels, p=currentPrice, sess=getSession();
+  if(type==='info_zona') return 'Precio $'+fmt(p)+'. EQ entre SH/SL: $'+fmt(lv.eq)+'. Zona actual: '+lv.zone+'. '+(p>lv.eq?'PREMIUM: zona de distribucion institucional.':'DISCOUNT: zona de acumulacion institucional.');
+  if(type==='info_bias') return 'Bias: '+lv.bias+'. EMA20 $'+fmt(lv.ema20)+' vs EMA50 $'+fmt(lv.ema50)+'. '+(lv.bos?lv.bos.label+' confirma estructura.':'Sin BOS confirmado.');
+  if(type==='info_sesion') return 'Sesion activa: '+sess.name+(sess.ast?' ('+sess.ast+')'  :'')+' hora San Juan AST. Kill Zones: London KZ 1:00-2:00 AM AST, NY KZ 8:00-9:00 AM AST. Sesiones: London 2:00-5:00 AM, New York 9:00 AM-2:00 PM, Asia 4:00-8:00 PM. El mayor volumen de oro ocurre en overlap London apertura NY (8:00-10:00 AM AST).';
+  if(type==='info_atr') return 'ATR(14): '+fmt(lv.atr)+' pts en '+activeTF+'. SL minimo: '+fmt(lv.atr*1.2)+' pts. TP1 minimo: '+fmt(lv.atr*1.5)+' pts.';
+  if(type==='info_ob') return (lv.bullOB?'OB ALCISTA: $'+fmt(lv.bullOB.bot)+'-$'+fmt(lv.bullOB.top)+'. ':'')+( lv.bearOB?'OB BAJISTA: $'+fmt(lv.bearOB.bot)+'-$'+fmt(lv.bearOB.top)+'.':'')+((!lv.bullOB&&!lv.bearOB)?'Sin Order Blocks claros. Espera impulso fuerte.':'');
+  if(type==='info_bos') return (lv.bos?lv.bos.label+' detectado. Bias: '+lv.bias+'.':'Sin BOS/CHoCH claro. Estructura consolidando.')+' Para confirmar CHoCH necesitas cierre sobre ultimo swing '+(lv.bias==='ALCISTA'?'high.':'low.');
+  return '';
+}
+
+function setLoading(on){
+  document.getElementById('sendBtn').disabled=on;
+  if(on) document.getElementById('analysisArea').innerHTML='<div class="thinking"><div class="dots"><span></span><span></span><span></span></div>Calculando niveles institucionales...</div>';
+}
+
+function runQuery(tipo){
+  if(!candles.length){showErr('Esperando datos...');return;}
+  setLoading(true);
+  setTimeout(function(){
+    try{
+      var s=calcSetup(tipo);
+      if(s.noSetup) renderInfo(s.analysis,['MONITOREANDO',levels.bias,levels.zone]);
+      else applySetup(s);
+    }catch(e){showErr('Error: '+e.message);}
+    setLoading(false);
+  },500);
+}
+
+function runCustom(){
+  var q=document.getElementById('userQ').value.trim();
+  if(!q||!candles.length) return;
+  document.getElementById('userQ').value='';
+  setLoading(true);
+  setTimeout(function(){
+    try{
+      var tipo=parseQuery(q);
+      if(tipo.indexOf('info_')===0){
+        renderInfo(getInfoText(tipo),[tipo.replace('info_','').toUpperCase(),levels.bias,levels.zone]);
+      } else {
+        var s=calcSetup(tipo);
+        if(s.noSetup) renderInfo(s.analysis,['MONITOREANDO',levels.bias]);
+        else applySetup(s);
+      }
+    }catch(e){showErr('Error: '+e.message);}
+    setLoading(false);
+  },500);
+}
+
+function applySetup(s){
+  var check=validateRR(s);
+  if(!check.valid){ renderRejected(s,check); return; }
+  activeLvl={entry:+s.entry,tp1:+s.tp1,tp2:+s.tp2,sl_price:+s.sl};
+  drawChart();
+  renderCard(s,check.rr);
+}
+
+function showErr(msg){
+  document.getElementById('analysisArea').innerHTML='<div class="err-box">'+msg+'</div>';
+}
+
+/* ── RENDER ── */
+function chipClass(c){
+  if(/(BUY|BULL|COMPRA)/i.test(c)) return 'c-bull';
+  if(/(SELL|BEAR|VENTA)/i.test(c)) return 'c-bear';
+  if(/(FVG|OB|BOS|POOL|ORDER|FLOW|LOXM|QUANT)/i.test(c)) return 'c-blue';
+  return 'c-gold';
+}
+
+function renderChips(chips){
+  return (chips||[]).filter(Boolean).map(function(c){
+    return '<span class="chip '+chipClass(c)+'">'+c+'</span>';
+  }).join('');
+}
+
+function renderInfo(text, chips){
+  document.getElementById('analysisArea').innerHTML=
+    '<div class="analysis-card">'+
+    '<div class="a-header"><div class="a-ico">IA</div><div>'+
+    '<div class="a-name">AURUM PRO AGNT · ANALISIS</div>'+
+    '<div class="a-sub">XAUUSD '+activeTF+' · '+getSJTime().display+'</div>'+
+    '</div></div>'+
+    '<div class="chips">'+renderChips(chips)+'</div>'+
+    '<div class="a-text">'+text+'</div>'+
+    '</div>';
+}
+
+function renderRejected(s,check){
+  activeLvl={entry:+s.entry,tp1:+s.tp1,tp2:+s.tp2,sl_price:+s.sl};
+  drawChart();
+  var risk=Math.abs(s.entry-s.sl);
+  document.getElementById('analysisArea').innerHTML=
+    '<div class="rej-card">'+
+    '<div class="a-header">'+
+    '<div class="a-ico" style="background:rgba(255,61,61,0.2);border-color:rgba(255,61,61,0.4);color:var(--red);">✕</div>'+
+    '<div><div class="a-name" style="color:var(--red);">SETUP RECHAZADO · R/R INSUFICIENTE</div>'+
+    '<div class="a-sub">'+activeTF+' · '+getSJTime().display+'</div></div></div>'+
+    '<div class="chips">'+
+    '<span class="chip c-bear">R/R 1:'+check.rr.toFixed(2)+'</span>'+
+    '<span class="chip c-bear">MINIMO 1:'+MIN_RR+'</span>'+
+    '<span class="chip c-gold">'+(s.direction==='BUY'?'COMPRA':'VENTA')+'</span>'+
+    '</div>'+
+    '<div style="background:rgba(255,61,61,0.06);border:1px solid rgba(255,61,61,0.2);border-radius:8px;padding:10px;margin-bottom:10px;">'+
+    '<div style="font-size:7px;color:var(--red);letter-spacing:2px;margin-bottom:5px;font-family:Rajdhani,sans-serif;font-weight:700;">MOTIVO DEL RECHAZO</div>'+
+    '<div class="a-text" style="color:#E8A0A0;">'+check.reason+'</div></div>'+
+    '<div class="lvl-grid" style="opacity:0.45;">'+
+    '<div class="lvl-box lv-e"><div class="lv-lbl">ENTRY</div><div class="lv-val">$'+fmt(s.entry)+'</div></div>'+
+    '<div class="lvl-box lv-sl"><div class="lv-lbl">STOP LOSS</div><div class="lv-val">$'+fmt(s.sl)+'</div></div>'+
+    '<div class="lvl-box lv-t1"><div class="lv-lbl">TP1</div><div class="lv-val">$'+fmt(s.tp1)+'</div></div>'+
+    '<div class="lvl-box lv-t2" style="border-color:rgba(255,61,61,0.3);"><div class="lv-lbl" style="color:var(--red);">TP2 INSUF</div><div class="lv-val" style="color:var(--red);">$'+fmt(s.tp2)+'</div>'+
+    '<div class="lv-sub">Necesita +'+(risk*MIN_RR-Math.abs(s.tp2-s.entry)).toFixed(1)+' pts</div></div>'+
+    '</div>'+
+    '<div class="rr-row">R/R actual: <span class="rr-badge" style="background:rgba(255,61,61,0.12);border-color:rgba(255,61,61,0.3);color:var(--red);">1:'+check.rr.toFixed(2)+'</span> necesita minimo <span class="rr-badge">1:'+MIN_RR+'</span></div>'+
+    '</div>'+
+    '<div class="info-row">'+
+    '<div class="qbtn" onclick="runQuery(\'compra\')">Buscar setup compra</div>'+
+    '<div class="qbtn" onclick="runQuery(\'venta\')">Buscar setup venta</div>'+
+    '</div>';
+}
+
+function renderCard(s, rr){
+  var dir=s.direction||'BUY';
+  var rrStr=(+rr).toFixed(2);
+  var now=getSJTime().display;
+  var scoreColor=s.quantScore>30?'var(--green)':s.quantScore<-30?'var(--red)':'var(--gold2)';
+  document.getElementById('analysisArea').innerHTML=
+    '<div class="analysis-card">'+
+    '<div class="a-header">'+
+    '<div class="a-ico">IA</div>'+
+    '<div><div class="a-name">AURUM PRO AGNT · '+(dir==='BUY'?'▲ COMPRA':'▼ VENTA')+'</div>'+
+    '<div class="a-sub">XAUUSD '+activeTF+' · '+new Date().toLocaleDateString('es-PR')+'</div></div>'+
+    '<div class="a-time">'+now+'</div>'+
+    '</div>'+
+    '<div class="chips">'+renderChips(s.chips)+'</div>'+
+    '<div class="a-text">'+s.analysis+'</div>'+
+    '<div class="lvl-grid">'+
+    '<div class="lvl-box lv-e"><div class="lv-lbl">ENTRY</div><div class="lv-val">$'+fmt(s.entry)+'</div><div class="lv-sub">'+s.entryReason+'</div></div>'+
+    '<div class="lvl-box lv-sl"><div class="lv-lbl">STOP LOSS</div><div class="lv-val">$'+fmt(s.sl)+'</div><div class="lv-sub">'+s.slReason+'</div></div>'+
+    '<div class="lvl-box lv-t1"><div class="lv-lbl">TP1</div><div class="lv-val">$'+fmt(s.tp1)+'</div><div class="lv-sub">+'+Math.abs(s.tp1-s.entry).toFixed(1)+' pts</div></div>'+
+    '<div class="lvl-box lv-t2"><div class="lv-lbl">TP2</div><div class="lv-val">$'+fmt(s.tp2)+'</div><div class="lv-sub">+'+Math.abs(s.tp2-s.entry).toFixed(1)+' pts</div></div>'+
+    '</div>'+
+    '<div class="rr-row">R/R: <span class="rr-badge">1:'+rrStr+'</span> <span style="font-size:9px">'+s.management+'</span></div>'+
+    '<div class="qscore-bar">'+
+    '<div class="qscore-lbl">TWO SIGMA QUANT SCORE</div>'+
+    '<div class="qscore-row">'+
+    '<div class="qscore-track"><div class="qscore-fill" style="width:'+Math.min(100,Math.abs(s.quantScore))+'%;background:'+(s.quantScore>0?'linear-gradient(90deg,#00E676,#00E5FF)':'linear-gradient(90deg,#FF3D3D,#FF9100)')+'"></div></div>'+
+    '<span style="font-size:9px;font-family:Rajdhani,sans-serif;font-weight:700;color:'+scoreColor+';">'+(s.quantScore>0?'+':'')+s.quantScore+'/100</span>'+
+    '<span style="font-size:8px;color:var(--muted);">'+s.quantConviction+'</span>'+
+    '</div></div>'+
+    '</div>'+
+    '<div class="info-row">'+
+    '<div class="qbtn" onclick="runQuery(\'compra\')">Nuevo setup compra</div>'+
+    '<div class="qbtn" onclick="runQuery(\'venta\')">Nuevo setup venta</div>'+
+    '</div>';
+}
+
+/* ── CHART ── */
+function drawChart(){
+  var cv=document.getElementById('cvs');
+  var W=cv.parentElement.clientWidth||900;
+  var H=Math.max(400, Math.round(W*0.42));
+  cv.width=W*2; cv.height=H*2; cv.style.width=W+'px'; cv.style.height=H+'px';
+  var ctx=cv.getContext('2d'); ctx.scale(2,2);
+  if(!candles.length) return;
+  var lv=levels, al=activeLvl;
+  // Apply zoom & pan: slice visible candles
+  var totalN   = candles.length;
+  var visible  = Math.max(10, Math.floor(totalN / viewZoom));
+  var startIdx = Math.max(0, Math.min(totalN - visible, Math.floor(viewOffset)));
+  var cd       = candles.slice(startIdx, startIdx + visible);
+  if(!cd.length) return;
+  var PL=4,PR=62,PT=16,PB=22, cW=W-PL-PR, cH=H-PT-PB;
+  var mn=Math.min.apply(null,cd.map(function(d){ return d.l; }));
+  var mx=Math.max.apply(null,cd.map(function(d){ return d.h; }));
+  if(al.sl_price) mn=Math.min(mn,al.sl_price);
+  if(al.tp2)      mx=Math.max(mx,al.tp2);
+  var pd=(mx-mn)*0.08; mn-=pd; mx+=pd;
+  var tX=function(i){ return PL+((i+0.5)/cd.length)*cW; };
+  var tY=function(p){ return PT+cH-(((p-mn)/(mx-mn))*cH); };
+
+  ctx.fillStyle='#080A0E'; ctx.fillRect(0,0,W,H);
+
+  // Grid
+  for(var i=0;i<=6;i++){
+    var gy=PT+(cH/6)*i;
+    ctx.strokeStyle='rgba(255,255,255,0.04)'; ctx.lineWidth=0.5;
+    ctx.beginPath(); ctx.moveTo(PL,gy); ctx.lineTo(W-PR+4,gy); ctx.stroke();
+    var gp=mx-((mx-mn)/6)*i;
+    ctx.fillStyle='#5A6070'; ctx.font='8px monospace'; ctx.textAlign='left';
+    ctx.fillText(gp.toFixed(1),W-PR+7,gy+3);
+  }
+  var skip=Math.ceil(cd.length/6);
+  cd.forEach(function(d,i){
+    if(i%skip===0){
+      var x=tX(i);
+      ctx.strokeStyle='rgba(255,255,255,0.04)'; ctx.lineWidth=0.5;
+      ctx.beginPath(); ctx.moveTo(x,PT); ctx.lineTo(x,PT+cH); ctx.stroke();
+      ctx.fillStyle='#5A6070'; ctx.font='7px monospace'; ctx.textAlign='center';
+      ctx.fillText(d.t?d.t.slice(11,16)||d.t.slice(5,10):'',x,PT+cH+14);
+    }
+  });
+
+  // OB zones
+  if(lv.bullOB){
+    var y1=tY(lv.bullOB.top),y2=tY(lv.bullOB.bot);
+    ctx.fillStyle='rgba(0,230,118,0.07)'; ctx.fillRect(PL,y1,cW,y2-y1);
+    ctx.strokeStyle='rgba(0,230,118,0.3)'; ctx.lineWidth=0.5; ctx.setLineDash([2,3]);
+    ctx.strokeRect(PL,y1,cW,y2-y1); ctx.setLineDash([]);
+    ctx.fillStyle='rgba(0,230,118,0.7)'; ctx.font='7px monospace'; ctx.textAlign='left';
+    ctx.fillText('OB▲',PL+2,y1+8);
+  }
+  if(lv.bearOB){
+    var y1=tY(lv.bearOB.top),y2=tY(lv.bearOB.bot);
+    ctx.fillStyle='rgba(255,61,61,0.07)'; ctx.fillRect(PL,y1,cW,y2-y1);
+    ctx.strokeStyle='rgba(255,61,61,0.3)'; ctx.lineWidth=0.5; ctx.setLineDash([2,3]);
+    ctx.strokeRect(PL,y1,cW,y2-y1); ctx.setLineDash([]);
+    ctx.fillStyle='rgba(255,61,61,0.7)'; ctx.font='7px monospace'; ctx.textAlign='left';
+    ctx.fillText('OB▼',PL+2,y1+8);
+  }
+
+  // FVG zones
+  lv.fvgs&&lv.fvgs.forEach(function(f){
+    var y1=tY(f.top),y2=tY(f.bot),x=tX(f.idx);
+    ctx.fillStyle=f.type==='bull'?'rgba(68,136,255,0.06)':'rgba(180,79,255,0.06)';
+    ctx.fillRect(x,y1,cW-(x-PL),y2-y1);
+    ctx.strokeStyle=f.type==='bull'?'rgba(68,136,255,0.3)':'rgba(180,79,255,0.3)';
+    ctx.lineWidth=0.4; ctx.setLineDash([1,3]);
+    ctx.strokeRect(x,y1,cW-(x-PL),y2-y1); ctx.setLineDash([]);
+    ctx.fillStyle=f.type==='bull'?'rgba(68,136,255,0.8)':'rgba(180,79,255,0.8)';
+    ctx.font='6px monospace'; ctx.textAlign='left';
+    ctx.fillText('FVG',x+2,y1+7);
+  });
+
+  function hLine(price,color,dash,lbl,bg,fg){
+    if(price==null||isNaN(price)) return;
+    var y=tY(price);
+    ctx.save(); ctx.strokeStyle=color; ctx.lineWidth=1.2; ctx.setLineDash(dash||[]);
+    ctx.beginPath(); ctx.moveTo(PL,y); ctx.lineTo(W-PR+4,y); ctx.stroke(); ctx.restore();
+    if(lbl){
+      var lw=80,lh=14,lx=W-PR-76,ly=y-7;
+      ctx.fillStyle=bg||color;
+      ctx.beginPath(); if(ctx.roundRect)ctx.roundRect(lx,ly,lw,lh,3);else ctx.rect(lx,ly,lw,lh); ctx.fill();
+      ctx.fillStyle=fg||'#000'; ctx.font='bold 8px monospace'; ctx.textAlign='center';
+      ctx.fillText(lbl+' $'+fmt(price),lx+lw/2,ly+9.5);
+    }
+  }
+
+  hLine(lv.eq,'rgba(234,179,8,0.4)',[6,4]);
+  hLine(lv.sh,'rgba(255,61,61,0.2)',[3,3]);
+  hLine(lv.sl,'rgba(0,230,118,0.2)',[3,3]);
+  hLine(lv.ema20,'rgba(68,136,255,0.4)',[4,3]);
+  if(al.tp2!=null) hLine(al.tp2,'#00FFB0',[5,3],'TP2','#005A48','#A0FFE8');
+  if(al.tp1!=null) hLine(al.tp1,'#00E676',[5,3],'TP1','#004030','#80FFD0');
+  if(al.sl_price!=null) hLine(al.sl_price,'#FF3D3D',[3,3],'SL','#990808','#FFD0D0');
+
+  // Candles
+  var cw=Math.max(2,(cW/cd.length)*0.65);
+  cd.forEach(function(d,i){
+    var x=tX(i),bull=d.c>=d.o;
+    ctx.strokeStyle=bull?'#26A69A':'#EF5350'; ctx.lineWidth=1; ctx.setLineDash([]);
+    ctx.beginPath(); ctx.moveTo(x,tY(d.h)); ctx.lineTo(x,tY(d.l)); ctx.stroke();
+    var bT=tY(Math.max(d.o,d.c)),bH=Math.max(1.5,tY(Math.min(d.o,d.c))-bT);
+    ctx.fillStyle=bull?'#26A69A':'#EF5350'; ctx.fillRect(x-cw/2,bT,cw,bH);
+    if(!bull){ctx.strokeStyle='#EF5350';ctx.strokeRect(x-cw/2,bT,cw,bH);}
+  });
+
+  // Last price tag
+  var last=cd[cd.length-1];
+  if(last){
+    var ly=tY(last.c),bull=last.c>=last.o;
+    ctx.strokeStyle=bull?'#26A69A':'#EF5350'; ctx.lineWidth=0.8; ctx.setLineDash([2,3]);
+    ctx.beginPath(); ctx.moveTo(PL,ly); ctx.lineTo(W-PR+4,ly); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle=bull?'#26A69A':'#EF5350';
+    if(ctx.roundRect)ctx.roundRect(W-PR+6,ly-7,50,14,2);else ctx.rect(W-PR+6,ly-7,50,14);
+    ctx.fill(); ctx.fillStyle='#fff'; ctx.font='bold 8px monospace'; ctx.textAlign='left';
+    ctx.fillText('$'+fmt(last.c),W-PR+8,ly+4);
+  }
+
+  // ENTRY label on top of everything
+  if(al.entry!=null){
+    var ey=tY(al.entry);
+    ctx.save(); ctx.strokeStyle='#4488FF'; ctx.lineWidth=2; ctx.setLineDash([3,2]);
+    ctx.shadowColor='#4488FF'; ctx.shadowBlur=8;
+    ctx.beginPath(); ctx.moveTo(PL,ey); ctx.lineTo(W-PR+4,ey); ctx.stroke(); ctx.restore();
+    var ex=W-PR-76,ew=80,eh=16,ey2=ey-8;
+    ctx.fillStyle='#0D2266';
+    ctx.beginPath(); if(ctx.roundRect)ctx.roundRect(ex,ey2,ew,eh,3);else ctx.rect(ex,ey2,ew,eh); ctx.fill();
+    ctx.strokeStyle='#4488FF'; ctx.lineWidth=1; ctx.setLineDash([]);
+    ctx.beginPath(); if(ctx.roundRect)ctx.roundRect(ex,ey2,ew,eh,3);else ctx.rect(ex,ey2,ew,eh); ctx.stroke();
+    ctx.fillStyle='#C0D8FF'; ctx.font='bold 8px monospace'; ctx.textAlign='center';
+    ctx.fillText('ENTRY $'+fmt(al.entry),ex+ew/2,ey2+10.5);
+    ctx.fillStyle='#4488FF';
+    ctx.beginPath(); ctx.moveTo(PL+2,ey); ctx.lineTo(PL+8,ey-4); ctx.lineTo(PL+8,ey+4); ctx.closePath(); ctx.fill();
+  }
+
+  ctx.fillStyle='rgba(201,160,39,0.15)'; ctx.font='bold 8px monospace';
+  ctx.textAlign='left'; ctx.fillText('AURUM PRO AGNT · ICT/SMC',PL+4,PT+11);
+}
+
+function updateUI(){
+  var lv=levels, sess=getSession(), inP=currentPrice>lv.eq;
+  document.getElementById('s1').textContent='$'+fmt(currentPrice);
+  document.getElementById('s2').textContent=lv.atr?fmt(lv.atr):'---';
+  document.getElementById('s3').textContent=inP?'PREMIUM':'DISCOUNT';
+  document.getElementById('s3').style.color=inP?'var(--red)':'var(--green)';
+  document.getElementById('s4').textContent=sess.name;
+  document.getElementById('s4').style.color=sess.color;
+  var sjt = getSJTime();
+  document.getElementById('sessionLbl').textContent=
+    dataSource+' · '+sess.name+' · '+sjt.display+' · San Juan PR';
+  document.getElementById('ctInfo').textContent=
+    'OB:'+(lv.bullOB?'▲':'-')+(lv.bearOB?'▼':'-')+' FVG:'+lv.fvgs.length+' ATR:'+fmt(lv.atr)+' BIAS:'+lv.bias;
+}
+
+/* ── INIT ── */
+setInterval(function(){
+  var el=document.getElementById('sessionLbl');
+  if(el&&levels.eq){
+    var sjt2=getSJTime(), sess2=getSession();
+    el.textContent=dataSource+' · '+sess2.name+' · '+sjt2.display+' · San Juan PR';
+  }
+},1000);
+
+function saveKeys(){
+  var ck = document.getElementById('inputClaudeKey').value.trim();
+  var tk = document.getElementById('inputTDKey').value.trim();
+  var err = document.getElementById('modalError');
+
+  if(!ck || !ck.startsWith('sk-ant-')){
+    err.style.display='block';
+    err.textContent='La API Key de Claude es requerida y debe comenzar con sk-ant-';
+    return;
+  }
+
+  localStorage.setItem('aurum_claude_key', ck);
+  if(tk) localStorage.setItem('aurum_td_key', tk);
+
+  // Update runtime variables
+  CLAUDE_KEY = ck;
+  if(tk) TD_KEY = tk;
+
+  document.getElementById('setupModal').style.display='none';
+  showWelcome();
+  loadData('15min');
+  setInterval(function(){ loadData(activeTF); },60000);
+}
+
+function checkKeys(){
+  CLAUDE_KEY = localStorage.getItem('aurum_claude_key') || '';
+  TD_KEY     = localStorage.getItem('aurum_td_key') || '55c198220c554394bc4d9475bef8f616';
+
+  if(!CLAUDE_KEY){
+    // Show setup modal
+    document.getElementById('setupModal').style.display='flex';
+  } else {
+    showWelcome();
+    loadData('15min');
+    setInterval(function(){ loadData(activeTF); },60000);
+  }
+}
+
+// Allow re-config via console: resetAurum()
+function resetAurum(){
+  localStorage.removeItem('aurum_claude_key');
+  localStorage.removeItem('aurum_td_key');
+  location.reload();
+}
+
+window.addEventListener('load',function(){
+  initChartInteraction();
+  checkKeys();
+});
+
+
+/* ══════════════════════════════════
+   CLAUDE CHAT ENGINE — OPEN CONVERSATION
+══════════════════════════════════ */
+
+function buildSystemPrompt(){
+  var lv=levels, p=currentPrice, sess=getSession(), sjt=getSJTime();
+  if(!p||!lv.eq) return 'Eres AURUM PRO AGNT, experto en trading institucional de XAU/USD con metodologia ICT y SMC. Los datos de mercado aun se estan cargando.';
+  var inP=p>lv.eq, bullBias=lv.ema20>lv.ema50;
+  var q=quantAnalysis();
+  var sys = 'Eres AURUM PRO AGNT, un agente experto en trading institucional de XAU/USD (Oro). ';
+  sys += 'Tu especialidad es ICT (Inner Circle Trader) y SMC (Smart Money Concepts). ';
+  sys += 'Tambien integras analisis cuantitativo de Renaissance Technologies, Citadel Securities, Two Sigma, JPMorgan LOXM y DE Shaw. ';
+  sys += 'Respondes SIEMPRE en espanol, de forma clara, directa y profesional. ';
+  sys += 'Cuando das un setup siempre incluyes Entry, SL, TP1 y TP2 con precios exactos basados en los datos reales. ';
+  sys += 'Nunca das consejos financieros, das analisis tecnico institucional. ';
+  sys += 'DATOS DE MERCADO EN TIEMPO REAL: ';
+  sys += 'Precio XAU/USD: $' + fmt(p) + '. ';
+  sys += 'Hora San Juan: ' + sjt.display + '. ';
+  sys += 'Sesion: ' + sess.name + '. ';
+  sys += 'Zona: ' + (inP ? 'PREMIUM (sobre EQ)' : 'DISCOUNT (bajo EQ)') + '. ';
+  sys += 'Bias: ' + (bullBias ? 'ALCISTA' : 'BAJISTA') + ' (EMA20 $' + fmt(lv.ema20) + ' vs EMA50 $' + fmt(lv.ema50) + '). ';
+  sys += 'Swing High: $' + fmt(lv.sh) + ' | Swing Low: $' + fmt(lv.sl) + ' | EQ: $' + fmt(lv.eq) + '. ';
+  sys += 'ATR(14): ' + fmt(lv.atr) + ' pts. ';
+  sys += 'Order Block alcista: ' + (lv.bullOB ? '$' + fmt(lv.bullOB.bot) + '-$' + fmt(lv.bullOB.top) : 'No detectado') + '. ';
+  sys += 'Order Block bajista: ' + (lv.bearOB ? '$' + fmt(lv.bearOB.bot) + '-$' + fmt(lv.bearOB.top) : 'No detectado') + '. ';
+  sys += 'FVG sin mitigar: ' + lv.fvgs.length + ' activos. ';
+  sys += 'BOS: ' + (lv.bos ? lv.bos.label : 'No confirmado') + '. ';
+  sys += 'Pool liquidez alto: $' + fmt(lv.liqH) + ' | bajo: $' + fmt(lv.liqL) + '. ';
+  sys += 'LOXM Timing: ' + q.loxm.timing + ' - ' + q.loxm.note + '. ';
+  sys += 'Two Sigma Score: ' + (q.twoSigma.score > 0 ? '+' : '') + q.twoSigma.score + '/100 (' + q.twoSigma.conviction + '). ';
+  sys += 'Renaissance: Z-Score ' + q.renaissance.zScore + ', ' + q.renaissance.momentum.replace(/_/g,' ') + '. ';
+  sys += 'Citadel: ' + q.citadel.flow.replace(/_/g,' ') + ', presion compradora ' + q.citadel.buyPct + '%. ';
+  sys += 'DE Shaw: Regimen ' + q.deShaw.regime + ', ' + q.deShaw.halfLife.replace(/_/g,' ') + '. ';
+  sys += 'Fuente de datos: ' + dataSource + '. Timeframe: ' + activeTF + '.';
+  return sys;
+}
+
+function appendMsg(role, text, time){
+  var box=document.getElementById('chatBox');
+  var div=document.createElement('div');
+  div.className='chat-msg '+role;
+  var bubble=document.createElement('div');
+  bubble.className='chat-bubble';
+  bubble.textContent=text;
+  var meta=document.createElement('div');
+  meta.className='chat-meta';
+  meta.textContent=(role==='user'?'Tú':'AURUM PRO AGNT')+' · '+(time||getSJTime().display);
+  div.appendChild(bubble);
+  div.appendChild(meta);
+  box.appendChild(div);
+  box.scrollTop=box.scrollHeight;
+  return bubble;
+}
+
+function showTyping(){
+  var box=document.getElementById('chatBox');
+  var div=document.createElement('div');
+  div.className='chat-msg agent';
+  div.id='typingIndicator';
+  div.innerHTML='<div class="chat-typing"><div class="dots"><span></span><span></span><span></span></div>Analizando mercado...</div>';
+  box.appendChild(div);
+  box.scrollTop=box.scrollHeight;
+}
+
+function removeTyping(){
+  var el=document.getElementById('typingIndicator');
+  if(el) el.remove();
+}
+
+function showWelcome(){
+  var box=document.getElementById('chatBox');
+  box.innerHTML='<div class="chat-welcome">'+
+    '<span>AURUM PRO AGNT</span> listo.<br>'+
+    'Pregunta cualquier cosa sobre el Oro —<br>'+
+    'setups, analisis, sesiones, niveles, estrategia ICT/SMC...<br><br>'+
+    '<span style="color:var(--muted);font-size:11px">Usa los botones rapidos o escribe libremente</span>'+
+    '</div>';
+}
+
+async function callClaude(userMsg){
+  chatHistory.push({role:'user', content:userMsg});
+
+  var messages = chatHistory.slice(-12); // keep last 12 turns for context
+
+  var response = await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'x-api-key':CLAUDE_KEY,
+      'anthropic-version':'2023-06-01',
+      'anthropic-dangerous-direct-browser-access':'true'
+    },
+    body:JSON.stringify({
+      model:CLAUDE_MODEL,
+      max_tokens:1200,
+      system:buildSystemPrompt(),
+      messages:messages
+    })
+  });
+
+  if(!response.ok){
+    var err=await response.json().catch(function(){ return {}; });
+    throw new Error(err.error&&err.error.message?err.error.message:'Error HTTP '+response.status);
+  }
+
+  var data=await response.json();
+  var reply=data.content&&data.content[0]?data.content[0].text:'Sin respuesta';
+  chatHistory.push({role:'assistant', content:reply});
+  return reply;
+}
+
+async function sendChat(){
+  var input=document.getElementById('userQ');
+  var q=input.value.trim();
+  if(!q) return;
+  input.value='';
+  document.getElementById('sendBtn').disabled=true;
+
+  // Remove welcome if present
+  var box=document.getElementById('chatBox');
+  var welcome=box.querySelector('.chat-welcome');
+  if(welcome) welcome.remove();
+
+  var time=getSJTime().display;
+  appendMsg('user', q, time);
+  showTyping();
+
+  try{
+    var reply=await callClaude(q);
+    removeTyping();
+    appendMsg('agent', reply, getSJTime().display);
+
+    // Try to extract and plot setup levels if reply contains prices
+    tryExtractSetup(reply);
+
+  }catch(e){
+    removeTyping();
+    appendMsg('agent', 'Error al conectar con el agente: '+e.message+'. Verifica tu conexion a internet.', getSJTime().display);
+  }
+
+  document.getElementById('sendBtn').disabled=false;
+  input.focus();
+}
+
+function quickAsk(q){
+  var input=document.getElementById('userQ');
+  input.value=q;
+  sendChat();
+}
+
+function tryExtractSetup(text){
+  // Try to find entry/sl/tp prices in response and plot them
+  var entryMatch = text.match(/[Ee]ntry[:\s]+\$?([\d,]+\.?\d*)/);
+  var slMatch    = text.match(/[Ss]top[:\s]+\$?([\d,]+\.?\d*)|SL[:\s]+\$?([\d,]+\.?\d*)/);
+  var tp1Match   = text.match(/TP1[:\s]+\$?([\d,]+\.?\d*)/);
+  var tp2Match   = text.match(/TP2[:\s]+\$?([\d,]+\.?\d*)/);
+
+  if(entryMatch && slMatch && tp1Match){
+    var entry = parseFloat((entryMatch[1]||'').replace(',',''));
+    var sl    = parseFloat(((slMatch[1]||slMatch[2]||'')).replace(',',''));
+    var tp1   = parseFloat((tp1Match[1]||'').replace(',',''));
+    var tp2   = tp2Match ? parseFloat((tp2Match[1]||'').replace(',','')) : tp1+(tp1-entry)*1.5;
+
+    if(entry>0 && sl>0 && tp1>0){
+      activeLvl={entry:entry, sl_price:sl, tp1:tp1, tp2:tp2};
+      drawChart();
+    }
+  }
+}
+
+window.addEventListener('resize',function(){
+  if(candles.length) drawChart();
+});
+</script>
+</body>
+</html>
