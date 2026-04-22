@@ -122,47 +122,6 @@ canvas#cvs.dragging{cursor:grabbing}
 .qscore-fill{height:100%;border-radius:3px;transition:width .5s ease}
 .info-row{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px}
 
-/* ── CHAT BOX ── */
-.chat-box{
-  max-height:380px;overflow-y:auto;
-  display:flex;flex-direction:column;gap:10px;
-  padding:4px 0;
-  scrollbar-width:thin;scrollbar-color:var(--dim) transparent;
-}
-.chat-box::-webkit-scrollbar{width:4px}
-.chat-box::-webkit-scrollbar-thumb{background:var(--dim);border-radius:2px}
-.chat-msg{display:flex;flex-direction:column;gap:3px;animation:fadeIn .3s ease}
-.chat-msg.user{align-items:flex-end}
-.chat-msg.agent{align-items:flex-start}
-.chat-bubble{
-  max-width:88%;padding:10px 14px;border-radius:10px;
-  font-size:13px;line-height:1.7;
-}
-.chat-msg.user .chat-bubble{
-  background:rgba(201,160,39,0.12);
-  border:1px solid rgba(201,160,39,0.25);
-  color:var(--gold2);border-radius:10px 10px 2px 10px;
-  font-family:'Rajdhani',sans-serif;font-weight:600;
-}
-.chat-msg.agent .chat-bubble{
-  background:var(--bg3);
-  border:1px solid var(--border);
-  color:var(--text);border-radius:10px 10px 10px 2px;
-  font-family:'Rajdhani',sans-serif;font-weight:400;
-  white-space:pre-wrap;
-}
-.chat-meta{font-size:9px;color:var(--muted);letter-spacing:1px;font-family:'Share Tech Mono',monospace}
-.chat-typing{
-  display:flex;align-items:center;gap:8px;
-  padding:10px 14px;background:var(--bg3);border:1px solid var(--border);
-  border-radius:10px 10px 10px 2px;color:var(--muted);font-size:12px;
-  font-family:'Rajdhani',sans-serif;
-}
-.chat-welcome{
-  text-align:center;padding:20px 10px;color:var(--muted);
-  font-size:12px;line-height:1.7;font-family:'Rajdhani',sans-serif;
-}
-.chat-welcome span{color:var(--gold);font-weight:700}
 </style>
 </head>
 <body>
@@ -219,64 +178,30 @@ canvas#cvs.dragging{cursor:grabbing}
 
   <!-- QUERY -->
   <div class="query-card">
-    <div class="q-title">◈ AURUM PRO AGNT · CHAT ABIERTO</div>
+    <div class="q-title">◈ CONSULTA AL AGENTE · ICT/SMC</div>
     <div class="quick-btns">
-      <div class="qbtn" onclick="quickAsk('Dame el mejor setup de compra ahora con entry TP1 TP2 y SL')">▲ Setup COMPRA</div>
-      <div class="qbtn" onclick="quickAsk('Dame el mejor setup de venta ahora con entry TP1 TP2 y SL')">▼ Setup VENTA</div>
-      <div class="qbtn" onclick="quickAsk('Donde estan los pools de liquidez mas importantes ahora?')">◉ Liquidez</div>
-      <div class="qbtn" onclick="quickAsk('Hay Fair Value Gap valido para entrar ahora?')">◈ FVG</div>
-      <div class="qbtn" onclick="quickAsk('Dame un analisis completo del mercado del oro ahora mismo')">📊 Analisis</div>
-      <div class="qbtn" onclick="quickAsk('Cual es el bias institucional y en que zona estamos?')">🧭 Bias/Zona</div>
-      <div class="qbtn" onclick="quickAsk('Que dicen los 5 motores cuantitativos sobre el oro ahora?')">🤖 Quant</div>
-      <div class="qbtn" onclick="chatHistory=[];document.getElementById('chatBox').innerHTML='';showWelcome()">🗑 Limpiar</div>
+      <div class="qbtn" onclick="runQuery('compra')">▲ Setup COMPRA</div>
+      <div class="qbtn" onclick="runQuery('venta')">▼ Setup VENTA</div>
+      <div class="qbtn" onclick="runQuery('liquidez')">◉ Liquidez pools</div>
+      <div class="qbtn" onclick="runQuery('fvg')">◈ Analizar FVG</div>
+      <div class="qbtn" onclick="runQuery('quant')">🤖 Quant</div>
+      <div class="qbtn" onclick="runInfoQuery('info_bias')">🧭 Bias/Zona</div>
+      <div class="qbtn" onclick="runInfoQuery('info_sesion')">🕐 Sesion</div>
+      <div class="qbtn" onclick="runInfoQuery('info_ob')">📦 Order Block</div>
     </div>
-    <div id="chatBox" class="chat-box"></div>
-    <div class="input-row" style="margin-top:8px">
-      <input class="q-input" id="userQ" placeholder="Pregunta cualquier cosa sobre el Oro..." onkeydown="if(event.key==='Enter')sendChat()">
-      <button class="send-btn" id="sendBtn" onclick="sendChat()">▶</button>
+    <div class="input-row">
+      <input class="q-input" id="userQ" placeholder="¿Cuál es el entry? ¿Hay FVG? ¿Zona premium? ¿Bias?..." onkeydown="if(event.key==='Enter')runCustom()">
+      <button class="send-btn" id="sendBtn" onclick="runCustom()">▶</button>
     </div>
   </div>
 
   <div id="analysisArea"></div>
 </div>
 
-<!-- SETUP MODAL -->
-<div id="setupModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;backdrop-filter:blur(6px)">
-  <div style="background:#0D1018;border:1px solid rgba(201,160,39,0.35);border-radius:14px;padding:32px;max-width:480px;width:90%;position:relative">
-    <div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,#C9A027,transparent);border-radius:14px 14px 0 0"></div>
-    <div style="font-family:'Cinzel',serif;font-size:22px;font-weight:900;background:linear-gradient(135deg,#FFD97D,#C9A027);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px">AURUM PRO AGNT</div>
-    <div style="font-size:10px;color:#5A6070;letter-spacing:3px;font-family:'Share Tech Mono',monospace;margin-bottom:24px">CONFIGURACION INICIAL</div>
-
-    <div style="margin-bottom:18px">
-      <div style="font-size:10px;color:#00E5FF;letter-spacing:2px;font-family:'Share Tech Mono',monospace;margin-bottom:8px">API KEY · ANTHROPIC (CLAUDE)</div>
-      <div style="font-size:11px;color:#5A6070;margin-bottom:8px;font-family:'Rajdhani',sans-serif">Obtén tu key gratis en <a href="https://console.anthropic.com" target="_blank" style="color:#C9A027">console.anthropic.com</a> → API Keys</div>
-      <input id="inputClaudeKey" type="password" placeholder="sk-ant-api03-..." style="width:100%;background:#0A0C12;border:1px solid #2A3045;border-radius:7px;padding:11px 14px;font-family:'Share Tech Mono',monospace;font-size:12px;color:#E8E6DE;outline:none;letter-spacing:1px">
-    </div>
-
-    <div style="margin-bottom:24px">
-      <div style="font-size:10px;color:#00E5FF;letter-spacing:2px;font-family:'Share Tech Mono',monospace;margin-bottom:8px">API KEY · TWELVE DATA (OPCIONAL)</div>
-      <div style="font-size:11px;color:#5A6070;margin-bottom:8px;font-family:'Rajdhani',sans-serif">Ya incluida por defecto. Solo cambia si tienes tu propia key en <a href="https://twelvedata.com" target="_blank" style="color:#C9A027">twelvedata.com</a></div>
-      <input id="inputTDKey" type="password" placeholder="Dejar vacío para usar la key por defecto" style="width:100%;background:#0A0C12;border:1px solid #2A3045;border-radius:7px;padding:11px 14px;font-family:'Share Tech Mono',monospace;font-size:12px;color:#E8E6DE;outline:none;letter-spacing:1px">
-    </div>
-
-    <div id="modalError" style="display:none;background:rgba(255,61,61,0.08);border:1px solid rgba(255,61,61,0.25);border-radius:6px;padding:10px 14px;font-size:12px;color:#FF3D3D;margin-bottom:16px;font-family:'Rajdhani',sans-serif"></div>
-
-    <button onclick="saveKeys()" style="width:100%;background:linear-gradient(135deg,#C9A027,#8B6914);color:#000;border:none;border-radius:8px;padding:14px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Rajdhani',sans-serif;letter-spacing:2px">
-      ACTIVAR AURUM PRO AGNT
-    </button>
-
-    <div style="text-align:center;margin-top:14px;font-size:10px;color:#3A4055;font-family:'Share Tech Mono',monospace;line-height:1.6">
-      Las keys se guardan solo en tu navegador (localStorage).<br>Nunca se envían a ningún servidor externo.
-    </div>
-  </div>
-</div>
-
 <script>
 
-var TD_KEY = localStorage.getItem('aurum_td_key') || '55c198220c554394bc4d9475bef8f616';
-var CLAUDE_KEY = localStorage.getItem('aurum_claude_key') || '';
+var TD_KEY = '55c198220c554394bc4d9475bef8f616';
 var CLAUDE_MODEL = 'claude-sonnet-4-20250514';
-var chatHistory = [];
 var candles = [], levels = {}, currentPrice = 0, openPrice = 0;
 var activeTF = '15min', activeLvl = {};
 var MIN_RR = 2.0;
@@ -809,6 +734,17 @@ function setLoading(on){
   if(on) document.getElementById('analysisArea').innerHTML='<div class="thinking"><div class="dots"><span></span><span></span><span></span></div>Calculando niveles institucionales...</div>';
 }
 
+function runInfoQuery(tipo){
+  if(!candles.length){showErr('Esperando datos...');return;}
+  setLoading(true);
+  setTimeout(function(){
+    try{
+      renderInfo(getInfoText(tipo),[tipo.replace('info_','').toUpperCase(),levels.bias,levels.zone]);
+    }catch(e){showErr('Error: '+e.message);}
+    setLoading(false);
+  },400);
+}
+
 function runQuery(tipo){
   if(!candles.length){showErr('Esperando datos...');return;}
   setLoading(true);
@@ -1116,226 +1052,14 @@ setInterval(function(){
   }
 },1000);
 
-function saveKeys(){
-  var ck = document.getElementById('inputClaudeKey').value.trim();
-  var tk = document.getElementById('inputTDKey').value.trim();
-  var err = document.getElementById('modalError');
-
-  if(!ck || !ck.startsWith('sk-ant-')){
-    err.style.display='block';
-    err.textContent='La API Key de Claude es requerida y debe comenzar con sk-ant-';
-    return;
-  }
-
-  localStorage.setItem('aurum_claude_key', ck);
-  if(tk) localStorage.setItem('aurum_td_key', tk);
-
-  // Update runtime variables
-  CLAUDE_KEY = ck;
-  if(tk) TD_KEY = tk;
-
-  document.getElementById('setupModal').style.display='none';
-  showWelcome();
-  loadData('15min');
-  setInterval(function(){ loadData(activeTF); },60000);
-}
-
-function checkKeys(){
-  CLAUDE_KEY = localStorage.getItem('aurum_claude_key') || '';
-  TD_KEY     = localStorage.getItem('aurum_td_key') || '55c198220c554394bc4d9475bef8f616';
-
-  if(!CLAUDE_KEY){
-    // Show setup modal
-    document.getElementById('setupModal').style.display='flex';
-  } else {
-    showWelcome();
-    loadData('15min');
-    setInterval(function(){ loadData(activeTF); },60000);
-  }
-}
-
-// Allow re-config via console: resetAurum()
-function resetAurum(){
-  localStorage.removeItem('aurum_claude_key');
-  localStorage.removeItem('aurum_td_key');
-  location.reload();
-}
 
 window.addEventListener('load',function(){
   initChartInteraction();
-  checkKeys();
+  loadData('15min');
+  setInterval(function(){ loadData(activeTF); },60000);
 });
 
 
-/* ══════════════════════════════════
-   CLAUDE CHAT ENGINE — OPEN CONVERSATION
-══════════════════════════════════ */
-
-function buildSystemPrompt(){
-  var lv=levels, p=currentPrice, sess=getSession(), sjt=getSJTime();
-  if(!p||!lv.eq) return 'Eres AURUM PRO AGNT, experto en trading institucional de XAU/USD con metodologia ICT y SMC. Los datos de mercado aun se estan cargando.';
-  var inP=p>lv.eq, bullBias=lv.ema20>lv.ema50;
-  var q=quantAnalysis();
-  var sys = 'Eres AURUM PRO AGNT, un agente experto en trading institucional de XAU/USD (Oro). ';
-  sys += 'Tu especialidad es ICT (Inner Circle Trader) y SMC (Smart Money Concepts). ';
-  sys += 'Tambien integras analisis cuantitativo de Renaissance Technologies, Citadel Securities, Two Sigma, JPMorgan LOXM y DE Shaw. ';
-  sys += 'Respondes SIEMPRE en espanol, de forma clara, directa y profesional. ';
-  sys += 'Cuando das un setup siempre incluyes Entry, SL, TP1 y TP2 con precios exactos basados en los datos reales. ';
-  sys += 'Nunca das consejos financieros, das analisis tecnico institucional. ';
-  sys += 'DATOS DE MERCADO EN TIEMPO REAL: ';
-  sys += 'Precio XAU/USD: $' + fmt(p) + '. ';
-  sys += 'Hora San Juan: ' + sjt.display + '. ';
-  sys += 'Sesion: ' + sess.name + '. ';
-  sys += 'Zona: ' + (inP ? 'PREMIUM (sobre EQ)' : 'DISCOUNT (bajo EQ)') + '. ';
-  sys += 'Bias: ' + (bullBias ? 'ALCISTA' : 'BAJISTA') + ' (EMA20 $' + fmt(lv.ema20) + ' vs EMA50 $' + fmt(lv.ema50) + '). ';
-  sys += 'Swing High: $' + fmt(lv.sh) + ' | Swing Low: $' + fmt(lv.sl) + ' | EQ: $' + fmt(lv.eq) + '. ';
-  sys += 'ATR(14): ' + fmt(lv.atr) + ' pts. ';
-  sys += 'Order Block alcista: ' + (lv.bullOB ? '$' + fmt(lv.bullOB.bot) + '-$' + fmt(lv.bullOB.top) : 'No detectado') + '. ';
-  sys += 'Order Block bajista: ' + (lv.bearOB ? '$' + fmt(lv.bearOB.bot) + '-$' + fmt(lv.bearOB.top) : 'No detectado') + '. ';
-  sys += 'FVG sin mitigar: ' + lv.fvgs.length + ' activos. ';
-  sys += 'BOS: ' + (lv.bos ? lv.bos.label : 'No confirmado') + '. ';
-  sys += 'Pool liquidez alto: $' + fmt(lv.liqH) + ' | bajo: $' + fmt(lv.liqL) + '. ';
-  sys += 'LOXM Timing: ' + q.loxm.timing + ' - ' + q.loxm.note + '. ';
-  sys += 'Two Sigma Score: ' + (q.twoSigma.score > 0 ? '+' : '') + q.twoSigma.score + '/100 (' + q.twoSigma.conviction + '). ';
-  sys += 'Renaissance: Z-Score ' + q.renaissance.zScore + ', ' + q.renaissance.momentum.replace(/_/g,' ') + '. ';
-  sys += 'Citadel: ' + q.citadel.flow.replace(/_/g,' ') + ', presion compradora ' + q.citadel.buyPct + '%. ';
-  sys += 'DE Shaw: Regimen ' + q.deShaw.regime + ', ' + q.deShaw.halfLife.replace(/_/g,' ') + '. ';
-  sys += 'Fuente de datos: ' + dataSource + '. Timeframe: ' + activeTF + '.';
-  return sys;
-}
-
-function appendMsg(role, text, time){
-  var box=document.getElementById('chatBox');
-  var div=document.createElement('div');
-  div.className='chat-msg '+role;
-  var bubble=document.createElement('div');
-  bubble.className='chat-bubble';
-  bubble.textContent=text;
-  var meta=document.createElement('div');
-  meta.className='chat-meta';
-  meta.textContent=(role==='user'?'Tú':'AURUM PRO AGNT')+' · '+(time||getSJTime().display);
-  div.appendChild(bubble);
-  div.appendChild(meta);
-  box.appendChild(div);
-  box.scrollTop=box.scrollHeight;
-  return bubble;
-}
-
-function showTyping(){
-  var box=document.getElementById('chatBox');
-  var div=document.createElement('div');
-  div.className='chat-msg agent';
-  div.id='typingIndicator';
-  div.innerHTML='<div class="chat-typing"><div class="dots"><span></span><span></span><span></span></div>Analizando mercado...</div>';
-  box.appendChild(div);
-  box.scrollTop=box.scrollHeight;
-}
-
-function removeTyping(){
-  var el=document.getElementById('typingIndicator');
-  if(el) el.remove();
-}
-
-function showWelcome(){
-  var box=document.getElementById('chatBox');
-  box.innerHTML='<div class="chat-welcome">'+
-    '<span>AURUM PRO AGNT</span> listo.<br>'+
-    'Pregunta cualquier cosa sobre el Oro —<br>'+
-    'setups, analisis, sesiones, niveles, estrategia ICT/SMC...<br><br>'+
-    '<span style="color:var(--muted);font-size:11px">Usa los botones rapidos o escribe libremente</span>'+
-    '</div>';
-}
-
-async function callClaude(userMsg){
-  chatHistory.push({role:'user', content:userMsg});
-
-  var messages = chatHistory.slice(-12); // keep last 12 turns for context
-
-  var response = await fetch('https://api.anthropic.com/v1/messages',{
-    method:'POST',
-    headers:{
-      'Content-Type':'application/json',
-      'x-api-key':CLAUDE_KEY,
-      'anthropic-version':'2023-06-01',
-      'anthropic-dangerous-direct-browser-access':'true'
-    },
-    body:JSON.stringify({
-      model:CLAUDE_MODEL,
-      max_tokens:1200,
-      system:buildSystemPrompt(),
-      messages:messages
-    })
-  });
-
-  if(!response.ok){
-    var err=await response.json().catch(function(){ return {}; });
-    throw new Error(err.error&&err.error.message?err.error.message:'Error HTTP '+response.status);
-  }
-
-  var data=await response.json();
-  var reply=data.content&&data.content[0]?data.content[0].text:'Sin respuesta';
-  chatHistory.push({role:'assistant', content:reply});
-  return reply;
-}
-
-async function sendChat(){
-  var input=document.getElementById('userQ');
-  var q=input.value.trim();
-  if(!q) return;
-  input.value='';
-  document.getElementById('sendBtn').disabled=true;
-
-  // Remove welcome if present
-  var box=document.getElementById('chatBox');
-  var welcome=box.querySelector('.chat-welcome');
-  if(welcome) welcome.remove();
-
-  var time=getSJTime().display;
-  appendMsg('user', q, time);
-  showTyping();
-
-  try{
-    var reply=await callClaude(q);
-    removeTyping();
-    appendMsg('agent', reply, getSJTime().display);
-
-    // Try to extract and plot setup levels if reply contains prices
-    tryExtractSetup(reply);
-
-  }catch(e){
-    removeTyping();
-    appendMsg('agent', 'Error al conectar con el agente: '+e.message+'. Verifica tu conexion a internet.', getSJTime().display);
-  }
-
-  document.getElementById('sendBtn').disabled=false;
-  input.focus();
-}
-
-function quickAsk(q){
-  var input=document.getElementById('userQ');
-  input.value=q;
-  sendChat();
-}
-
-function tryExtractSetup(text){
-  // Try to find entry/sl/tp prices in response and plot them
-  var entryMatch = text.match(/[Ee]ntry[:\s]+\$?([\d,]+\.?\d*)/);
-  var slMatch    = text.match(/[Ss]top[:\s]+\$?([\d,]+\.?\d*)|SL[:\s]+\$?([\d,]+\.?\d*)/);
-  var tp1Match   = text.match(/TP1[:\s]+\$?([\d,]+\.?\d*)/);
-  var tp2Match   = text.match(/TP2[:\s]+\$?([\d,]+\.?\d*)/);
-
-  if(entryMatch && slMatch && tp1Match){
-    var entry = parseFloat((entryMatch[1]||'').replace(',',''));
-    var sl    = parseFloat(((slMatch[1]||slMatch[2]||'')).replace(',',''));
-    var tp1   = parseFloat((tp1Match[1]||'').replace(',',''));
-    var tp2   = tp2Match ? parseFloat((tp2Match[1]||'').replace(',','')) : tp1+(tp1-entry)*1.5;
-
-    if(entry>0 && sl>0 && tp1>0){
-      activeLvl={entry:entry, sl_price:sl, tp1:tp1, tp2:tp2};
-      drawChart();
-    }
-  }
-}
 
 window.addEventListener('resize',function(){
   if(candles.length) drawChart();
