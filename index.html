@@ -669,7 +669,7 @@ function calcSetup(type){
     if(lv.bearOB) base+='Order Block bajista entre $'+fmt(lv.bearOB.bot)+' y $'+fmt(lv.bearOB.top)+'. ';
     base+='Bias '+lv.bias+'. Pool de liquidez inferior en $'+fmt(lv.liqL)+'. Sesion: '+sess.name+'.';
         var grade=scoreSetup('venta',lv,q,sess);
-    if(grade.blocked){return {noSetup:true,blocked:true,grade:grade,analysis:'GRADE '+grade.grade+' · '+grade.positiveCount+' CONFLUENCIAS\n\n'+grade.gradeDesc+'\n\nActivas: '+grade.confluences.join(' · ')+'\n\nNecesitas al menos 3 confluencias para operar. Espera Kill Zone, Order Block o FVG valido.'};}
+    if(grade.blocked){return {noSetup:true,blocked:true,grade:grade,analysis:'GRADE '+grade.grade+' ('+grade.positiveCount+' de 3 confluencias minimas). '+grade.gradeDesc+' Activas: '+grade.confluences.join(', ')+'. Necesitas al menos 3 confluencias para operar.'};}
     return {direction:'SELL',entry:entry,sl:sl,tp1:tp1,tp2:tp2,entryReason:entryReason,slReason:'Sobre OB/swing',chips:chips,analysis:buildAnalysis(base),management:'50% en TP1, SL a BE, deja correr a TP2',quantScore:q.twoSigma.score,quantConviction:q.twoSigma.conviction,grade:grade};
   }
 
