@@ -838,14 +838,8 @@ function renderInfo(text, chips){
     '<div class="a-name">AURUM PRO AGNT · ANALISIS</div>'+
     '<div class="a-sub">XAUUSD '+activeTF+' · '+getSJTime().display+'</div>'+
     '</div></div>'+
-        '<div class="chips">'+renderChips(s.chips)+'</div>'+
-    (s.grade?'<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;padding:10px 14px;border-radius:8px;background:rgba(0,0,0,0.25);border:1px solid '+s.grade.gradeColor+'55">'+
-    '<div style="width:44px;height:44px;border-radius:50%;border:2px solid '+s.grade.gradeColor+';display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;color:'+s.grade.gradeColor+';font-family:Rajdhani,sans-serif;flex-shrink:0">'+s.grade.grade+'</div>'+
-    '<div><div style="font-size:9px;color:'+s.grade.gradeColor+';letter-spacing:2px;font-family:Share Tech Mono,monospace;margin-bottom:3px">GRADE · '+s.grade.positiveCount+'/7 CONFLUENCIAS · SCORE '+s.grade.score+'</div>'+
-    '<div style="font-size:11px;color:var(--text);font-family:Rajdhani,sans-serif;margin-bottom:5px">'+s.grade.gradeDesc+'</div>'+
-    '<div style="font-size:10px;color:#00E676;font-family:Rajdhani,sans-serif;font-weight:700">'+s.grade.confluences.join(' · ')+'</div>'+
-    '</div></div>':'') +
-    '<div class="a-text">'+s.analysis+'</div>'+
+    '<div class="chips">'+renderChips(chips)+'</div>'+
+    '<div class="a-text">'+text+'</div>'+
     '</div>';
 }
 
@@ -886,6 +880,23 @@ function renderCard(s, rr){
   var rrStr=(+rr).toFixed(2);
   var now=getSJTime().display;
   var scoreColor=s.quantScore>30?'var(--green)':s.quantScore<-30?'var(--red)':'var(--gold2)';
+  var gradeBadge='';
+  if(s.grade){
+    var g=s.grade;
+    var confHtml='';
+    for(var i=0;i<g.confluences.length;i++){
+      confHtml+='<span style="font-size:8px;padding:2px 7px;border-radius:2px;background:rgba(0,230,118,0.1);color:#00E676;border:1px solid rgba(0,230,118,0.2);font-family:Rajdhani,sans-serif;font-weight:700;margin-right:4px">'+g.confluences[i]+'</span>';
+    }
+    gradeBadge=
+      '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;padding:10px 14px;border-radius:8px;background:rgba(0,0,0,0.25);border:1px solid '+g.gradeColor+'55">'+
+      '<div style="width:44px;height:44px;border-radius:50%;border:2px solid '+g.gradeColor+';display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;color:'+g.gradeColor+';font-family:Rajdhani,sans-serif;flex-shrink:0">'+g.grade+'</div>'+
+      '<div>'+
+        '<div style="font-size:9px;color:'+g.gradeColor+';letter-spacing:2px;font-family:Share Tech Mono,monospace;margin-bottom:3px">GRADE · '+g.positiveCount+'/7 CONFLUENCIAS · SCORE '+g.score+'</div>'+
+        '<div style="font-size:11px;color:var(--text);font-family:Rajdhani,sans-serif;margin-bottom:5px">'+g.gradeDesc+'</div>'+
+        '<div>'+confHtml+'</div>'+
+      '</div>'+
+      '</div>';
+  }
   document.getElementById('analysisArea').innerHTML=
     '<div class="analysis-card">'+
     '<div class="a-header">'+
@@ -895,6 +906,7 @@ function renderCard(s, rr){
     '<div class="a-time">'+now+'</div>'+
     '</div>'+
     '<div class="chips">'+renderChips(s.chips)+'</div>'+
+    gradeBadge+
     '<div class="a-text">'+s.analysis+'</div>'+
     '<div class="lvl-grid">'+
     '<div class="lvl-box lv-e"><div class="lv-lbl">ENTRY</div><div class="lv-val">$'+fmt(s.entry)+'</div><div class="lv-sub">'+s.entryReason+'</div></div>'+
