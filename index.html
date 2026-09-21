@@ -838,12 +838,13 @@ function renderInfo(text, chips){
     '<div class="a-name">AURUM PRO AGNT · ANALISIS</div>'+
     '<div class="a-sub">XAUUSD '+activeTF+' · '+getSJTime().display+'</div>'+
     '</div></div>'+
-    '<div class="chips">'+renderChips(s.chips)+'</div>'+
+        '<div class="chips">'+renderChips(s.chips)+'</div>'+
     (s.grade?'<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;padding:10px 14px;border-radius:8px;background:rgba(0,0,0,0.25);border:1px solid '+s.grade.gradeColor+'55">'+
     '<div style="width:44px;height:44px;border-radius:50%;border:2px solid '+s.grade.gradeColor+';display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;color:'+s.grade.gradeColor+';font-family:Rajdhani,sans-serif;flex-shrink:0">'+s.grade.grade+'</div>'+
     '<div><div style="font-size:9px;color:'+s.grade.gradeColor+';letter-spacing:2px;font-family:Share Tech Mono,monospace;margin-bottom:3px">GRADE · '+s.grade.positiveCount+'/7 CONFLUENCIAS · SCORE '+s.grade.score+'</div>'+
     '<div style="font-size:11px;color:var(--text);font-family:Rajdhani,sans-serif;margin-bottom:5px">'+s.grade.gradeDesc+'</div>'+
-    '<div style="display:flex;flex-wrap:wrap;gap:4px">'+s.grade.confluences.map(function(c){return \'<span style="font-size:8px;padding:2px 7px;border-radius:2px;background:rgba(0,230,118,0.1);color:#00E676;border:1px solid rgba(0,230,118,0.2);font-family:Rajdhani,sans-serif;font-weight:700">✓ \'+c+\'</span>\';}).join(\'\')+'</div></div></div>':'') +
+    '<div style="font-size:10px;color:#00E676;font-family:Rajdhani,sans-serif;font-weight:700">'+s.grade.confluences.join(' · ')+'</div>'+
+    '</div></div>':'') +
     '<div class="a-text">'+s.analysis+'</div>'+
     '</div>';
 }
