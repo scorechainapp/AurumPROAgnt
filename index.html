@@ -589,7 +589,30 @@ function quantAnalysis(){
 
   return {renaissance:renaissance, citadel:citadel, twoSigma:twoSigma, loxm:loxm, deShaw:deShaw};
 }
-
+/* ── CONFLUENCE SCORER · GRADE A/B/C ── */
+function scoreSetup(type,lv,q,sess){
+  var score=0,conf=[],p=currentPrice,bull=lv.bias==='ALCISTA';
+  if(q.loxm.timing==='EJECUTAR'){score+=30;conf.push('KILL ZONE');}
+  else if(q.loxm.timing==='FAVORABLE'){score+=15;conf.push('SESION ACTIVA');}
+  if(type==='compra'&&p<lv.eq){score+=20;conf.push('DISCOUNT');}
+  else if(type==='venta'&&p>lv.eq){score+=20;conf.push('PREMIUM');}
+  if((type==='compra'&&bull)||(type==='venta'&&!bull)){score+=15;conf.push('BIAS OK');}
+  if(type==='compra'&&lv.bullOB){score+=20;conf.push('ORDER BLOCK');}
+  else if(type==='venta'&&lv.bearOB){score+=20;conf.push('ORDER BLOCK');}
+  var fvgOk=type==='compra'?lv.fvgs.some(function(f){return f.type==='bull';}):lv.fvgs.some(function(f){return f.type==='bear';});
+  if(fvgOk){score+=15;conf.push('FVG');}
+  if(lv.bos&&((type==='compra'&&lv.bos.type==='bull')||(type==='venta'&&lv.bos.type==='bear'))){score+=15;conf.push('BOS');}
+  if((type==='compra'&&q.twoSigma.score>25)||(type==='venta'&&q.twoSigma.score<-25)){score+=10;conf.push('QUANT OK');}
+  var pos=conf.length;
+  var grade,gc,gd;
+  if(score>=80&&pos>=5){grade='A+';gc='#00FFB0';gd='Setup institucional de maxima calidad.';}
+  else if(score>=65&&pos>=4){grade='A';gc='#00E676';gd='Alta calidad. Buenas confluencias.';}
+  else if(score>=45&&pos>=3){grade='B';gc='#F0C040';gd='Setup valido. 3+ confluencias confirmadas.';}
+  else if(pos>=2){grade='C';gc='#FF9100';gd='Debil. Solo '+pos+' confluencias. Espera mas confirmacion.';}
+  else{grade='D';gc='#FF3D3D';gd='Insuficiente - menos de 2 confluencias. NO OPERAR.';}
+  return{score:score,grade:grade,gradeColor:gc,gradeDesc:gd,confluences:conf,positiveCount:pos,blocked:pos<3};
+}
+  
 /* ── SETUP CALCULATOR ── */
 function calcSetup(type){
   var lv = levels, p = currentPrice, atr = lv.atr;
@@ -629,7 +652,9 @@ function calcSetup(type){
     var base='El precio cotiza a $'+fmt(p)+' en zona '+lv.zone+'. ';
     if(lv.bullOB) base+='Order Block alcista entre $'+fmt(lv.bullOB.bot)+' y $'+fmt(lv.bullOB.top)+'. ';
     base+='Bias '+lv.bias+'. Pool de liquidez superior en $'+fmt(lv.liqH)+'. Sesion: '+sess.name+'.';
-    return {direction:'BUY',entry:entry,sl:sl,tp1:tp1,tp2:tp2,entryReason:entryReason,slReason:'Bajo OB/swing',chips:chips,analysis:buildAnalysis(base),management:'50% en TP1, SL a BE, deja correr a TP2',quantScore:q.twoSigma.score,quantConviction:q.twoSigma.conviction};
+        var grade=scoreSetup('compra',lv,q,sess);
+    if(grade.blocked){return {noSetup:true,blocked:true,grade:grade,analysis:'GRADE '+grade.grade+' · '+grade.positiveCount+' CONFLUENCIAS\n\n'+grade.gradeDesc+'\n\nActivas: '+grade.confluences.join(' · ')+'\n\nNecesitas al menos 3 confluencias para operar. Espera Kill Zone, Order Block o FVG valido.'};}
+    return {direction:'BUY',entry:entry,sl:sl,tp1:tp1,tp2:tp2,entryReason:entryReason,slReason:'Bajo OB/swing',chips:chips,analysis:buildAnalysis(base),management:'50% en TP1, SL a BE, deja correr a TP2',quantScore:q.twoSigma.score,quantConviction:q.twoSigma.conviction,grade:grade};
   }
 
   if(type==='venta'){
@@ -643,7 +668,9 @@ function calcSetup(type){
     var base='El precio cotiza a $'+fmt(p)+' en zona '+lv.zone+'. ';
     if(lv.bearOB) base+='Order Block bajista entre $'+fmt(lv.bearOB.bot)+' y $'+fmt(lv.bearOB.top)+'. ';
     base+='Bias '+lv.bias+'. Pool de liquidez inferior en $'+fmt(lv.liqL)+'. Sesion: '+sess.name+'.';
-    return {direction:'SELL',entry:entry,sl:sl,tp1:tp1,tp2:tp2,entryReason:entryReason,slReason:'Sobre OB/swing',chips:chips,analysis:buildAnalysis(base),management:'50% en TP1, SL a BE, deja correr a TP2',quantScore:q.twoSigma.score,quantConviction:q.twoSigma.conviction};
+        var grade=scoreSetup('venta',lv,q,sess);
+    if(grade.blocked){return {noSetup:true,blocked:true,grade:grade,analysis:'GRADE '+grade.grade+' · '+grade.positiveCount+' CONFLUENCIAS\n\n'+grade.gradeDesc+'\n\nActivas: '+grade.confluences.join(' · ')+'\n\nNecesitas al menos 3 confluencias para operar. Espera Kill Zone, Order Block o FVG valido.'};}
+    return {direction:'SELL',entry:entry,sl:sl,tp1:tp1,tp2:tp2,entryReason:entryReason,slReason:'Sobre OB/swing',chips:chips,analysis:buildAnalysis(base),management:'50% en TP1, SL a BE, deja correr a TP2',quantScore:q.twoSigma.score,quantConviction:q.twoSigma.conviction,grade:grade};
   }
 
   if(type==='liquidez'){
@@ -811,8 +838,13 @@ function renderInfo(text, chips){
     '<div class="a-name">AURUM PRO AGNT · ANALISIS</div>'+
     '<div class="a-sub">XAUUSD '+activeTF+' · '+getSJTime().display+'</div>'+
     '</div></div>'+
-    '<div class="chips">'+renderChips(chips)+'</div>'+
-    '<div class="a-text">'+text+'</div>'+
+    '<div class="chips">'+renderChips(s.chips)+'</div>'+
+    (s.grade?'<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;padding:10px 14px;border-radius:8px;background:rgba(0,0,0,0.25);border:1px solid '+s.grade.gradeColor+'55">'+
+    '<div style="width:44px;height:44px;border-radius:50%;border:2px solid '+s.grade.gradeColor+';display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;color:'+s.grade.gradeColor+';font-family:Rajdhani,sans-serif;flex-shrink:0">'+s.grade.grade+'</div>'+
+    '<div><div style="font-size:9px;color:'+s.grade.gradeColor+';letter-spacing:2px;font-family:Share Tech Mono,monospace;margin-bottom:3px">GRADE · '+s.grade.positiveCount+'/7 CONFLUENCIAS · SCORE '+s.grade.score+'</div>'+
+    '<div style="font-size:11px;color:var(--text);font-family:Rajdhani,sans-serif;margin-bottom:5px">'+s.grade.gradeDesc+'</div>'+
+    '<div style="display:flex;flex-wrap:wrap;gap:4px">'+s.grade.confluences.map(function(c){return \'<span style="font-size:8px;padding:2px 7px;border-radius:2px;background:rgba(0,230,118,0.1);color:#00E676;border:1px solid rgba(0,230,118,0.2);font-family:Rajdhani,sans-serif;font-weight:700">✓ \'+c+\'</span>\';}).join(\'\')+'</div></div></div>':'') +
+    '<div class="a-text">'+s.analysis+'</div>'+
     '</div>';
 }
 
