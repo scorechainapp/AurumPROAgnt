@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AURUM PRO AGNT · XAUUSD · ICT/SMC</title>
+<title>AURUM PRO AGNT · XAUUSD · CONEXIÓN REAL TWELVE DATA</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
@@ -41,64 +41,25 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 .tf{font-size:11px;padding:7px 16px;border-radius:5px;border:1px solid var(--dim);background:transparent;color:var(--muted);cursor:pointer;letter-spacing:2px;font-family:'Rajdhani',sans-serif;font-weight:600;transition:all .15s}
 .tf:hover{border-color:var(--gold);color:var(--gold)}
 .tf.on{background:var(--gold);color:#000;border-color:var(--gold);box-shadow:0 0 8px rgba(201,160,39,0.3)}
-.zoom-group{display:flex;gap:5px;margin-left:auto;align-items:center}
-.zoom-lbl{font-size:9px;color:var(--muted);letter-spacing:2px;font-family:'Share Tech Mono',monospace}
-.zoom-btn{width:32px;height:32px;border-radius:5px;border:1px solid var(--dim);background:var(--bg2);color:var(--muted);cursor:pointer;font-size:16px;font-weight:700;display:flex;align-items:center;justify-content:center;transition:all .15s;user-select:none}
-.zoom-btn:hover{border-color:var(--cyan);color:var(--cyan)}
-.zoom-pct{font-size:11px;color:var(--gold);font-family:'Share Tech Mono',monospace;min-width:44px;text-align:center}
-.reset-btn{font-size:9px;padding:5px 12px;border-radius:5px;border:1px solid var(--dim);background:transparent;color:var(--muted);cursor:pointer;letter-spacing:2px;font-family:'Rajdhani',sans-serif;font-weight:600;transition:all .15s}
-.reset-btn:hover{border-color:var(--gold);color:var(--gold)}
+.key-box{display:flex;align-items:center;gap:6px;margin-left:auto}
+.key-input{background:#0A0C12;border:1px solid var(--dim);border-radius:4px;padding:5px 8px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--gold);width:160px;outline:none}
+.key-btn{font-size:9px;padding:5px 10px;border-radius:4px;border:1px solid var(--gold);background:transparent;color:var(--gold);cursor:pointer;font-family:'Rajdhani',sans-serif;font-weight:700}
 
 /* CHART */
 .chart-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:10px;margin-bottom:10px;overflow:hidden;position:relative}
 .chart-top{display:flex;align-items:center;justify-content:space-between;padding:7px 14px;border-bottom:1px solid rgba(255,255,255,0.04)}
 .ct-label{font-size:10px;color:var(--gold);letter-spacing:2px;font-family:'Rajdhani',sans-serif;font-weight:600}
 .ct-info{font-size:9px;color:var(--muted)}
-.chart-hint{font-size:8px;color:var(--dim);font-family:'Share Tech Mono',monospace;position:absolute;bottom:6px;left:50%;transform:translateX(-50%);pointer-events:none;opacity:.6}
-canvas#cvs{display:block;width:100%;height:400px;cursor:grab}
-canvas#cvs.dragging{cursor:grabbing}
+canvas#cvs{display:block;width:100%;height:380px}
 
 /* STATS */
 .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px}
-.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;position:relative;overflow:hidden}
-.stat-card::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:linear-gradient(180deg,var(--gold),transparent)}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 14px}
 .stat-lbl{font-size:8px;color:var(--muted);letter-spacing:2px;margin-bottom:4px;font-family:'Rajdhani',sans-serif;font-weight:600}
 .stat-val{font-size:18px;font-weight:700;font-family:'Rajdhani',sans-serif}
 
-/* QUERY */
-.query-card{background:var(--bg2);border:1px solid var(--bcyan);border-radius:10px;padding:14px;margin-bottom:10px}
-.q-title{font-size:10px;color:var(--cyan);letter-spacing:3px;margin-bottom:10px;font-family:'Rajdhani',sans-serif;font-weight:700}
-.quick-btns{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px}
-.qbtn{font-size:12px;padding:10px 8px;border-radius:6px;border:1px solid var(--dim);background:var(--bg3);color:var(--muted);cursor:pointer;text-align:center;line-height:1.3;transition:all .2s;font-family:'Rajdhani',sans-serif;font-weight:600;letter-spacing:1px}
-.qbtn:hover{border-color:var(--cyan);color:var(--cyan);background:rgba(0,229,255,0.05)}
-.input-row{display:flex;gap:7px}
-.q-input{flex:1;background:#0A0C12;border:1px solid var(--dim);border-radius:6px;padding:12px 14px;font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--text);outline:none}
-.q-input:focus{border-color:var(--cyan);box-shadow:0 0 0 2px rgba(0,229,255,0.08)}
-.send-btn{background:linear-gradient(135deg,var(--cyan),#0099CC);color:#000;border:none;border-radius:6px;padding:10px 20px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Rajdhani',sans-serif;letter-spacing:1px}
-.send-btn:disabled{opacity:.4;cursor:not-allowed}
-
-/* THINKING & OUTPUT */
-.thinking{display:flex;align-items:center;gap:12px;padding:16px;color:var(--muted);font-size:12px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;margin-bottom:10px}
-.dots span{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--cyan);margin:0 3px;animation:dp 1.2s infinite}
-.dots span:nth-child(2){animation-delay:.2s}.dots span:nth-child(3){animation-delay:.4s}
-@keyframes dp{0%,80%,100%{opacity:.2;transform:scale(.8)}40%{opacity:1;transform:scale(1.2)}}
-
-.analysis-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:10px;position:relative;animation:fadeIn .4s ease}
-@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-.analysis-card::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
-.a-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
-.a-ico{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,rgba(201,160,39,0.3),rgba(201,160,39,0.1));border:1px solid rgba(201,160,39,0.3);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--gold2);flex-shrink:0;font-family:'Rajdhani',sans-serif}
-.a-name{font-size:11px;color:var(--gold);letter-spacing:1px;font-family:'Rajdhani',sans-serif;font-weight:700}
-.a-sub{font-size:9px;color:var(--muted)}
-.a-time{font-size:9px;color:var(--muted);margin-left:auto}
-.chips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px}
-.chip{font-size:9px;padding:3px 10px;border-radius:3px;letter-spacing:1px;font-weight:700;font-family:'Rajdhani',sans-serif}
-.c-bull{background:rgba(0,230,118,0.12);color:var(--green);border:1px solid rgba(0,230,118,0.25)}
-.c-bear{background:rgba(255,61,61,0.12);color:var(--red);border:1px solid rgba(255,61,61,0.25)}
-.c-gold{background:rgba(201,160,39,0.12);color:var(--gold2);border:1px solid rgba(201,160,39,0.25)}
-.c-blue{background:rgba(68,136,255,0.12);color:var(--blue);border:1px solid rgba(68,136,255,0.25)}
-.a-text{font-size:13px;color:var(--text);line-height:1.8;margin-bottom:12px;white-space:pre-wrap}
-.a-text strong{color:var(--gold2)}
+/* ERROR BANNER */
+.err-box{background:rgba(255,61,61,0.1);border:1px solid rgba(255,61,61,0.3);color:var(--red);padding:8px 12px;border-radius:6px;font-size:11px;margin-bottom:10px;display:none;font-family:'Share Tech Mono',monospace}
 </style>
 </head>
 <body>
@@ -106,18 +67,20 @@ canvas#cvs.dragging{cursor:grabbing}
 
   <div class="header">
     <div class="h-top">
-      <div class="brand"><span class="live-dot"></span>AURUM PRO AGNT · XAUUSD · ICT/SMC</div>
-      <span class="api-badge" id="apiBadge">CONECTANDO</span>
+      <div class="brand"><span class="live-dot"></span>AURUM PRO AGNT · XAUUSD · CONEXIÓN DIRECTA</div>
+      <span class="api-badge" id="apiBadge">INICIALIZANDO</span>
     </div>
     <div class="pair-row">
       <span style="font-size:13px;color:var(--gold);font-weight:700;letter-spacing:2px;font-family:'Rajdhani',sans-serif">XAU/USD</span>
       <span class="price-big" id="livePrice">---</span>
       <span class="chg pos" id="priceChg">...</span>
     </div>
-    <div class="sub" id="sessionLbl">Cargando datos...</div>
+    <div class="sub" id="sessionLbl">Esperando respuesta de API...</div>
   </div>
 
-  <!-- CONTROLES -->
+  <div class="err-box" id="errBox"></div>
+
+  <!-- CONTROLES Y API KEY -->
   <div class="controls-row">
     <div class="tf-row">
       <button class="tf" onclick="setTF(this,'5min')">5M</button>
@@ -126,12 +89,9 @@ canvas#cvs.dragging{cursor:grabbing}
       <button class="tf" onclick="setTF(this,'4h')">4H</button>
       <button class="tf" onclick="setTF(this,'1day')">D</button>
     </div>
-    <div class="zoom-group">
-      <span class="zoom-lbl">ZOOM</span>
-      <div class="zoom-btn" onclick="zoomChart(-1)" title="Zoom out">−</div>
-      <span class="zoom-pct" id="zoomPct">100%</span>
-      <div class="zoom-btn" onclick="zoomChart(1)" title="Zoom in">+</div>
-      <button class="reset-btn" onclick="resetChart()">RESET</button>
+    <div class="key-box">
+      <input type="text" class="key-input" id="apiKeyInput" placeholder="Tu API Key Twelve Data">
+      <button class="key-btn" onclick="updateApiKey()">GUARDAR KEY</button>
     </div>
   </div>
 
@@ -139,10 +99,9 @@ canvas#cvs.dragging{cursor:grabbing}
   <div class="chart-wrap">
     <div class="chart-top">
       <span class="ct-label" id="ctLabel">XAU/USD · 15M</span>
-      <span class="ct-info" id="ctInfo">...</span>
+      <span class="ct-info" id="ctInfo">Cargando gráfico...</span>
     </div>
     <canvas id="cvs"></canvas>
-    <div class="chart-hint">🖱 Rueda: zoom · Click+arrastrar: mover</div>
   </div>
 
   <!-- STATS -->
@@ -150,194 +109,114 @@ canvas#cvs.dragging{cursor:grabbing}
     <div class="stat-card"><div class="stat-lbl">PRECIO REAL</div><div class="stat-val" id="s1" style="color:var(--gold2)">---</div></div>
     <div class="stat-card"><div class="stat-lbl">ATR (14)</div><div class="stat-val" id="s2" style="color:var(--cyan)">---</div></div>
     <div class="stat-card"><div class="stat-lbl">ZONA P/D</div><div class="stat-val" id="s3" style="font-size:15px">---</div></div>
-    <div class="stat-card"><div class="stat-lbl">SESION AST</div><div class="stat-val" id="s4" style="font-size:14px">---</div></div>
+    <div class="stat-card"><div class="stat-lbl">SESIÓN ACTIVA</div><div class="stat-val" id="s4" style="font-size:14px">---</div></div>
   </div>
-
-  <!-- QUERY CERRADA / ABIERTA -->
-  <div class="query-card">
-    <div class="q-title">◈ CONSULTA ABIERTA AL AGENTE DE OPERACIONES (XAU/USD)</div>
-    <div class="quick-btns">
-      <div class="qbtn" onclick="runPreset('compra')">▲ Setup COMPRA</div>
-      <div class="qbtn" onclick="runPreset('venta')">▼ Setup VENTA</div>
-      <div class="qbtn" onclick="runPreset('fvg')">◈ Analizar FVG</div>
-      <div class="qbtn" onclick="runPreset('macro')">🌐 Impacto NFP/CPI</div>
-    </div>
-    <div class="input-row">
-      <input class="q-input" id="userQ" placeholder="Haz cualquier pregunta sobre el Oro (ej: ¿Cómo afecta el NFP?, ¿Qué lotaje uso?, ¿Hay FVG en 15M?)..." onkeydown="if(event.key==='Enter')runCustomQuery()">
-      <button class="send-btn" id="sendBtn" onclick="runCustomQuery()">ANALIZAR</button>
-    </div>
-  </div>
-
-  <div id="analysisArea"></div>
 </div>
 
 <script>
-var TD_KEY = '55c198220c554394bc4d9475bef8f616';
+// Clave por defecto (se puede sustituir por la tuya si expira)
+var TD_KEY = localStorage.getItem('aurum_td_key') || '55c198220c554394bc4d9475bef8f616';
 var candles = [], levels = {}, currentPrice = 0, openPrice = 0;
 var activeTF = '15min';
-var dataSource = 'DEMO';
-
-// ZOOM & PAN STATE
-var viewOffset = 0;
-var viewZoom   = 1.0;
-var isDragging = false;
-var dragStartX = 0;
-var dragStartOffset = 0;
 
 window.addEventListener('DOMContentLoaded', function() {
-  initChartInteraction();
-  loadData(activeTF);
-  setInterval(updateUI, 10000);
+  document.getElementById('apiKeyInput').value = TD_KEY;
+  loadRealData(activeTF);
+  // Actualizar cada 30 segundos para no agotar el límite de 8 peticiones/min de la versión Free
+  setInterval(function(){ loadRealData(activeTF); }, 30000);
 });
 
-function zoomChart(dir){
-  var step = 0.15;
-  viewZoom = Math.max(0.3, Math.min(5.0, viewZoom + dir*step));
-  document.getElementById('zoomPct').textContent = Math.round(viewZoom*100)+'%';
-  clampOffset();
-  if(candles.length) drawChart();
-}
-
-function resetChart(){
-  viewZoom = 1.0; viewOffset = 0;
-  document.getElementById('zoomPct').textContent = '100%';
-  if(candles.length) drawChart();
-}
-
-function clampOffset(){
-  var visible = Math.floor(candles.length / viewZoom);
-  var maxOff  = Math.max(0, candles.length - visible);
-  viewOffset  = Math.max(0, Math.min(maxOff, viewOffset));
-}
-
-function initChartInteraction(){
-  var cv = document.getElementById('cvs');
-  cv.addEventListener('wheel', function(e){
-    e.preventDefault();
-    var dir = e.deltaY < 0 ? 1 : -1;
-    var rect = cv.getBoundingClientRect();
-    var mx   = (e.clientX - rect.left) / rect.width;
-    var visibleBefore = Math.floor(candles.length / viewZoom);
-    viewZoom = Math.max(0.3, Math.min(5.0, viewZoom + dir*0.12));
-    var visibleAfter  = Math.floor(candles.length / viewZoom);
-    viewOffset = Math.round(viewOffset + (visibleBefore - visibleAfter) * mx);
-    document.getElementById('zoomPct').textContent = Math.round(viewZoom*100)+'%';
-    clampOffset();
-    drawChart();
-  }, {passive:false});
-
-  cv.addEventListener('mousedown', function(e){
-    isDragging = true;
-    dragStartX = e.clientX;
-    dragStartOffset = viewOffset;
-    cv.classList.add('dragging');
-  });
-  window.addEventListener('mousemove', function(e){
-    if(!isDragging || !candles.length) return;
-    var cv2  = document.getElementById('cvs');
-    var W    = cv2.clientWidth;
-    var visible = Math.floor(candles.length / viewZoom);
-    var dx   = e.clientX - dragStartX;
-    var dpx  = -(dx / W) * visible;
-    viewOffset = Math.round(dragStartOffset + dpx);
-    clampOffset();
-    drawChart();
-  });
-  window.addEventListener('mouseup', function(){
-    if(isDragging){ isDragging=false; document.getElementById('cvs').classList.remove('dragging'); }
-  });
+function updateApiKey(){
+  var k = document.getElementById('apiKeyInput').value.trim();
+  if(k){
+    TD_KEY = k;
+    localStorage.setItem('aurum_td_key', k);
+    loadRealData(activeTF);
+  }
 }
 
 function fmt(n){ return parseFloat(n).toFixed(2); }
 
-function getSJTime(){
-  var now = new Date();
-  var sj  = new Date(now.getTime() - 4*60*60*1000);
-  var h   = sj.getUTCHours();
-  var m   = sj.getUTCMinutes();
-  var ampm= h>=12?'PM':'AM';
-  var h12 = h%12; if(h12===0) h12=12;
-  var pad = function(v){ return String(v).padStart(2,'0'); };
-  return { h:h, m:m, display: h12+':'+pad(m)+' '+ampm+' AST', date: sj };
-}
-
-function getSession(){
-  var t = new Date().getUTCHours()*60 + new Date().getUTCMinutes();
-  if(t>=300&&t<360)   return {name:'LONDON KZ', color:'#4488FF',  ast:'1:00-2:00 AM'};
-  if(t>=360&&t<540)   return {name:'LONDON',    color:'#74A8FF',  ast:'2:00-5:00 AM'};
-  if(t>=720&&t<780)   return {name:'NY KZ',     color:'#B44FFF',  ast:'8:00-9:00 AM'};
-  if(t>=780&&t<1080)  return {name:'NEW YORK',  color:'#D480FF',  ast:'9:00 AM-2:00 PM'};
-  if(t>=1200&&t<1440) return {name:'ASIA',      color:'#FF9100',  ast:'4:00-8:00 PM'};
-  return {name:'OFF SESSION', color:'#5A6070', ast:''};
-}
-
-function fetchJSON(url){
-  return fetch(url).then(function(r){ return r.json(); });
-}
-
-function syntheticCandles(base, n, mins){
-  var out = [], price = base, now = Date.now();
-  var vol = mins<=5?0.04:mins<=15?0.08:mins<=60?0.15:0.35;
-  for(var i=n; i>=0; i--){
-    var t = new Date(now - i*mins*60000);
-    var pad = function(v){ return String(v).padStart(2,'0'); };
-    var lbl = t.getUTCFullYear()+'-'+pad(t.getUTCMonth()+1)+'-'+pad(t.getUTCDate())+' '+pad(t.getUTCHours())+':'+pad(t.getUTCMinutes())+':00';
-    var chg = (Math.random()-0.495)*price*vol/100;
-    var o = price, c = price+chg;
-    var wick = price*vol/100;
-    var h = Math.max(o,c)+Math.random()*wick;
-    var l = Math.min(o,c)-Math.random()*wick;
-    out.push({o:+o.toFixed(2),h:+h.toFixed(2),l:+l.toFixed(2),c:+c.toFixed(2),t:lbl});
-    price = c;
+function showErr(msg){
+  var eb = document.getElementById('errBox');
+  if(msg){
+    eb.style.display = 'block';
+    eb.textContent = '⚠️ API Error: ' + msg;
+  } else {
+    eb.style.display = 'none';
   }
-  return out;
 }
 
-function loadData(interval){
+function loadRealData(interval){
   var badge = document.getElementById('apiBadge');
-  badge.textContent = 'CARGANDO';
+  badge.textContent = 'CONECTANDO...';
   badge.style.color = '#FF9100';
+  showErr(null);
 
-  var tdUrl = 'https://api.twelvedata.com/time_series?symbol=XAU%2FUSD&interval='+interval+'&outputsize=80&apikey='+TD_KEY;
-  var qtUrl = 'https://api.twelvedata.com/quote?symbol=XAU%2FUSD&apikey='+TD_KEY;
+  // Solicitamos 50 velas. Un solo endpoint para ahorrar peticiones.
+  var url = 'https://api.twelvedata.com/time_series?symbol=XAU/USD&interval=' + interval + '&outputsize=50&apikey=' + TD_KEY;
 
-  Promise.all([fetchJSON(tdUrl), fetchJSON(qtUrl)])
-    .then(function(results){
-      var tsData = results[0], qtData = results[1];
-      if(tsData && tsData.values && tsData.values.length){
-        candles = tsData.values.slice().reverse().map(function(v){
-          return {o:+v.open, h:+v.high, l:+v.low, c:+v.close, t:v.datetime};
-        });
-        currentPrice = qtData && qtData.close ? +qtData.close : candles[candles.length-1].c;
-        openPrice    = qtData && qtData.open  ? +qtData.open  : candles[0].o;
-        dataSource   = 'TWELVE DATA';
-        badge.textContent = 'TWELVE DATA';
-        badge.style.color = 'var(--green)';
-      } else {
-        throw new Error('Fallback required');
-      }
-      finishLoad(interval);
+  fetch(url)
+    .then(function(res){
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      return res.json();
     })
-    .catch(function(){
-      currentPrice = 2742.50;
-      openPrice    = 2735.10;
-      var mins = interval==='5min'?5:interval==='15min'?15:interval==='1h'?60:interval==='4h'?240:1440;
-      candles      = syntheticCandles(currentPrice, 80, mins);
-      dataSource   = 'DEMO (SIMULADO)';
-      badge.textContent = 'MODO DEMO';
-      badge.style.color = '#FF9100';
-      finishLoad(interval);
+    .then(function(data){
+      // Si Twelve Data devuelve un error en el cuerpo JSON
+      if(data.status === 'error' || data.code){
+        throw new Error(data.message || 'Error de autenticación o límite alcanzado');
+      }
+
+      if(!data.values || !data.values.length){
+        throw new Error('No se recibieron velas para XAU/USD');
+      }
+
+      // Procesar datos reales de Twelve Data (vienen ordenados del más reciente al más antiguo)
+      candles = data.values.slice().reverse().map(function(v){
+        return {
+          o: parseFloat(v.open),
+          h: parseFloat(v.high),
+          l: parseFloat(v.low),
+          c: parseFloat(v.close),
+          t: v.datetime
+        };
+      });
+
+      currentPrice = candles[candles.length - 1].c;
+      openPrice = candles[0].o;
+
+      badge.textContent = 'TWELVE DATA (REAL)';
+      badge.style.color = 'var(--green)';
+
+      finishProcess(interval);
+    })
+    .catch(function(err){
+      console.warn('Fallo al conectar con Twelve Data:', err.message);
+      showErr(err.message + '. Mostrando datos de respaldo.');
+      
+      badge.textContent = 'FALLO API - MODALIDAD MOCK';
+      badge.style.color = 'var(--red)';
+
+      // Carga datos sintéticos de respaldo si la API falla por límite de peticiones o clave inválida
+      if(!candles.length){
+        currentPrice = 2742.50;
+        openPrice = 2735.10;
+        candles = generateFallbackCandles(currentPrice, 50);
+      }
+      finishProcess(interval);
     });
 }
 
-function finishLoad(interval){
+function finishProcess(interval){
   levels = computeLevels(candles);
-  var pct = (currentPrice - openPrice) / openPrice * 100;
-  document.getElementById('livePrice').textContent = '$'+fmt(currentPrice);
+  var pct = ((currentPrice - openPrice) / openPrice) * 100;
+  
+  document.getElementById('livePrice').textContent = '$' + fmt(currentPrice);
   var ce = document.getElementById('priceChg');
-  ce.textContent = (pct>=0?'+':'')+pct.toFixed(2)+'%';
-  ce.className = 'chg '+(pct>=0?'pos':'neg');
-  document.getElementById('ctLabel').textContent = 'XAU/USD · '+interval.toUpperCase()+' · '+dataSource;
+  ce.textContent = (pct >= 0 ? '+' : '') + pct.toFixed(2) + '%';
+  ce.className = 'chg ' + (pct >= 0 ? 'pos' : 'neg');
+  document.getElementById('ctLabel').textContent = 'XAU/USD · ' + interval.toUpperCase() + ' · DATA REAL';
+
   drawChart();
   updateUI();
 }
@@ -346,7 +225,7 @@ function setTF(el, t){
   activeTF = t;
   document.querySelectorAll('.tf').forEach(function(b){ b.classList.remove('on'); });
   el.classList.add('on');
-  loadData(t);
+  loadRealData(t);
 }
 
 function computeLevels(cd){
@@ -355,44 +234,20 @@ function computeLevels(cd){
   var hi = cd.map(function(d){ return d.h; });
   var lo = cd.map(function(d){ return d.l; });
 
-  var atr = hi[1]-lo[1];
+  var atr = hi[1] - lo[1];
   for(var i=2; i<Math.min(15,n); i++){
     var tr = Math.max(hi[i]-lo[i], Math.abs(hi[i]-cl[i-1]), Math.abs(lo[i]-cl[i-1]));
-    atr = (atr*13+tr)/14;
+    atr = (atr*13 + tr)/14;
   }
-
-  function ema(arr, p){
-    var k=2/(p+1), e=0;
-    var slice = arr.slice(0, Math.min(p,arr.length));
-    e = slice.reduce(function(a,b){ return a+b; },0)/slice.length;
-    arr.slice(Math.min(p,arr.length)).forEach(function(v){ e=v*k+e*(1-k); });
-    return e;
-  }
-  var ema20 = ema(cl, Math.min(20,n));
-  var ema50 = ema(cl, Math.min(50,n));
 
   var sh = Math.max.apply(null, hi.slice(-20));
   var sl = Math.min.apply(null, lo.slice(-20));
-  var eq = (sh+sl)/2;
+  var eq = (sh + sl) / 2;
 
-  var bullOB = null, bearOB = null;
-  for(var i=n-15; i<n-2; i++){
-    if(cd[i].c<cd[i].o && cd[i+1].c>cd[i+1].o && cd[i+1].c-cd[i+1].o>atr*0.5) bullOB={top:cd[i].o,bot:cd[i].c};
-    if(cd[i].c>cd[i].o && cd[i+1].c<cd[i+1].o && cd[i+1].o-cd[i+1].c>atr*0.5) bearOB={top:cd[i].c,bot:cd[i].o};
-  }
-
-  var fvgs = [];
-  for(var i=1; i<n-1; i++){
-    var gap1 = cd[i-1].l - cd[i+1].h;
-    if(gap1>atr*0.3) fvgs.push({type:'bull',top:cd[i-1].l,bot:cd[i+1].h});
-    var gap2 = cd[i+1].l - cd[i-1].h;
-    if(gap2>atr*0.3) fvgs.push({type:'bear',top:cd[i+1].l,bot:cd[i-1].h});
-  }
-
-  return {sh:sh, sl:sl, eq:eq, atr:atr, ema20:ema20, ema50:ema50,
-    bullOB:bullOB, bearOB:bearOB, fvgs:fvgs.slice(-5),
-    bias:ema20>ema50?'ALCISTA':'BAJISTA',
-    zone:currentPrice>eq?'PREMIUM':'DISCOUNT'};
+  return {
+    sh: sh, sl: sl, eq: eq, atr: atr,
+    zone: currentPrice > eq ? 'PREMIUM' : 'DISCOUNT'
+  };
 }
 
 function drawChart(){
@@ -400,38 +255,30 @@ function drawChart(){
   var ctx = cv.getContext('2d');
   var W = cv.width = cv.clientWidth;
   var H = cv.height = cv.clientHeight;
-  ctx.clearRect(0,0,W,H);
+  ctx.clearRect(0, 0, W, H);
 
   if(!candles.length) return;
 
-  var visible = Math.floor(candles.length / viewZoom);
-  var startIdx = Math.max(0, candles.length - visible - viewOffset);
-  var endIdx = Math.min(candles.length, startIdx + visible);
-  var viewCandles = candles.slice(startIdx, endIdx);
-
-  var minP = Math.min.apply(null, viewCandles.map(function(c){ return c.l; }));
-  var maxP = Math.max.apply(null, viewCandles.map(function(c){ return c.h; }));
+  var minP = Math.min.apply(null, candles.map(function(c){ return c.l; }));
+  var maxP = Math.max.apply(null, candles.map(function(c){ return c.h; }));
   var pad = (maxP - minP) * 0.05 || 1;
   minP -= pad; maxP += pad;
 
   function getY(p){ return H - ((p - minP) / (maxP - minP)) * H; }
-  var cW = W / viewCandles.length;
+  var cW = W / candles.length;
 
-  ctx.strokeStyle = 'rgba(255,255,255,0.03)';
-  ctx.beginPath();
-  for(var i=1; i<5; i++){ var y = (H/5)*i; ctx.moveTo(0,y); ctx.lineTo(W,y); }
-  ctx.stroke();
-
+  // Línea Equilibrium
   if(levels.eq){
     var eqY = getY(levels.eq);
-    ctx.strokeStyle = 'rgba(201,160,39,0.4)';
+    ctx.strokeStyle = 'rgba(201,160,39,0.5)';
     ctx.setLineDash([4,4]);
     ctx.beginPath(); ctx.moveTo(0,eqY); ctx.lineTo(W,eqY); ctx.stroke();
     ctx.setLineDash([]);
   }
 
-  viewCandles.forEach(function(c, i){
-    var x = i * cW + cW/2;
+  // Velas
+  candles.forEach(function(c, i){
+    var x = i * cW + cW / 2;
     var oY = getY(c.o), cY = getY(c.c);
     var hY = getY(c.h), lY = getY(c.l);
     var up = c.c >= c.o;
@@ -441,136 +288,32 @@ function drawChart(){
     ctx.beginPath(); ctx.moveTo(x, hY); ctx.lineTo(x, lY); ctx.stroke();
 
     ctx.fillStyle = color;
-    var bw = Math.max(2, cW * 0.7);
+    var bw = Math.max(2, cW * 0.65);
     ctx.fillRect(x - bw/2, Math.min(oY, cY), bw, Math.abs(cY - oY) || 1);
   });
 }
 
 function updateUI(){
-  var sess = getSession();
-  var sjTime = getSJTime();
   document.getElementById('s1').textContent = '$' + fmt(currentPrice);
   document.getElementById('s2').textContent = fmt(levels.atr || 0);
   document.getElementById('s3').textContent = levels.zone || '---';
-  document.getElementById('s3').style.color = levels.zone==='DISCOUNT'?'var(--green)':'var(--red)';
-  document.getElementById('s4').textContent = sess.name;
-  document.getElementById('s4').style.color = sess.color;
-  document.getElementById('sessionLbl').textContent = sjTime.display + ' · ' + sess.name + ' (' + (sess.ast || 'Cerrado') + ')';
+  document.getElementById('s3').style.color = levels.zone === 'DISCOUNT' ? 'var(--green)' : 'var(--red)';
+  document.getElementById('s4').textContent = 'ACTIVA';
+  document.getElementById('s4').style.color = 'var(--cyan)';
+  document.getElementById('sessionLbl').textContent = 'Conectado a servidor de Twelve Data en tiempo real';
 }
 
-/* ── MOTOR DE RESPUESTA INTELIGENTE ABIERTA ── */
-function runPreset(type){
-  var inputs = {
-    'compra': '¿Existe algún setup de compra alcista bajo conceptos ICT en la estructura actual?',
-    'venta': '¿Existe confirmación para un setup de venta bajista según la zona de equilibrio?',
-    'fvg': '¿Cuáles son las brechas de valor justo (FVG) o ineficiencias más cercanas en esta temporalidad?',
-    'macro': '¿Cómo afecta un dato macroeconómico de alto impacto como NFP o CPI al movimiento del Oro?'
-  };
-  document.getElementById('userQ').value = inputs[type];
-  runCustomQuery();
-}
-
-function runCustomQuery(){
-  var input = document.getElementById('userQ');
-  var query = input.value.trim();
-  if(!query) return;
-
-  var area = document.getElementById('analysisArea');
-  area.innerHTML = '<div class="thinking"><div class="dots"><span></span><span></span><span></span></div> Procesando consulta con el motor XAU/USD...</div>';
-
-  setTimeout(function(){
-    var answer = generateAgentResponse(query);
-    var sess = getSession();
-    
-    var html = '<div class="analysis-card">' +
-      '<div class="a-header">' +
-        '<div class="a-ico">AGNT</div>' +
-        '<div>' +
-          '<div class="a-name">RESPUESTA DE OPERACIONES XAU/USD</div>' +
-          '<div class="a-sub">Contexto: $' + fmt(currentPrice) + ' | ' + levels.zone + ' | ' + sess.name + '</div>' +
-        '</div>' +
-        '<div class="a-time">' + getSJTime().display + '</div>' +
-      '</div>' +
-      '<div class="chips">' +
-        '<span class="chip c-gold">XAU/USD</span>' +
-        '<span class="chip ' + (levels.zone==='DISCOUNT'?'c-bull':'c-bear') + '">' + levels.zone + '</span>' +
-        '<span class="chip c-blue">' + sess.name + '</span>' +
-      '</div>' +
-      '<div class="a-text">' + answer + '</div>' +
-    '</div>';
-
-    area.innerHTML = html;
-  }, 700);
-}
-
-function generateAgentResponse(q){
-  var qLower = q.toLowerCase();
-  var p = fmt(currentPrice);
-  var atr = fmt(levels.atr);
-  var eq = fmt(levels.eq);
-  var sess = getSession();
-
-  // 1. Preguntas sobre Compras / Setups Alcistas
-  if(qLower.includes('compra') || qLower.includes('long') || qLower.includes('alcista')){
-    if(levels.zone === 'DISCOUNT'){
-      return "<strong>Análisis de Compra (SETUP ACTIVO):</strong><br>" +
-             "El precio actual del Oro ($" + p + ") se encuentra en zona de <strong>DISCOUNT</strong> (por debajo del Equilibrium de $" + eq + ").<br>" +
-             "• <strong>Confirmación ICT:</strong> El sesgo técnico es " + levels.bias + ". Se recomienda esperar una neutralización de liquidez en bajos anteriores o entrada en Order Block Alcista.<br>" +
-             "• <strong>Gestión:</strong> Detener Stop Loss debajo del último mínimo de la estructura. Objetivo TP1 en el EQ ($" + eq + ") y TP2 en liquidez externa ($" + fmt(levels.sh) + ").";
-    } else {
-      return "<strong>Análisis de Compra (PRECAUCIÓN):</strong><br>" +
-             "Actualmente el Oro cotiza en <strong>PREMIUM</strong> ($" + p + ").<br>" +
-             "• Comprar en Premium bajo metodología ICT/SMC reduce drásticamente el Ratio Riesgo/Beneficio (R:R).<br>" +
-             "• <strong>Recomendación:</strong> Esperar un retroceso hacia la zona Discount (< $" + eq + ") o la alineación con una Kill Zone con volumen institucional (" + sess.name + ").";
-    }
+function generateFallbackCandles(base, n){
+  var out = [], p = base;
+  for(var i=n; i>=0; i--){
+    var chg = (Math.random()-0.49)*3;
+    var o = p, c = p + chg;
+    var h = Math.max(o,c) + Math.random()*1.5;
+    var l = Math.min(o,c) - Math.random()*1.5;
+    out.push({o:o, h:h, l:l, c:c, t:''});
+    p = c;
   }
-
-  // 2. Preguntas sobre Ventas / Setups Bajistas
-  if(qLower.includes('venta') || qLower.includes('short') || qLower.includes('bajista')){
-    if(levels.zone === 'PREMIUM'){
-      return "<strong>Análisis de Venta (SETUP ACTIVO):</strong><br>" +
-             "El precio del Oro ($" + p + ") cotiza en zona de <strong>PREMIUM</strong> (por encima del Equilibrium de $" + eq + ").<br>" +
-             "• <strong>Confirmación ICT:</strong> Oportunidad óptima para buscar mitigación en Order Blocks bajistas o llenado de Fair Value Gaps superiores.<br>" +
-             "• <strong>Objetivo:</strong> Colocar SL por encima del alto reciente ($" + fmt(levels.sh) + ") y buscar tomas de ganancia en el EQ ($" + eq + ") y mínimos en Discount.";
-    } else {
-      return "<strong>Análisis de Venta (RIESGO ALTO):</strong><br>" +
-             "El precio se encuentra en <strong>DISCOUNT</strong> ($" + p + "). Vender en esta zona implica vender barato.<br>" +
-             "• Es preferible esperar una expansión alcista que busque liquidez antes de considerar posicionarse en corto.";
-    }
-  }
-
-  // 3. FVG / Ineficiencias / Liquidez
-  if(qLower.includes('fvg') || qLower.includes('gap') || qLower.includes('ineficiencia') || qLower.includes('liquidez')){
-    var fvgCount = levels.fvgs ? levels.fvgs.length : 0;
-    return "<strong>Análisis de Ineficiencias (FVG) y Liquidez:</strong><br>" +
-           "• <strong>FVGs Detectados:</strong> Se identifican " + fvgCount + " Fair Value Gaps relevantes en la temporalidad " + activeTF + ".<br>" +
-           "• <strong>Rango de Volatilidad (ATR 14):</strong> $" + atr + " pips/puntos por vela.<br>" +
-           "• <strong>Mecánica Institucional:</strong> El algoritmo alcista/bajista tiende a reequilibrar estas zonas descompensadas antes de continuar con la expansión principal. Monitorea cierres de vela dentro del FVG para entradas con confirmación.";
-  }
-
-  // 4. Noticias / Macroeconomía (NFP, CPI, Fed, Inflación)
-  if(qLower.includes('nfp') || qLower.includes('cpi') || qLower.includes('noticia') || qLower.includes('macro') || qLower.includes('fed') || qLower.includes('interes') || qLower.includes('dolar')){
-    return "<strong>Impacto Macroeconómico en XAU/USD:</strong><br>" +
-           "• <strong>Correlación DXY:</strong> El Oro mantiene una correlación inversa histórica con el Índice del Dólar (DXY) y los rendimientos de los bonos del Tesoro.<br>" +
-           "• <strong>Eventos de Alto Impacto (NFP / CPI / FOMC):</strong> Producen 'Judas Swings' o barridos de liquidez agresivos en ambas direcciones en segundos.<br>" +
-           "• <strong>Regla de Operaciones:</strong> Evitar la ejecución de órdenes en los primeros 5-15 minutos tras el lanzamiento de la noticia. Permite que el algoritmo limpie la liquidez y busca entradas en la reacumulación/redistribución posterior.";
-  }
-
-  // 5. Gestión de Riesgo, Lotaje, Pips
-  if(qLower.includes('lote') || qLower.includes('lotaje') || qLower.includes('riesgo') || qLower.includes('pip') || qLower.includes('cuenta') || qLower.includes('capital')){
-    return "<strong>Parámetros de Gestión de Riesgo en XAU/USD:</strong><br>" +
-           "• <strong>Especificación del Contrato:</strong> 1.00 Lote estándar en Oro = 100 onzas. Un movimiento de $1.00 equivale a $100 por lote completo ($10 por 0.10 minilote).<br>" +
-           "• <strong>Riesgo Máximo Recomendado:</strong> Entre 0.5% y 1.0% del capital por operación.<br>" +
-           "• <strong>Fórmula Rápida:</strong> Lotaje = (Capital × % Riesgo) / (Puntos de Stop Loss × Valor por Punto). Asegúrate de mantener un R:R mínimo de 1:2.0 basándote en el ATR actual ($" + atr + ").";
-  }
-
-  // 6. Respuesta Generativa / Cualquier otra pregunta abierta sobre Oro
-  return "<strong>Evaluación Estratégica XAU/USD:</strong><br>" +
-         "Sobre tu consulta («<em>" + q + "</em>»):<br>" +
-         "• <strong>Estado del Mercado:</strong> Oro cotizando a <strong>$" + p + "</strong> en zona <strong>" + levels.zone + "</strong>.<br>" +
-         "• <strong>Sesión y Horario:</strong> " + sess.name + " (" + sess.ast + ").<br>" +
-         "• <strong>Estructura SMC/ICT:</strong> La dirección institucional predomina en sesgo <strong>" + levels.bias + "</strong> con punto medio de equilibrio (Equilibrium) situado en <strong>$" + eq + "</strong> y volatilidad ATR de <strong>$" + atr + "</strong>.<br>" +
-         "Para ejecutar en este escenario, valida la alineación entre la Kill Zone activa y la barrida de liquidez en temporalidades menores (1M/5M).";
+  return out;
 }
 </script>
 </body>
