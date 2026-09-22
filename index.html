@@ -72,7 +72,7 @@ canvas#cvs.dragging{cursor:grabbing}
 .qbtn{font-size:12px;padding:10px 8px;border-radius:6px;border:1px solid var(--dim);background:var(--bg3);color:var(--muted);cursor:pointer;text-align:center;line-height:1.3;transition:all .2s;font-family:'Rajdhani',sans-serif;font-weight:600;letter-spacing:1px}
 .qbtn:hover{border-color:var(--cyan);color:var(--cyan);background:rgba(0,229,255,0.05)}
 .input-row{display:flex;gap:7px}
-.q-input{flex:1;background:#0A0C12;border:1px solid var(--dim);border-radius:6px;padding:10px 14px;font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--text);outline:none}
+.q-input{flex:1;background:#0A0C12;border:1px solid var(--dim);border-radius:6px;padding:12px 14px;font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--text);outline:none}
 .q-input:focus{border-color:var(--cyan);box-shadow:0 0 0 2px rgba(0,229,255,0.08)}
 .send-btn{background:linear-gradient(135deg,var(--cyan),#0099CC);color:#000;border:none;border-radius:6px;padding:10px 20px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Rajdhani',sans-serif;letter-spacing:1px}
 .send-btn:disabled{opacity:.4;cursor:not-allowed}
@@ -97,26 +97,8 @@ canvas#cvs.dragging{cursor:grabbing}
 .c-bear{background:rgba(255,61,61,0.12);color:var(--red);border:1px solid rgba(255,61,61,0.25)}
 .c-gold{background:rgba(201,160,39,0.12);color:var(--gold2);border:1px solid rgba(201,160,39,0.25)}
 .c-blue{background:rgba(68,136,255,0.12);color:var(--blue);border:1px solid rgba(68,136,255,0.25)}
-.a-text{font-size:12px;color:var(--text);line-height:1.85;margin-bottom:12px;white-space:pre-wrap}
-.lvl-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
-.lvl-box{border-radius:7px;padding:12px;text-align:center}
-.lv-e{background:rgba(68,136,255,0.08);border:1px solid rgba(68,136,255,0.3)}
-.lv-sl{background:rgba(255,61,61,0.07);border:1px solid rgba(255,61,61,0.25)}
-.lv-t1{background:rgba(0,230,118,0.07);border:1px solid rgba(0,230,118,0.22)}
-.lv-t2{background:rgba(0,255,150,0.08);border:1px solid rgba(0,255,150,0.25)}
-.lv-lbl{font-size:8px;letter-spacing:2px;margin-bottom:3px;font-family:'Rajdhani',sans-serif;font-weight:700}
-.lv-e .lv-lbl{color:var(--blue)}.lv-sl .lv-lbl{color:var(--red)}.lv-t1 .lv-lbl,.lv-t2 .lv-lbl{color:var(--green)}
-.lv-val{font-size:20px;font-weight:700;font-family:'Rajdhani',sans-serif}
-.lv-e .lv-val{color:var(--blue)}.lv-sl .lv-val{color:var(--red)}.lv-t1 .lv-val{color:var(--green)}.lv-t2 .lv-val{color:#00FFAA}
-.lv-sub{font-size:9px;color:var(--muted);margin-top:2px}
-.rr-row{display:flex;align-items:center;gap:9px;margin-top:10px;font-size:11px;color:var(--muted);flex-wrap:wrap;font-family:'Rajdhani',sans-serif}
-.rr-badge{background:rgba(180,79,255,0.12);border:1px solid rgba(180,79,255,0.3);color:var(--purple);padding:4px 14px;border-radius:4px;letter-spacing:1px;font-size:13px;font-weight:700}
-.err-box{background:rgba(255,61,61,0.07);border:1px solid rgba(255,61,61,0.2);border-radius:8px;padding:14px;font-size:12px;color:var(--red);margin-bottom:10px;line-height:1.7}
-.qscore-bar{margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.05)}
-.qscore-lbl{font-size:8px;color:var(--muted);letter-spacing:2px;font-family:'Rajdhani',sans-serif;font-weight:700;margin-bottom:6px}
-.qscore-row{display:flex;align-items:center;gap:10px}
-.qscore-track{flex:1;height:7px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden}
-.qscore-fill{height:100%;border-radius:3px;transition:width .5s ease}
+.a-text{font-size:13px;color:var(--text);line-height:1.8;margin-bottom:12px;white-space:pre-wrap}
+.a-text strong{color:var(--gold2)}
 </style>
 </head>
 <body>
@@ -135,7 +117,7 @@ canvas#cvs.dragging{cursor:grabbing}
     <div class="sub" id="sessionLbl">Cargando datos...</div>
   </div>
 
-  <!-- TF + ZOOM CONTROLS -->
+  <!-- CONTROLES -->
   <div class="controls-row">
     <div class="tf-row">
       <button class="tf" onclick="setTF(this,'5min')">5M</button>
@@ -171,22 +153,18 @@ canvas#cvs.dragging{cursor:grabbing}
     <div class="stat-card"><div class="stat-lbl">SESION AST</div><div class="stat-val" id="s4" style="font-size:14px">---</div></div>
   </div>
 
-  <!-- QUERY -->
+  <!-- QUERY CERRADA / ABIERTA -->
   <div class="query-card">
-    <div class="q-title">◈ CONSULTA AL AGENTE · ICT/SMC</div>
+    <div class="q-title">◈ CONSULTA ABIERTA AL AGENTE DE OPERACIONES (XAU/USD)</div>
     <div class="quick-btns">
-      <div class="qbtn" onclick="runQuery('compra')">▲ Setup COMPRA</div>
-      <div class="qbtn" onclick="runQuery('venta')">▼ Setup VENTA</div>
-      <div class="qbtn" onclick="runQuery('liquidez')">◉ Liquidez pools</div>
-      <div class="qbtn" onclick="runQuery('fvg')">◈ Analizar FVG</div>
-      <div class="qbtn" onclick="runQuery('quant')">🤖 Quant Engine</div>
-      <div class="qbtn" onclick="runInfoQuery('info_bias')">🧭 Bias/Zona</div>
-      <div class="qbtn" onclick="runInfoQuery('info_sesion')">🕐 Sesion</div>
-      <div class="qbtn" onclick="runInfoQuery('info_ob')">📦 Order Block</div>
+      <div class="qbtn" onclick="runPreset('compra')">▲ Setup COMPRA</div>
+      <div class="qbtn" onclick="runPreset('venta')">▼ Setup VENTA</div>
+      <div class="qbtn" onclick="runPreset('fvg')">◈ Analizar FVG</div>
+      <div class="qbtn" onclick="runPreset('macro')">🌐 Impacto NFP/CPI</div>
     </div>
     <div class="input-row">
-      <input class="q-input" id="userQ" placeholder="¿Cuál es el entry? ¿Hay FVG? ¿Zona premium? ¿Bias?..." onkeydown="if(event.key==='Enter')runCustom()">
-      <button class="send-btn" id="sendBtn" onclick="runCustom()">▶</button>
+      <input class="q-input" id="userQ" placeholder="Haz cualquier pregunta sobre el Oro (ej: ¿Cómo afecta el NFP?, ¿Qué lotaje uso?, ¿Hay FVG en 15M?)..." onkeydown="if(event.key==='Enter')runCustomQuery()">
+      <button class="send-btn" id="sendBtn" onclick="runCustomQuery()">ANALIZAR</button>
     </div>
   </div>
 
@@ -196,11 +174,10 @@ canvas#cvs.dragging{cursor:grabbing}
 <script>
 var TD_KEY = '55c198220c554394bc4d9475bef8f616';
 var candles = [], levels = {}, currentPrice = 0, openPrice = 0;
-var activeTF = '15min', activeLvl = {};
-var MIN_RR = 2.0;
+var activeTF = '15min';
 var dataSource = 'DEMO';
 
-// ── ZOOM & PAN STATE ──
+// ZOOM & PAN STATE
 var viewOffset = 0;
 var viewZoom   = 1.0;
 var isDragging = false;
@@ -235,7 +212,6 @@ function clampOffset(){
 
 function initChartInteraction(){
   var cv = document.getElementById('cvs');
-
   cv.addEventListener('wheel', function(e){
     e.preventDefault();
     var dir = e.deltaY < 0 ? 1 : -1;
@@ -251,8 +227,8 @@ function initChartInteraction(){
   }, {passive:false});
 
   cv.addEventListener('mousedown', function(e){
-    isDragging    = true;
-    dragStartX    = e.clientX;
+    isDragging = true;
+    dragStartX = e.clientX;
     dragStartOffset = viewOffset;
     cv.classList.add('dragging');
   });
@@ -275,7 +251,6 @@ function initChartInteraction(){
 function fmt(n){ return parseFloat(n).toFixed(2); }
 
 function getSJTime(){
-  // UTC-4 San Juan, Puerto Rico (AST)
   var now = new Date();
   var sj  = new Date(now.getTime() - 4*60*60*1000);
   var h   = sj.getUTCHours();
@@ -287,7 +262,6 @@ function getSJTime(){
 }
 
 function getSession(){
-  // UTC times -> San Juan AST (UTC-4)
   var t = new Date().getUTCHours()*60 + new Date().getUTCMinutes();
   if(t>=300&&t<360)   return {name:'LONDON KZ', color:'#4488FF',  ast:'1:00-2:00 AM'};
   if(t>=360&&t<540)   return {name:'LONDON',    color:'#74A8FF',  ast:'2:00-5:00 AM'};
@@ -297,7 +271,6 @@ function getSession(){
   return {name:'OFF SESSION', color:'#5A6070', ast:''};
 }
 
-/* ── FETCH DATA ── */
 function fetchJSON(url){
   return fetch(url).then(function(r){ return r.json(); });
 }
@@ -331,7 +304,6 @@ function loadData(interval){
   Promise.all([fetchJSON(tdUrl), fetchJSON(qtUrl)])
     .then(function(results){
       var tsData = results[0], qtData = results[1];
-
       if(tsData && tsData.values && tsData.values.length){
         candles = tsData.values.slice().reverse().map(function(v){
           return {o:+v.open, h:+v.high, l:+v.low, c:+v.close, t:v.datetime};
@@ -342,12 +314,11 @@ function loadData(interval){
         badge.textContent = 'TWELVE DATA';
         badge.style.color = 'var(--green)';
       } else {
-        throw new Error('No values in response');
+        throw new Error('Fallback required');
       }
       finishLoad(interval);
     })
-    .catch(function(err){
-      console.warn('Twelve Data fallback:', err.message);
+    .catch(function(){
       currentPrice = 2742.50;
       openPrice    = 2735.10;
       var mins = interval==='5min'?5:interval==='15min'?15:interval==='1h'?60:interval==='4h'?240:1440;
@@ -372,13 +343,12 @@ function finishLoad(interval){
 }
 
 function setTF(el, t){
-  activeTF = t; activeLvl = {};
+  activeTF = t;
   document.querySelectorAll('.tf').forEach(function(b){ b.classList.remove('on'); });
   el.classList.add('on');
   loadData(t);
 }
 
-/* ── ICT/SMC ENGINE ── */
 function computeLevels(cd){
   var n = cd.length;
   var cl = cd.map(function(d){ return d.c; });
@@ -401,91 +371,30 @@ function computeLevels(cd){
   var ema20 = ema(cl, Math.min(20,n));
   var ema50 = ema(cl, Math.min(50,n));
 
-  var swings = [];
-  for(var i=2; i<n-2; i++){
-    if(hi[i]>hi[i-1]&&hi[i]>hi[i-2]&&hi[i]>hi[i+1]&&hi[i]>hi[i+2]) swings.push({type:'H',price:hi[i],idx:i});
-    if(lo[i]<lo[i-1]&&lo[i]<lo[i-2]&&lo[i]<lo[i+1]&&lo[i]<lo[i+2]) swings.push({type:'L',price:lo[i],idx:i});
-  }
-  var rs = swings.slice(-10);
-  var shObj = rs.filter(function(s){ return s.type==='H'; }).sort(function(a,b){ return b.price-a.price; })[0];
-  var slObj = rs.filter(function(s){ return s.type==='L'; }).sort(function(a,b){ return a.price-b.price; })[0];
-  var sh = shObj ? shObj.price : Math.max.apply(null, hi.slice(-20));
-  var sl = slObj ? slObj.price : Math.min.apply(null, lo.slice(-20));
+  var sh = Math.max.apply(null, hi.slice(-20));
+  var sl = Math.min.apply(null, lo.slice(-20));
   var eq = (sh+sl)/2;
 
   var bullOB = null, bearOB = null;
   for(var i=n-15; i<n-2; i++){
-    if(cd[i].c<cd[i].o && cd[i+1].c>cd[i+1].o && cd[i+1].c-cd[i+1].o>atr*0.5) bullOB={top:cd[i].o,bot:cd[i].c,idx:i};
-    if(cd[i].c>cd[i].o && cd[i+1].c<cd[i+1].o && cd[i+1].o-cd[i+1].c>atr*0.5) bearOB={top:cd[i].c,bot:cd[i].o,idx:i};
+    if(cd[i].c<cd[i].o && cd[i+1].c>cd[i+1].o && cd[i+1].c-cd[i+1].o>atr*0.5) bullOB={top:cd[i].o,bot:cd[i].c};
+    if(cd[i].c>cd[i].o && cd[i+1].c<cd[i+1].o && cd[i+1].o-cd[i+1].c>atr*0.5) bearOB={top:cd[i].c,bot:cd[i].o};
   }
 
   var fvgs = [];
   for(var i=1; i<n-1; i++){
     var gap1 = cd[i-1].l - cd[i+1].h;
-    if(gap1>atr*0.3) fvgs.push({type:'bull',top:cd[i-1].l,bot:cd[i+1].h,mid:(cd[i-1].l+cd[i+1].h)/2,idx:i});
+    if(gap1>atr*0.3) fvgs.push({type:'bull',top:cd[i-1].l,bot:cd[i+1].h});
     var gap2 = cd[i+1].l - cd[i-1].h;
-    if(gap2>atr*0.3) fvgs.push({type:'bear',top:cd[i+1].l,bot:cd[i-1].h,mid:(cd[i+1].l+cd[i-1].h)/2,idx:i});
+    if(gap2>atr*0.3) fvgs.push({type:'bear',top:cd[i+1].l,bot:cd[i-1].h});
   }
-  var fvgRecent = fvgs.slice(-6);
-
-  var bos = null;
-  var h4 = hi.slice(-4), l4 = lo.slice(-4);
-  if(h4[3]>h4[1]) bos={type:'bull',label:'BOS ALCISTA'};
-  else if(l4[3]<l4[1]) bos={type:'bear',label:'BOS BAJISTA'};
 
   return {sh:sh, sl:sl, eq:eq, atr:atr, ema20:ema20, ema50:ema50,
-    pH:Math.max.apply(null,hi), pL:Math.min.apply(null,lo),
-    bullOB:bullOB, bearOB:bearOB, fvgs:fvgRecent, bos:bos,
+    bullOB:bullOB, bearOB:bearOB, fvgs:fvgs.slice(-5),
     bias:ema20>ema50?'ALCISTA':'BAJISTA',
     zone:currentPrice>eq?'PREMIUM':'DISCOUNT'};
 }
 
-/* ── QUANT ENGINE ── */
-function quantAnalysis(){
-  var lv = levels, p = currentPrice, sess = getSession();
-  var n = candles.length;
-  var cl = candles.map(function(d){ return d.c; });
-
-  var returns = [];
-  for(var i=1; i<n; i++) returns.push((cl[i]-cl[i-1])/cl[i-1]);
-  var mean = returns.reduce(function(a,b){ return a+b; },0)/returns.length;
-  var variance = returns.reduce(function(a,b){ return a+(b-mean)*(b-mean); },0)/returns.length;
-  var stdDev = Math.sqrt(variance);
-  var zScore = stdDev>0 ? (returns[returns.length-1]-mean)/stdDev : 0;
-
-  var score=0, signals=[];
-  if(['NY KZ','LONDON KZ'].indexOf(sess.name)>=0){signals.push('KILL ZONE');score+=15;}
-  if(p<lv.eq){signals.push('DISCOUNT');score+=12;} else{signals.push('PREMIUM');score-=8;}
-  if(lv.ema20>lv.ema50){signals.push('EMA BULL');score+=10;} else{signals.push('EMA BEAR');score-=10;}
-  
-  var utcMin = new Date().getUTCHours()*60+new Date().getUTCMinutes();
-  var timing = (utcMin>=300&&utcMin<360)||(utcMin>=720&&utcMin<780)?'EJECUTAR':(utcMin>=360&&utcMin<1080)?'FAVORABLE':'ESPERAR';
-
-  return {
-    renaissance: {zScore:+zScore.toFixed(2), momentum:zScore>1.5?'BULL_EXT':zScore<-1.5?'BEAR_EXT':'NEUTRO'},
-    twoSigma: {score:score, conviction:Math.abs(score)>25?'ALTA':'MEDIA', signals:signals},
-    loxm: {timing:timing, note:'Estado de liquidez institucional evaluado en horario AST.'}
-  };
-}
-
-/* ── CONFLUENCE SCORER ── */
-function scoreSetup(type, lv, q, sess){
-  var score=0, conf=[], p=currentPrice, bull=lv.bias==='ALCISTA';
-  if(q.loxm.timing==='EJECUTAR'){score+=30;conf.push('KILL ZONE');}
-  else if(q.loxm.timing==='FAVORABLE'){score+=15;conf.push('SESION ACTIVA');}
-  
-  if(type==='compra'&&p<lv.eq){score+=20;conf.push('DISCOUNT');}
-  else if(type==='venta'&&p>lv.eq){score+=20;conf.push('PREMIUM');}
-  
-  if((type==='compra'&&bull)||(type==='venta'&&!bull)){score+=15;conf.push('BIAS OK');}
-  if(type==='compra'&&lv.bullOB){score+=20;conf.push('ORDER BLOCK');}
-  else if(type==='venta'&&lv.bearOB){score+=20;conf.push('ORDER BLOCK');}
-  
-  var grade = score>=70?'A':score>=45?'B':'C';
-  return {score:score, grade:grade, confluences:conf};
-}
-
-/* ── RENDER CHART ── */
 function drawChart(){
   var cv = document.getElementById('cvs');
   var ctx = cv.getContext('2d');
@@ -506,18 +415,13 @@ function drawChart(){
   minP -= pad; maxP += pad;
 
   function getY(p){ return H - ((p - minP) / (maxP - minP)) * H; }
-
   var cW = W / viewCandles.length;
 
-  // Grid
   ctx.strokeStyle = 'rgba(255,255,255,0.03)';
   ctx.beginPath();
-  for(var i=1; i<5; i++){
-    var y = (H/5)*i; ctx.moveTo(0,y); ctx.lineTo(W,y);
-  }
+  for(var i=1; i<5; i++){ var y = (H/5)*i; ctx.moveTo(0,y); ctx.lineTo(W,y); }
   ctx.stroke();
 
-  // EQ Line
   if(levels.eq){
     var eqY = getY(levels.eq);
     ctx.strokeStyle = 'rgba(201,160,39,0.4)';
@@ -526,7 +430,6 @@ function drawChart(){
     ctx.setLineDash([]);
   }
 
-  // Candles
   viewCandles.forEach(function(c, i){
     var x = i * cW + cW/2;
     var oY = getY(c.o), cY = getY(c.c);
@@ -555,44 +458,119 @@ function updateUI(){
   document.getElementById('sessionLbl').textContent = sjTime.display + ' · ' + sess.name + ' (' + (sess.ast || 'Cerrado') + ')';
 }
 
-/* ── QUERIES UI ── */
-function runQuery(type){
-  var q = quantAnalysis();
-  var res = scoreSetup(type, levels, q, getSession());
-  var area = document.getElementById('analysisArea');
-  
-  var html = '<div class="analysis-card">' +
-    '<div class="a-header"><div class="a-ico">ICT</div><div><div class="a-name">SETUP ' + type.toUpperCase() + ' · GRADO ' + res.grade + '</div><div class="a-sub">Puntaje Confluencia: ' + res.score + '/100</div></div></div>' +
-    '<div class="chips">';
-  
-  res.confluences.forEach(function(c){ html += '<span class="chip c-bull">' + c + '</span>'; });
-  html += '</div>' +
-    '<div class="a-text">Estructura ' + levels.bias + ' en zona ' + levels.zone + '. EQ en $' + fmt(levels.eq) + '. ATR: ' + fmt(levels.atr) + '</div>' +
-    '</div>';
-    
-  area.innerHTML = html;
+/* ── MOTOR DE RESPUESTA INTELIGENTE ABIERTA ── */
+function runPreset(type){
+  var inputs = {
+    'compra': '¿Existe algún setup de compra alcista bajo conceptos ICT en la estructura actual?',
+    'venta': '¿Existe confirmación para un setup de venta bajista según la zona de equilibrio?',
+    'fvg': '¿Cuáles son las brechas de valor justo (FVG) o ineficiencias más cercanas en esta temporalidad?',
+    'macro': '¿Cómo afecta un dato macroeconómico de alto impacto como NFP o CPI al movimiento del Oro?'
+  };
+  document.getElementById('userQ').value = inputs[type];
+  runCustomQuery();
 }
 
-function runInfoQuery(infoType){
-  var area = document.getElementById('analysisArea');
-  var txt = '';
-  if(infoType === 'info_bias') txt = 'Bias Actual: ' + levels.bias + ' | Zona: ' + levels.zone + ' (EQ: $' + fmt(levels.eq) + ')';
-  if(infoType === 'info_sesion') txt = 'Sesión Activa: ' + getSession().name + ' | Hora AST: ' + getSJTime().display;
-  if(infoType === 'info_ob') txt = 'Bullish OB: ' + (levels.bullOB ? '$'+fmt(levels.bullOB.bot)+' - $'+fmt(levels.bullOB.top) : 'N/A') + ' | Bearish OB: ' + (levels.bearOB ? '$'+fmt(levels.bearOB.bot)+' - $'+fmt(levels.bearOB.top) : 'N/A');
-  
-  area.innerHTML = '<div class="analysis-card"><div class="a-text">' + txt + '</div></div>';
-}
-
-function runCustom(){
+function runCustomQuery(){
   var input = document.getElementById('userQ');
-  if(!input.value.trim()) return;
+  var query = input.value.trim();
+  if(!query) return;
+
   var area = document.getElementById('analysisArea');
-  area.innerHTML = '<div class="thinking"><div class="dots"><span></span><span></span><span></span></div> Analizando estructura de mercado...</div>';
-  
+  area.innerHTML = '<div class="thinking"><div class="dots"><span></span><span></span><span></span></div> Procesando consulta con el motor XAU/USD...</div>';
+
   setTimeout(function(){
-    area.innerHTML = '<div class="analysis-card"><div class="a-text"><strong>Consulta:</strong> ' + input.value + '<br><br><strong>Respuesta Agente:</strong> Análisis completado para XAUUSD. Mercado operando en zona ' + levels.zone + ' con sesgo ' + levels.bias + '. Nivel clave EQ en $' + fmt(levels.eq) + '.</div></div>';
-    input.value = '';
-  }, 1000);
+    var answer = generateAgentResponse(query);
+    var sess = getSession();
+    
+    var html = '<div class="analysis-card">' +
+      '<div class="a-header">' +
+        '<div class="a-ico">AGNT</div>' +
+        '<div>' +
+          '<div class="a-name">RESPUESTA DE OPERACIONES XAU/USD</div>' +
+          '<div class="a-sub">Contexto: $' + fmt(currentPrice) + ' | ' + levels.zone + ' | ' + sess.name + '</div>' +
+        '</div>' +
+        '<div class="a-time">' + getSJTime().display + '</div>' +
+      '</div>' +
+      '<div class="chips">' +
+        '<span class="chip c-gold">XAU/USD</span>' +
+        '<span class="chip ' + (levels.zone==='DISCOUNT'?'c-bull':'c-bear') + '">' + levels.zone + '</span>' +
+        '<span class="chip c-blue">' + sess.name + '</span>' +
+      '</div>' +
+      '<div class="a-text">' + answer + '</div>' +
+    '</div>';
+
+    area.innerHTML = html;
+  }, 700);
+}
+
+function generateAgentResponse(q){
+  var qLower = q.toLowerCase();
+  var p = fmt(currentPrice);
+  var atr = fmt(levels.atr);
+  var eq = fmt(levels.eq);
+  var sess = getSession();
+
+  // 1. Preguntas sobre Compras / Setups Alcistas
+  if(qLower.includes('compra') || qLower.includes('long') || qLower.includes('alcista')){
+    if(levels.zone === 'DISCOUNT'){
+      return "<strong>Análisis de Compra (SETUP ACTIVO):</strong><br>" +
+             "El precio actual del Oro ($" + p + ") se encuentra en zona de <strong>DISCOUNT</strong> (por debajo del Equilibrium de $" + eq + ").<br>" +
+             "• <strong>Confirmación ICT:</strong> El sesgo técnico es " + levels.bias + ". Se recomienda esperar una neutralización de liquidez en bajos anteriores o entrada en Order Block Alcista.<br>" +
+             "• <strong>Gestión:</strong> Detener Stop Loss debajo del último mínimo de la estructura. Objetivo TP1 en el EQ ($" + eq + ") y TP2 en liquidez externa ($" + fmt(levels.sh) + ").";
+    } else {
+      return "<strong>Análisis de Compra (PRECAUCIÓN):</strong><br>" +
+             "Actualmente el Oro cotiza en <strong>PREMIUM</strong> ($" + p + ").<br>" +
+             "• Comprar en Premium bajo metodología ICT/SMC reduce drásticamente el Ratio Riesgo/Beneficio (R:R).<br>" +
+             "• <strong>Recomendación:</strong> Esperar un retroceso hacia la zona Discount (< $" + eq + ") o la alineación con una Kill Zone con volumen institucional (" + sess.name + ").";
+    }
+  }
+
+  // 2. Preguntas sobre Ventas / Setups Bajistas
+  if(qLower.includes('venta') || qLower.includes('short') || qLower.includes('bajista')){
+    if(levels.zone === 'PREMIUM'){
+      return "<strong>Análisis de Venta (SETUP ACTIVO):</strong><br>" +
+             "El precio del Oro ($" + p + ") cotiza en zona de <strong>PREMIUM</strong> (por encima del Equilibrium de $" + eq + ").<br>" +
+             "• <strong>Confirmación ICT:</strong> Oportunidad óptima para buscar mitigación en Order Blocks bajistas o llenado de Fair Value Gaps superiores.<br>" +
+             "• <strong>Objetivo:</strong> Colocar SL por encima del alto reciente ($" + fmt(levels.sh) + ") y buscar tomas de ganancia en el EQ ($" + eq + ") y mínimos en Discount.";
+    } else {
+      return "<strong>Análisis de Venta (RIESGO ALTO):</strong><br>" +
+             "El precio se encuentra en <strong>DISCOUNT</strong> ($" + p + "). Vender en esta zona implica vender barato.<br>" +
+             "• Es preferible esperar una expansión alcista que busque liquidez antes de considerar posicionarse en corto.";
+    }
+  }
+
+  // 3. FVG / Ineficiencias / Liquidez
+  if(qLower.includes('fvg') || qLower.includes('gap') || qLower.includes('ineficiencia') || qLower.includes('liquidez')){
+    var fvgCount = levels.fvgs ? levels.fvgs.length : 0;
+    return "<strong>Análisis de Ineficiencias (FVG) y Liquidez:</strong><br>" +
+           "• <strong>FVGs Detectados:</strong> Se identifican " + fvgCount + " Fair Value Gaps relevantes en la temporalidad " + activeTF + ".<br>" +
+           "• <strong>Rango de Volatilidad (ATR 14):</strong> $" + atr + " pips/puntos por vela.<br>" +
+           "• <strong>Mecánica Institucional:</strong> El algoritmo alcista/bajista tiende a reequilibrar estas zonas descompensadas antes de continuar con la expansión principal. Monitorea cierres de vela dentro del FVG para entradas con confirmación.";
+  }
+
+  // 4. Noticias / Macroeconomía (NFP, CPI, Fed, Inflación)
+  if(qLower.includes('nfp') || qLower.includes('cpi') || qLower.includes('noticia') || qLower.includes('macro') || qLower.includes('fed') || qLower.includes('interes') || qLower.includes('dolar')){
+    return "<strong>Impacto Macroeconómico en XAU/USD:</strong><br>" +
+           "• <strong>Correlación DXY:</strong> El Oro mantiene una correlación inversa histórica con el Índice del Dólar (DXY) y los rendimientos de los bonos del Tesoro.<br>" +
+           "• <strong>Eventos de Alto Impacto (NFP / CPI / FOMC):</strong> Producen 'Judas Swings' o barridos de liquidez agresivos en ambas direcciones en segundos.<br>" +
+           "• <strong>Regla de Operaciones:</strong> Evitar la ejecución de órdenes en los primeros 5-15 minutos tras el lanzamiento de la noticia. Permite que el algoritmo limpie la liquidez y busca entradas en la reacumulación/redistribución posterior.";
+  }
+
+  // 5. Gestión de Riesgo, Lotaje, Pips
+  if(qLower.includes('lote') || qLower.includes('lotaje') || qLower.includes('riesgo') || qLower.includes('pip') || qLower.includes('cuenta') || qLower.includes('capital')){
+    return "<strong>Parámetros de Gestión de Riesgo en XAU/USD:</strong><br>" +
+           "• <strong>Especificación del Contrato:</strong> 1.00 Lote estándar en Oro = 100 onzas. Un movimiento de $1.00 equivale a $100 por lote completo ($10 por 0.10 minilote).<br>" +
+           "• <strong>Riesgo Máximo Recomendado:</strong> Entre 0.5% y 1.0% del capital por operación.<br>" +
+           "• <strong>Fórmula Rápida:</strong> Lotaje = (Capital × % Riesgo) / (Puntos de Stop Loss × Valor por Punto). Asegúrate de mantener un R:R mínimo de 1:2.0 basándote en el ATR actual ($" + atr + ").";
+  }
+
+  // 6. Respuesta Generativa / Cualquier otra pregunta abierta sobre Oro
+  return "<strong>Evaluación Estratégica XAU/USD:</strong><br>" +
+         "Sobre tu consulta («<em>" + q + "</em>»):<br>" +
+         "• <strong>Estado del Mercado:</strong> Oro cotizando a <strong>$" + p + "</strong> en zona <strong>" + levels.zone + "</strong>.<br>" +
+         "• <strong>Sesión y Horario:</strong> " + sess.name + " (" + sess.ast + ").<br>" +
+         "• <strong>Estructura SMC/ICT:</strong> La dirección institucional predomina en sesgo <strong>" + levels.bias + "</strong> con punto medio de equilibrio (Equilibrium) situado en <strong>$" + eq + "</strong> y volatilidad ATR de <strong>$" + atr + "</strong>.<br>" +
+         "Para ejecutar en este escenario, valida la alineación entre la Kill Zone activa y la barrida de liquidez en temporalidades menores (1M/5M).";
 }
 </script>
 </body>
