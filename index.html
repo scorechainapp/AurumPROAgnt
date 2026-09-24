@@ -1,65 +1,68 @@
-// Nucleo de Estrategia BCL_NQ_AutoBot_V2 (JavaScript / Node.js)
+// strategy.js - Lógica pura BCL_NQ_AutoBot_V2 sin dependencias externas
 
-function evaluateStrategy(candles3M, close1H, sma1H, close4H, sma4H, currentTime) {
-    const response = {
-        timeValid: false,
-        htfBias: "Neutral",
-        sweepDetected: false,
-        ftdConfirmed: false,
-        ifvgDetected: false,
-        ifvgMid: null,
-        signal: "NO_TRADE"
-    };
-
-    // 0. Horario (9:30 AM - 11:00 AM -> 93000 a 110000)
-    if (currentTime < 93000 || currentTime > 110000) {
-        return { ...response, status: "Fuera de Horario Operativo" };
-    }
-    response.timeValid = true;
-
-    // 1. HTF Bias Engine
-    if (close1H > sma1H && close4H > sma4H) response.htfBias = "Bullish";
-    else if (close1H < sma1H && close4H < sma4H) response.htfBias = "Bearish";
-
-    if (response.htfBias === "Neutral") return response;
-
-    // 2. Liquidity Engine (10 velas previas)
-    const current = candles3M[0]; // Vela actual
-    const prev10High = Math.max(...candles3M.slice(1, 11).map(c => c.high));
-    const prev10Low = Math.min(...candles3M.slice(1, 11).map(c => c.low));
-
-    if (response.htfBias === "Bearish" && current.high > prev10High && current.close < prev10High) {
-        response.sweepDetected = true;
-    }
-    if (response.htfBias === "Bullish" && current.low < prev10Low && current.close > prev10Low) {
-        response.sweepDetected = true;
+class BCLNQStrategy {
+    constructor() {
+        this.proximityTicks = 12;
+        this.tickSize = 0.25; // NQ Tick size
     }
 
-    if (!response.sweepDetected) return response;
-
-    // 3. FTD Engine
-    if (response.htfBias === "Bearish" && current.close < current.open) response.ftdConfirmed = true;
-    if (response.htfBias === "Bullish" && current.close > current.open) response.ftdConfirmed = true;
-
-    if (!response.ftdConfirmed) return response;
-
-    // 4. Displacement + IFVG Engine
-    const body = Math.abs(current.close - current.open);
-    const avgBody = candles3M.slice(0, 10).reduce((acc, c) => acc + Math.abs(c.close - c.open), 0) / 10;
-    const twoBarsAgo = candles3M[2];
-
-    if (body > (avgBody * 1.5)) {
-        if (response.htfBias === "Bearish" && current.low > twoBarsAgo.high) {
-            response.ifvgDetected = true;
-            response.ifvgMid = (current.low + twoBarsAgo.high) / 2;
-            response.signal = "SHORT_ZONE";
+    evaluate(candles3M, close1H, sma1H, close4H, sma4H, timeString) {
+        // 1. Horario (9:30 AM a 11:00 AM)
+        const inSession = timeString >= "09:30" && timeString <= "11:00";
+        if (!inSession) {
+            return { inSession: false, status: "Fuera de Horario" };
         }
-        if (response.htfBias === "Bullish" && current.high < twoBarsAgo.low) {
-            response.ifvgDetected = true;
-            response.ifvgMid = (current.high + twoBarsAgo.low) / 2;
-            response.signal = "LONG_ZONE";
-        }
-    }
 
-    return response;
+        // 2. HTF Bias Engine
+        let htfBias = "Neutral";
+        if (close1H > sma1H && close4H > sma4H) htfBias = "Bullish";
+        else if (close1H < sma1H && close4H < sma4H) htfBias = "Bearish";
+
+        if (htfBias === "Neutral") {
+            return { inSession: true, htfBias, status: "Sin Tendencia Definida" };
+        }
+
+        // 3. Liquidity Engine
+        const current = candles3M[0];
+        const prev10High = Math.max(...candles3M.slice(1, 11).map(c => c.high));
+        const prev10Low = Math.min(...candles3M.slice(1, 11).map(c => c.low));
+
+        let sweepDetected = false;
+        if (htfBias === "Bearish" && current.high > prev10High && current.close < prev10High) sweepDetected = true;
+        if (htfBias === "Bullish" && current.low < prev10Low && current.close > prev10Low) sweepDetected = true;
+
+        // 4. FTD Engine
+        let ftdConfirmed = false;
+        if (sweepDetected) {
+            if (htfBias === "Bearish" && current.close < current.open) ftdConfirmed = true;
+            if (htfBias === "Bullish" && current.close > current.open) ftdConfirmed = true;
+        }
+
+        // 5. Displacement + IFVG Engine
+        const body = Math.abs(current.close - current.open);
+        const avgBody = candles3M.slice(0, 10).reduce((acc, c) => acc + Math.abs(c.close - c.open), 0) / 10;
+        const twoBarsAgo = candles3M[2];
+
+        let ifvgMid = null;
+        if (ftdConfirmed && body > (avgBody * 1.5)) {
+            if (htfBias === "Bearish" && current.low > twoBarsAgo.high) {
+                ifvgMid = (current.low + twoBarsAgo.high) / 2.0;
+            } else if (htfBias === "Bullish" && current.high < twoBarsAgo.low) {
+                ifvgMid = (current.high + twoBarsAgo.low) / 2.0;
+            }
+        }
+
+        const distTicks = ifvgMid ? Math.abs(current.close - ifvgMid) / this.tickSize : null;
+        const alertTriggered = distTicks !== null && distTicks <= this.proximityTicks;
+
+        return {
+            inSession: true,
+            htfBias,
+            sweepDetected,
+            ftdConfirmed,
+            ifvgMid,
+            distTicks,
+            alertTriggered
+        };
+    }
 }
