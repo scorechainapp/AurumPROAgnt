@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AURUM PRO AGNT · XAUUSD · BCL NQ Radar Engine</title>
+<title>AURUM PRO AGNT · XAUUSD · BCL Radar V2</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
@@ -35,6 +35,14 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 .chg.neg{background:rgba(255,61,61,0.12);color:var(--red);border:1px solid rgba(255,61,61,0.2)}
 .sub{font-size:10px;color:var(--muted);margin-top:4px;letter-spacing:1px}
 
+/* API KEY CONFIG CARD */
+.api-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:8px 14px;margin-bottom:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.api-lbl{font-size:11px;color:var(--gold);font-weight:700;letter-spacing:1px;white-space:nowrap}
+.api-input{flex:1;min-width:200px;background:#0A0C12;border:1px solid var(--dim);border-radius:4px;padding:6px 10px;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text);outline:none}
+.api-input:focus{border-color:var(--cyan)}
+.api-btn{background:var(--gold);color:#000;border:none;border-radius:4px;padding:6px 14px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Rajdhani',sans-serif;letter-spacing:1px;transition:all .15s}
+.api-btn:hover{background:var(--gold2)}
+
 /* CONTROLS */
 .controls-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
 .tf-row{display:flex;gap:6px}
@@ -58,8 +66,8 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 canvas#cvs{display:block;width:100%;height:400px;cursor:grab}
 canvas#cvs.dragging{cursor:grabbing}
 
-/* RADAR DASHBOARD OVERLAY */
-.radar-panel{position:absolute;top:38px;right:14px;background:rgba(8,10,14,0.85);border:1px solid var(--border);border-radius:6px;padding:10px;width:210px;backdrop-filter:blur(4px);z-index:10;font-family:'Share Tech Mono',monospace;font-size:10px}
+/* RADAR DASHBOARD OVERLAY (UBICADO A LA IZQUIERDA SUPERIOR) */
+.radar-panel{position:absolute;top:38px;left:14px;background:rgba(8,10,14,0.88);border:1px solid var(--border);border-radius:6px;padding:10px;width:210px;backdrop-filter:blur(4px);z-index:10;font-family:'Share Tech Mono',monospace;font-size:10px;box-shadow:0 4px 12px rgba(0,0,0,0.5)}
 .radar-title{font-size:10px;color:var(--gold2);font-weight:700;border-bottom:1px solid var(--dim);padding-bottom:4px;margin-bottom:6px;letter-spacing:1px;display:flex;justify-content:space-between}
 .radar-row{display:flex;justify-content:space-between;margin-bottom:4px}
 .radar-val{font-weight:bold}
@@ -129,7 +137,14 @@ canvas#cvs.dragging{cursor:grabbing}
     <div class="sub" id="sessionLbl">Cargando datos...</div>
   </div>
 
-  <!-- CONTROLES -->
+  <!-- CONFIGURACIÓN API KEY -->
+  <div class="api-card">
+    <span class="api-lbl">TWELVE DATA API KEY:</span>
+    <input type="password" id="apiKeyInput" class="api-input" placeholder="Pega tu API Key aquí...">
+    <button class="api-btn" onclick="saveApiKey()">GUARDAR Y CONECTAR</button>
+  </div>
+
+  <!-- CONTROLES DE TIMEFRAME Y ZOOM -->
   <div class="controls-row">
     <div class="tf-row">
       <button class="tf" onclick="setTF(this,'5min')">5M</button>
@@ -147,14 +162,14 @@ canvas#cvs.dragging{cursor:grabbing}
     </div>
   </div>
 
-  <!-- CHART WITH RADAR DASHBOARD -->
+  <!-- CHART CON DASHBOARD RADAR UBICADO A LA IZQUIERDA SUPERIOR -->
   <div class="chart-wrap">
     <div class="chart-top">
       <span class="ct-label" id="ctLabel">XAU/USD · 15M</span>
       <span class="ct-info" id="ctInfo">...</span>
     </div>
     
-    <!-- DASHBOARD RADAR ENGINE OVERLAY -->
+    <!-- DASHBOARD RADAR ENGINE OVERLAY (IZQUIERDA) -->
     <div class="radar-panel">
       <div class="radar-title"><span>BCL RADAR</span><span id="rdTime">--:--</span></div>
       <div class="radar-row"><span>Sesión (NY):</span><span class="status-pill bg-gray" id="rdSession">INACTIVO</span></div>
@@ -168,7 +183,7 @@ canvas#cvs.dragging{cursor:grabbing}
     <div class="chart-hint">🖱 Rueda: zoom · Click+arrastrar: mover</div>
   </div>
 
-  <!-- STATS -->
+  <!-- METRICAS DE MERCADO -->
   <div class="stats-row">
     <div class="stat-card"><div class="stat-lbl">PRECIO REAL</div><div class="stat-val" id="s1" style="color:var(--gold2)">---</div></div>
     <div class="stat-card"><div class="stat-lbl">ATR (14)</div><div class="stat-val" id="s2" style="color:var(--cyan)">---</div></div>
@@ -176,7 +191,7 @@ canvas#cvs.dragging{cursor:grabbing}
     <div class="stat-card"><div class="stat-lbl">ESTADO RADAR</div><div class="stat-val" id="s4" style="font-size:14px">---</div></div>
   </div>
 
-  <!-- QUERY CERRADA / ABIERTA -->
+  <!-- CONSULTAS AL AGENTE BCL -->
   <div class="query-card">
     <div class="q-title">◈ CONSULTA ABIERTA AL AGENTE BCL RADAR (XAU/USD)</div>
     <div class="quick-btns">
@@ -186,7 +201,7 @@ canvas#cvs.dragging{cursor:grabbing}
       <div class="qbtn" onclick="runPreset('macro')">🌐 Impacto NFP/CPI</div>
     </div>
     <div class="input-row">
-      <input class="q-input" id="userQ" placeholder="Haz cualquier pregunta sobre el Oro (ej: ¿Hay confirmación IFVG?, ¿Cuál es el HTF Bias?, ¿Es KillZone?)..." onkeydown="if(event.key==='Enter')runCustomQuery()">
+      <input class="q-input" id="userQ" placeholder="Haz cualquier pregunta sobre el Oro (ej: ¿Hay confirmación IFVG?, ¿Cuál es el HTF Bias?)..." onkeydown="if(event.key==='Enter')runCustomQuery()">
       <button class="send-btn" id="sendBtn" onclick="runCustomQuery()">ANALIZAR</button>
     </div>
   </div>
@@ -195,14 +210,16 @@ canvas#cvs.dragging{cursor:grabbing}
 </div>
 
 <script>
-var TD_KEY = '55c198220c554394bc4d9475bef8f616';
+// CLAVE API POR DEFECTO O ALMACENADA EN LOCALSTORAGE
+var activeApiKey = localStorage.getItem('twelve_data_api_key') || '55c198220c554394bc4d9475bef8f616';
+
 var candles = [], levels = {}, currentPrice = 0, openPrice = 0;
 var activeTF = '15min';
 var dataSource = 'DEMO';
 
 // BCL RADAR CONFIG & STATE
 var radarConfig = {
-  proximityTicks: 12, // 12 Ticks = 1.2 Puntos en Oro ($0.10 por tick)
+  proximityTicks: 12, // 12 Ticks = $1.20 en Oro ($0.10 por tick)
   tickSize: 0.10
 };
 var radarState = {
@@ -230,7 +247,7 @@ function playAlertSound() {
     var osc = audioCtx.createOscillator();
     var gain = audioCtx.createGain();
     osc.type = 'sine';
-    osc.frequency.setValueAtTime(880, audioCtx.currentTime); // Nota A5
+    osc.frequency.setValueAtTime(880, audioCtx.currentTime);
     gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
     osc.connect(gain);
     gain.connect(audioCtx.destination);
@@ -240,10 +257,20 @@ function playAlertSound() {
 }
 
 window.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('apiKeyInput').value = activeApiKey;
   initChartInteraction();
   loadData(activeTF);
   setInterval(updateUI, 10000);
 });
+
+function saveApiKey() {
+  var key = document.getElementById('apiKeyInput').value.trim();
+  if(key) {
+    activeApiKey = key;
+    localStorage.setItem('twelve_data_api_key', key);
+    loadData(activeTF);
+  }
+}
 
 function zoomChart(dir){
   var step = 0.15;
@@ -350,11 +377,11 @@ function syntheticCandles(base, n, mins){
 
 function loadData(interval){
   var badge = document.getElementById('apiBadge');
-  badge.textContent = 'CARGANDO';
+  badge.textContent = 'CARGANDO API...';
   badge.style.color = '#FF9100';
 
-  var tdUrl = 'https://api.twelvedata.com/time_series?symbol=XAU%2FUSD&interval='+interval+'&outputsize=80&apikey='+TD_KEY;
-  var qtUrl = 'https://api.twelvedata.com/quote?symbol=XAU%2FUSD&apikey='+TD_KEY;
+  var tdUrl = 'https://api.twelvedata.com/time_series?symbol=XAU%2FUSD&interval='+interval+'&outputsize=80&apikey='+activeApiKey;
+  var qtUrl = 'https://api.twelvedata.com/quote?symbol=XAU%2FUSD&apikey='+activeApiKey;
 
   Promise.all([fetchJSON(tdUrl), fetchJSON(qtUrl)])
     .then(function(results){
@@ -366,10 +393,10 @@ function loadData(interval){
         currentPrice = qtData && qtData.close ? +qtData.close : candles[candles.length-1].c;
         openPrice    = qtData && qtData.open  ? +qtData.open  : candles[0].o;
         dataSource   = 'TWELVE DATA';
-        badge.textContent = 'TWELVE DATA';
+        badge.textContent = 'TWELVE DATA (CONECTADO)';
         badge.style.color = 'var(--green)';
       } else {
-        throw new Error('Fallback required');
+        throw new Error('Incapaz de conectar con API Key');
       }
       finishLoad(interval);
     })
@@ -378,8 +405,8 @@ function loadData(interval){
       openPrice    = 2735.10;
       var mins = interval==='5min'?5:interval==='15min'?15:interval==='1h'?60:interval==='4h'?240:1440;
       candles      = syntheticCandles(currentPrice, 80, mins);
-      dataSource   = 'DEMO (SIMULADO)';
-      badge.textContent = 'MODO DEMO';
+      dataSource   = 'DEMO (FALLBACK)';
+      badge.textContent = 'MODO DEMO (FALLBACK)';
       badge.style.color = '#FF9100';
       finishLoad(interval);
     });
@@ -406,19 +433,15 @@ function setTF(el, t){
   loadData(t);
 }
 
-// ==========================================
-// BCL RADAR STRATEGY ENGINE IMPLEMENTATION
-// ==========================================
+// BCL RADAR STRATEGY ENGINE
 function evaluateBCLRadar(cd) {
   var n = cd.length;
   if (n < 15) return;
 
   var sj = getSJTime();
-  // 1. Horario / Kill Zone Engine (NY 8:00 AM - 11:00 AM AST)
   var minutesNow = sj.h * 60 + sj.m;
   radarState.inSession = (minutesNow >= 480 && minutesNow <= 660);
 
-  // 2. HTF Bias Engine (Simulado con EMAs de corto y largo alcance)
   var cl = cd.map(function(d){ return d.c; });
   var smaFast = cl.slice(-20).reduce(function(a,b){return a+b;},0)/20;
   var smaSlow = cl.slice(-50).reduce(function(a,b){return a+b;},0)/50;
@@ -427,7 +450,6 @@ function evaluateBCLRadar(cd) {
   else if (smaFast < smaSlow) radarState.htfBias = "Bearish";
   else radarState.htfBias = "Neutral";
 
-  // 3. Liquidity Engine (Lookback 10 velas)
   var curr = cd[n-1];
   var prev10High = Math.max.apply(null, cd.slice(-11, -1).map(function(c){ return c.h; }));
   var prev10Low  = Math.min.apply(null, cd.slice(-11, -1).map(function(c){ return c.l; }));
@@ -440,14 +462,12 @@ function evaluateBCLRadar(cd) {
     radarState.sweepDetected = true;
   }
 
-  // 4. FTD Engine (Follow Through Day / Directional Confirmation)
   radarState.ftdConfirmed = false;
   if (radarState.sweepDetected) {
     if (radarState.htfBias === "Bearish" && curr.c < curr.o) radarState.ftdConfirmed = true;
     if (radarState.htfBias === "Bullish" && curr.c > curr.o) radarState.ftdConfirmed = true;
   }
 
-  // 5. Displacement + IFVG Engine
   var body = Math.abs(curr.c - curr.o);
   var avgBody = cd.slice(-10).reduce(function(acc, c){ return acc + Math.abs(c.c - c.o); }, 0) / 10;
   var twoBarsAgo = cd[n-3];
@@ -461,13 +481,11 @@ function evaluateBCLRadar(cd) {
     }
   }
 
-  // Fallback si no hay IFVG dinámico reciente: usar el FVG más cercano de levels
   if (!radarState.ifvgMid && levels.fvgs && levels.fvgs.length) {
     var lastFvg = levels.fvgs[levels.fvgs.length - 1];
     radarState.ifvgMid = (lastFvg.top + lastFvg.bot) / 2.0;
   }
 
-  // 6. Alerta de Proximidad
   if (radarState.ifvgMid) {
     var distPoints = Math.abs(currentPrice - radarState.ifvgMid);
     radarState.distTicks = Math.round(distPoints / radarConfig.tickSize);
@@ -576,7 +594,7 @@ function drawChart(){
     
     ctx.fillStyle = radarState.nearZone ? '#B44FFF' : '#00E5FF';
     ctx.font = '10px Share Tech Mono';
-    ctx.fillText('IFVG MID: $' + fmt(radarState.ifvgMid), 10, ifvgY - 4);
+    ctx.fillText('IFVG MID: $' + fmt(radarState.ifvgMid), 235, ifvgY - 4);
   }
 
   // CANDLES DRAWING
@@ -635,7 +653,6 @@ function updateUI(){
   }
 }
 
-/* ── MOTOR DE RESPUESTA INTELIGENTE ABIERTA BCL RADAR ── */
 function runPreset(type){
   var inputs = {
     'compra': '¿Existe algún setup de compra alcista bajo el motor BCL Radar en la estructura actual?',
@@ -684,12 +701,9 @@ function runCustomQuery(){
 function generateAgentResponse(q){
   var qLower = q.toLowerCase();
   var p = fmt(currentPrice);
-  var atr = fmt(levels.atr);
   var eq = fmt(levels.eq);
-  var sess = getSession();
   var ifvgTxt = radarState.ifvgMid ? "$" + fmt(radarState.ifvgMid) : "Sin confirmar";
 
-  // 1. Setup Compra / Alcista BCL Radar
   if(qLower.includes('compra') || qLower.includes('long') || qLower.includes('alcista')){
     return "<strong>Análisis de Compra BCL Radar:</strong><br>" +
            "• <strong>Precio Actual:</strong> $" + p + " (" + levels.zone + ").<br>" +
@@ -699,7 +713,6 @@ function generateAgentResponse(q){
            "• <strong>Estrategia de Ejecución:</strong> " + (radarState.htfBias === 'Bullish' && levels.zone === 'DISCOUNT' ? "Favorable. Buscar reentrada cuando el precio mitigue la zona IFVG Mid con SL por debajo del mínimo reciente." : "Precaución. Espera alineación del HTF Bias a alcista y retroceso a zona Discount.");
   }
 
-  // 2. Setup Venta / Bajista BCL Radar
   if(qLower.includes('venta') || qLower.includes('short') || qLower.includes('bajista')){
     return "<strong>Análisis de Venta BCL Radar:</strong><br>" +
            "• <strong>Precio Actual:</strong> $" + p + " (" + levels.zone + ").<br>" +
@@ -709,7 +722,6 @@ function generateAgentResponse(q){
            "• <strong>Estrategia de Ejecución:</strong> " + (radarState.htfBias === 'Bearish' && levels.zone === 'PREMIUM' ? "Favorable. Configurar orden en zona IFVG Mid con objetivo en el Equilibrium ($" + eq + ")." : "Riesgo elevado. Vender fuera de Premium reduce el Ratio R:R.");
   }
 
-  // 3. IFVG / Radar Zone / FVG
   if(qLower.includes('fvg') || qLower.includes('radar') || qLower.includes('ifvg') || qLower.includes('gap')){
     return "<strong>Estado de Ineficiencias e IFVG Radar Engine:</strong><br>" +
            "• <strong>IFVG Mid Activo:</strong> " + ifvgTxt + ".<br>" +
@@ -718,19 +730,17 @@ function generateAgentResponse(q){
            "• <strong>Regla Operativa:</strong> Entrar únicamente cuando la vela M3/M15 valide el desplazamiento (FTD) tras la mitigación del nivel IFVG Mid.";
   }
 
-  // 4. Macro / Noticias / Horario
   if(qLower.includes('nfp') || qLower.includes('cpi') || qLower.includes('macro') || qLower.includes('noticia') || qLower.includes('horario')){
     return "<strong>Filtro Horario y Contexto Macroeconómico:</strong><br>" +
            "• <strong>Ventana Operativa NY:</strong> " + (radarState.inSession ? "DENTRO DE SESIÓN (8:00 AM - 11:00 AM AST)" : "FORA DE SESIÓN (Inactivo)") + ".<br>" +
            "• <strong>Filtro NFP/CPI:</strong> El motor BCL Radar desactiva ejecuciones automáticas durante eventos de alto impacto para evitar falsos desbalances (*Judas Swings*). Se recomienda esperar 15 min post-noticia para reevaluar el IFVG Mid.";
   }
 
-  // 5. Respuesta Generativa / Diagnóstico General
   return "<strong>Diagnóstico de Operaciones BCL NQ Radar Engine:</strong><br>" +
          "Sobre tu consulta («<em>" + q + "</em>»):<br>" +
          "• <strong>Oro (XAU/USD):</strong> $" + p + " | HTF Bias: <strong>" + radarState.htfBias + "</strong>.<br>" +
          "• <strong>Estado Radar:</strong> Zona IFVG Mid en <strong>" + ifvgTxt + "</strong> | Proximidad: <strong>" + (radarState.distTicks !== null ? radarState.distTicks + " Ticks" : "N/A") + "</strong>.<br>" +
-         "• <strong>Recomendación:</strong> Monitorea el cuadro visual 'BCL RADAR' en la esquina superior derecha del gráfico para confirmación de alertas en tiempo real.";
+         "• <strong>Recomendación:</strong> Monitorea el cuadro visual 'BCL RADAR' en la esquina superior izquierda del gráfico para confirmación de alertas en tiempo real.";
 }
 </script>
 </body>
