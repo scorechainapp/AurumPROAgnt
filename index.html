@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AURUM PRO AGNT · XAUUSD · BCL Radar V2</title>
+<title>AURUM PRO AGNT · XAUUSD · Auto-Refresh Radar Engine</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
@@ -24,9 +24,11 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 .header{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 20px;margin-bottom:10px;position:relative;overflow:hidden}
 .header::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
 .h-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
-.brand{font-size:12px;color:var(--gold);letter-spacing:3px;font-family:'Rajdhani',sans-serif;font-weight:700}
-.live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block;margin-right:6px;animation:blink 1.5s infinite}
+.brand{font-size:12px;color:var(--gold);letter-spacing:3px;font-family:'Rajdhani',sans-serif;font-weight:700;display:flex;align-items:center}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block;margin-right:8px;animation:blink 1.5s infinite}
 @keyframes blink{0%,100%{opacity:1;box-shadow:0 0 6px var(--green)}50%{opacity:.2;box-shadow:none}}
+.right-badges{display:flex;align-items:center;gap:8px}
+.refresh-badge{font-size:9px;padding:3px 8px;border-radius:3px;background:rgba(0,230,118,0.08);border:1px solid rgba(0,230,118,0.25);color:var(--green);letter-spacing:1px;font-family:'Share Tech Mono',monospace}
 .api-badge{font-size:9px;padding:3px 10px;border-radius:3px;background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.25);color:var(--cyan);letter-spacing:2px;font-family:'Rajdhani',sans-serif;font-weight:600}
 .pair-row{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
 .price-big{font-size:38px;font-weight:700;color:var(--gold2);font-family:'Rajdhani',sans-serif;letter-spacing:1px;text-shadow:0 0 24px rgba(240,192,64,0.3)}
@@ -35,13 +37,15 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 .chg.neg{background:rgba(255,61,61,0.12);color:var(--red);border:1px solid rgba(255,61,61,0.2)}
 .sub{font-size:10px;color:var(--muted);margin-top:4px;letter-spacing:1px}
 
-/* API KEY CONFIG CARD */
+/* CONFIG API KEY & AUTO REFRESH CONTROLS */
 .api-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:8px 14px;margin-bottom:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .api-lbl{font-size:11px;color:var(--gold);font-weight:700;letter-spacing:1px;white-space:nowrap}
 .api-input{flex:1;min-width:200px;background:#0A0C12;border:1px solid var(--dim);border-radius:4px;padding:6px 10px;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text);outline:none}
 .api-input:focus{border-color:var(--cyan)}
 .api-btn{background:var(--gold);color:#000;border:none;border-radius:4px;padding:6px 14px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Rajdhani',sans-serif;letter-spacing:1px;transition:all .15s}
 .api-btn:hover{background:var(--gold2)}
+.toggle-refresh-btn{background:rgba(0,229,255,0.1);color:var(--cyan);border:1px solid rgba(0,229,255,0.3);border-radius:4px;padding:6px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Rajdhani',sans-serif;letter-spacing:1px}
+.toggle-refresh-btn.paused{background:rgba(255,61,61,0.1);color:var(--red);border-color:rgba(255,61,61,0.3)}
 
 /* CONTROLS */
 .controls-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
@@ -66,7 +70,7 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 canvas#cvs{display:block;width:100%;height:400px;cursor:grab}
 canvas#cvs.dragging{cursor:grabbing}
 
-/* RADAR DASHBOARD OVERLAY (UBICADO A LA IZQUIERDA SUPERIOR) */
+/* RADAR DASHBOARD OVERLAY (IZQUIERDA SUPERIOR) */
 .radar-panel{position:absolute;top:38px;left:14px;background:rgba(8,10,14,0.88);border:1px solid var(--border);border-radius:6px;padding:10px;width:210px;backdrop-filter:blur(4px);z-index:10;font-family:'Share Tech Mono',monospace;font-size:10px;box-shadow:0 4px 12px rgba(0,0,0,0.5)}
 .radar-title{font-size:10px;color:var(--gold2);font-weight:700;border-bottom:1px solid var(--dim);padding-bottom:4px;margin-bottom:6px;letter-spacing:1px;display:flex;justify-content:space-between}
 .radar-row{display:flex;justify-content:space-between;margin-bottom:4px}
@@ -95,7 +99,6 @@ canvas#cvs.dragging{cursor:grabbing}
 .q-input{flex:1;background:#0A0C12;border:1px solid var(--dim);border-radius:6px;padding:12px 14px;font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--text);outline:none}
 .q-input:focus{border-color:var(--cyan);box-shadow:0 0 0 2px rgba(0,229,255,0.08)}
 .send-btn{background:linear-gradient(135deg,var(--cyan),#0099CC);color:#000;border:none;border-radius:6px;padding:10px 20px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Rajdhani',sans-serif;letter-spacing:1px}
-.send-btn:disabled{opacity:.4;cursor:not-allowed}
 
 /* THINKING & OUTPUT */
 .thinking{display:flex;align-items:center;gap:12px;padding:16px;color:var(--muted);font-size:12px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;margin-bottom:10px}
@@ -126,8 +129,11 @@ canvas#cvs.dragging{cursor:grabbing}
 
   <div class="header">
     <div class="h-top">
-      <div class="brand"><span class="live-dot"></span>AURUM PRO AGNT · XAUUSD · BCL RADAR V2</div>
-      <span class="api-badge" id="apiBadge">CONECTANDO</span>
+      <div class="brand"><span class="live-dot" id="liveDot"></span>AURUM PRO AGNT · XAUUSD · BCL RADAR V2</div>
+      <div class="right-badges">
+        <span class="refresh-badge" id="refreshTimer">ACT: 10s</span>
+        <span class="api-badge" id="apiBadge">CONECTANDO</span>
+      </div>
     </div>
     <div class="pair-row">
       <span style="font-size:13px;color:var(--gold);font-weight:700;letter-spacing:2px;font-family:'Rajdhani',sans-serif">XAU/USD</span>
@@ -137,11 +143,12 @@ canvas#cvs.dragging{cursor:grabbing}
     <div class="sub" id="sessionLbl">Cargando datos...</div>
   </div>
 
-  <!-- CONFIGURACIÓN API KEY -->
+  <!-- CONFIGURACIÓN DE API KEY Y TRANSMISIÓN -->
   <div class="api-card">
     <span class="api-lbl">TWELVE DATA API KEY:</span>
     <input type="password" id="apiKeyInput" class="api-input" placeholder="Pega tu API Key aquí...">
-    <button class="api-btn" onclick="saveApiKey()">GUARDAR Y CONECTAR</button>
+    <button class="api-btn" onclick="saveApiKey()">GUARDAR</button>
+    <button class="toggle-refresh-btn" id="toggleRefreshBtn" onclick="toggleAutoRefresh()">PAUSAR AUTO-REFRESH</button>
   </div>
 
   <!-- CONTROLES DE TIMEFRAME Y ZOOM -->
@@ -155,21 +162,21 @@ canvas#cvs.dragging{cursor:grabbing}
     </div>
     <div class="zoom-group">
       <span class="zoom-lbl">ZOOM</span>
-      <div class="zoom-btn" onclick="zoomChart(-1)" title="Zoom out">−</div>
+      <div class="zoom-btn" onclick="zoomChart(-1)">−</div>
       <span class="zoom-pct" id="zoomPct">100%</span>
-      <div class="zoom-btn" onclick="zoomChart(1)" title="Zoom in">+</div>
+      <div class="zoom-btn" onclick="zoomChart(1)">+</div>
       <button class="reset-btn" onclick="resetChart()">RESET</button>
     </div>
   </div>
 
-  <!-- CHART CON DASHBOARD RADAR UBICADO A LA IZQUIERDA SUPERIOR -->
+  <!-- CHART Y RADAR (IZQUIERDA SUPERIOR) -->
   <div class="chart-wrap">
     <div class="chart-top">
       <span class="ct-label" id="ctLabel">XAU/USD · 15M</span>
-      <span class="ct-info" id="ctInfo">...</span>
+      <span class="ct-info" id="ctInfo">Sincronización en directo</span>
     </div>
     
-    <!-- DASHBOARD RADAR ENGINE OVERLAY (IZQUIERDA) -->
+    <!-- DASHBOARD RADAR ENGINE OVERLAY -->
     <div class="radar-panel">
       <div class="radar-title"><span>BCL RADAR</span><span id="rdTime">--:--</span></div>
       <div class="radar-row"><span>Sesión (NY):</span><span class="status-pill bg-gray" id="rdSession">INACTIVO</span></div>
@@ -210,49 +217,34 @@ canvas#cvs.dragging{cursor:grabbing}
 </div>
 
 <script>
-// CLAVE API POR DEFECTO O ALMACENADA EN LOCALSTORAGE
+// CLAVE API Y CONFIGURACIÓN DE AUTO-REFRESH
 var activeApiKey = localStorage.getItem('twelve_data_api_key') || '55c198220c554394bc4d9475bef8f616';
+var REFRESH_INTERVAL = 10; // Segundos entre refrescos
+var countdown = REFRESH_INTERVAL;
+var autoRefreshEnabled = true;
+var refreshTimerId = null;
 
 var candles = [], levels = {}, currentPrice = 0, openPrice = 0;
 var activeTF = '15min';
 var dataSource = 'DEMO';
 
 // BCL RADAR CONFIG & STATE
-var radarConfig = {
-  proximityTicks: 12, // 12 Ticks = $1.20 en Oro ($0.10 por tick)
-  tickSize: 0.10
-};
-var radarState = {
-  inSession: false,
-  htfBias: "Neutral",
-  sweepDetected: false,
-  ftdConfirmed: false,
-  ifvgMid: null,
-  distTicks: null,
-  nearZone: false
-};
+var radarConfig = { proximityTicks: 12, tickSize: 0.10 };
+var radarState = { inSession: false, htfBias: "Neutral", sweepDetected: false, ftdConfirmed: false, ifvgMid: null, distTicks: null, nearZone: false };
 
 // ZOOM & PAN STATE
-var viewOffset = 0;
-var viewZoom   = 1.0;
-var isDragging = false;
-var dragStartX = 0;
-var dragStartOffset = 0;
+var viewOffset = 0, viewZoom = 1.0, isDragging = false, dragStartX = 0, dragStartOffset = 0;
 
-// AUDIO ALERT ENGINE (WEB AUDIO API)
+// AUDIO ALERT ENGINE
 var audioCtx = null;
 function playAlertSound() {
   try {
     if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    var osc = audioCtx.createOscillator();
-    var gain = audioCtx.createGain();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+    var osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+    osc.type = 'sine'; osc.frequency.setValueAtTime(880, audioCtx.currentTime);
     gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.start();
-    osc.stop(audioCtx.currentTime + 0.2);
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.start(); osc.stop(audioCtx.currentTime + 0.2);
   } catch(e){}
 }
 
@@ -260,8 +252,40 @@ window.addEventListener('DOMContentLoaded', function() {
   document.getElementById('apiKeyInput').value = activeApiKey;
   initChartInteraction();
   loadData(activeTF);
-  setInterval(updateUI, 10000);
+  
+  // INICIAR BUCLE DE ACTUALIZACIÓN AUTOMÁTICA (1 SEG)
+  refreshTimerId = setInterval(handleAutoRefreshLoop, 1000);
 });
+
+function handleAutoRefreshLoop() {
+  if (!autoRefreshEnabled) return;
+  countdown--;
+  if (countdown <= 0) {
+    countdown = REFRESH_INTERVAL;
+    loadData(activeTF, true); // Carga en segundo plano
+  }
+  document.getElementById('refreshTimer').textContent = 'ACT: ' + countdown + 's';
+}
+
+function toggleAutoRefresh() {
+  autoRefreshEnabled = !autoRefreshEnabled;
+  var btn = document.getElementById('toggleRefreshBtn');
+  var dot = document.getElementById('liveDot');
+  var timerTxt = document.getElementById('refreshTimer');
+
+  if (autoRefreshEnabled) {
+    btn.textContent = 'PAUSAR AUTO-REFRESH';
+    btn.classList.remove('paused');
+    dot.style.background = 'var(--green)';
+    countdown = REFRESH_INTERVAL;
+    timerTxt.textContent = 'ACT: ' + countdown + 's';
+  } else {
+    btn.textContent = 'REANUDAR AUTO-REFRESH';
+    btn.classList.add('paused');
+    dot.style.background = 'var(--red)';
+    timerTxt.textContent = 'PAUSADO';
+  }
+}
 
 function saveApiKey() {
   var key = document.getElementById('apiKeyInput').value.trim();
@@ -273,8 +297,7 @@ function saveApiKey() {
 }
 
 function zoomChart(dir){
-  var step = 0.15;
-  viewZoom = Math.max(0.3, Math.min(5.0, viewZoom + dir*step));
+  viewZoom = Math.max(0.3, Math.min(5.0, viewZoom + dir*0.15));
   document.getElementById('zoomPct').textContent = Math.round(viewZoom*100)+'%';
   clampOffset();
   if(candles.length) drawChart();
@@ -309,24 +332,20 @@ function initChartInteraction(){
   }, {passive:false});
 
   cv.addEventListener('mousedown', function(e){
-    isDragging = true;
-    dragStartX = e.clientX;
-    dragStartOffset = viewOffset;
+    isDragging = true; dragStartX = e.clientX; dragStartOffset = viewOffset;
     cv.classList.add('dragging');
   });
   window.addEventListener('mousemove', function(e){
     if(!isDragging || !candles.length) return;
-    var cv2  = document.getElementById('cvs');
-    var W    = cv2.clientWidth;
     var visible = Math.floor(candles.length / viewZoom);
-    var dx   = e.clientX - dragStartX;
-    var dpx  = -(dx / W) * visible;
+    var dx = e.clientX - dragStartX;
+    var dpx = -(dx / cv.clientWidth) * visible;
     viewOffset = Math.round(dragStartOffset + dpx);
     clampOffset();
     drawChart();
   });
   window.addEventListener('mouseup', function(){
-    if(isDragging){ isDragging=false; document.getElementById('cvs').classList.remove('dragging'); }
+    if(isDragging){ isDragging=false; cv.classList.remove('dragging'); }
   });
 }
 
@@ -353,9 +372,7 @@ function getSession(){
   return {name:'OFF SESSION', color:'#5A6070', ast:''};
 }
 
-function fetchJSON(url){
-  return fetch(url).then(function(r){ return r.json(); });
-}
+function fetchJSON(url){ return fetch(url).then(function(r){ return r.json(); }); }
 
 function syntheticCandles(base, n, mins){
   var out = [], price = base, now = Date.now();
@@ -375,10 +392,12 @@ function syntheticCandles(base, n, mins){
   return out;
 }
 
-function loadData(interval){
+function loadData(interval, isSilent){
   var badge = document.getElementById('apiBadge');
-  badge.textContent = 'CARGANDO API...';
-  badge.style.color = '#FF9100';
+  if (!isSilent) {
+    badge.textContent = 'CARGANDO API...';
+    badge.style.color = '#FF9100';
+  }
 
   var tdUrl = 'https://api.twelvedata.com/time_series?symbol=XAU%2FUSD&interval='+interval+'&outputsize=80&apikey='+activeApiKey;
   var qtUrl = 'https://api.twelvedata.com/quote?symbol=XAU%2FUSD&apikey='+activeApiKey;
@@ -396,16 +415,17 @@ function loadData(interval){
         badge.textContent = 'TWELVE DATA (CONECTADO)';
         badge.style.color = 'var(--green)';
       } else {
-        throw new Error('Incapaz de conectar con API Key');
+        throw new Error('API Error');
       }
       finishLoad(interval);
     })
     .catch(function(){
-      currentPrice = 2742.50;
-      openPrice    = 2735.10;
-      var mins = interval==='5min'?5:interval==='15min'?15:interval==='1h'?60:interval==='4h'?240:1440;
-      candles      = syntheticCandles(currentPrice, 80, mins);
-      dataSource   = 'DEMO (FALLBACK)';
+      if (!candles.length) {
+        currentPrice = 2742.50; openPrice = 2735.10;
+        var mins = interval==='5min'?5:interval==='15min'?15:interval==='1h'?60:interval==='4h'?240:1440;
+        candles = syntheticCandles(currentPrice, 80, mins);
+      }
+      dataSource = 'DEMO (FALLBACK)';
       badge.textContent = 'MODO DEMO (FALLBACK)';
       badge.style.color = '#FF9100';
       finishLoad(interval);
@@ -430,6 +450,7 @@ function setTF(el, t){
   activeTF = t;
   document.querySelectorAll('.tf').forEach(function(b){ b.classList.remove('on'); });
   el.classList.add('on');
+  countdown = REFRESH_INTERVAL;
   loadData(t);
 }
 
@@ -455,12 +476,8 @@ function evaluateBCLRadar(cd) {
   var prev10Low  = Math.min.apply(null, cd.slice(-11, -1).map(function(c){ return c.l; }));
 
   radarState.sweepDetected = false;
-  if (radarState.htfBias === "Bearish" && curr.h > prev10High && curr.c < prev10High) {
-    radarState.sweepDetected = true;
-  }
-  if (radarState.htfBias === "Bullish" && curr.l < prev10Low && curr.c > prev10Low) {
-    radarState.sweepDetected = true;
-  }
+  if (radarState.htfBias === "Bearish" && curr.h > prev10High && curr.c < prev10High) radarState.sweepDetected = true;
+  if (radarState.htfBias === "Bullish" && curr.l < prev10Low && curr.c > prev10Low) radarState.sweepDetected = true;
 
   radarState.ftdConfirmed = false;
   if (radarState.sweepDetected) {
@@ -474,11 +491,8 @@ function evaluateBCLRadar(cd) {
 
   radarState.ifvgMid = null;
   if (radarState.inSession && body > (avgBody * 1.3)) {
-    if (radarState.htfBias === "Bearish" && curr.l > twoBarsAgo.h) {
-      radarState.ifvgMid = (curr.l + twoBarsAgo.h) / 2.0;
-    } else if (radarState.htfBias === "Bullish" && curr.h < twoBarsAgo.l) {
-      radarState.ifvgMid = (curr.h + twoBarsAgo.l) / 2.0;
-    }
+    if (radarState.htfBias === "Bearish" && curr.l > twoBarsAgo.h) radarState.ifvgMid = (curr.l + twoBarsAgo.h) / 2.0;
+    else if (radarState.htfBias === "Bullish" && curr.h < twoBarsAgo.l) radarState.ifvgMid = (curr.h + twoBarsAgo.l) / 2.0;
   }
 
   if (!radarState.ifvgMid && levels.fvgs && levels.fvgs.length) {
@@ -489,15 +503,11 @@ function evaluateBCLRadar(cd) {
   if (radarState.ifvgMid) {
     var distPoints = Math.abs(currentPrice - radarState.ifvgMid);
     radarState.distTicks = Math.round(distPoints / radarConfig.tickSize);
-    
     var wasNear = radarState.nearZone;
     radarState.nearZone = (radarState.distTicks <= radarConfig.proximityTicks);
-    if (radarState.nearZone && !wasNear) {
-      playAlertSound();
-    }
+    if (radarState.nearZone && !wasNear) playAlertSound();
   } else {
-    radarState.distTicks = null;
-    radarState.nearZone = false;
+    radarState.distTicks = null; radarState.nearZone = false;
   }
 }
 
@@ -569,13 +579,11 @@ function drawChart(){
   function getY(p){ return H - ((p - minP) / (maxP - minP)) * H; }
   var cW = W / viewCandles.length;
 
-  // GRID LINES
   ctx.strokeStyle = 'rgba(255,255,255,0.03)';
   ctx.beginPath();
   for(var i=1; i<5; i++){ var y = (H/5)*i; ctx.moveTo(0,y); ctx.lineTo(W,y); }
   ctx.stroke();
 
-  // EQUILIBRIUM LINE
   if(levels.eq){
     var eqY = getY(levels.eq);
     ctx.strokeStyle = 'rgba(201,160,39,0.4)';
@@ -584,20 +592,17 @@ function drawChart(){
     ctx.setLineDash([]);
   }
 
-  // IFVG RADAR MID LEVEL LINE
   if(radarState.ifvgMid) {
     var ifvgY = getY(radarState.ifvgMid);
     ctx.strokeStyle = radarState.nearZone ? '#B44FFF' : '#00E5FF';
     ctx.lineWidth = 2;
     ctx.beginPath(); ctx.moveTo(0, ifvgY); ctx.lineTo(W, ifvgY); ctx.stroke();
     ctx.lineWidth = 1;
-    
     ctx.fillStyle = radarState.nearZone ? '#B44FFF' : '#00E5FF';
     ctx.font = '10px Share Tech Mono';
     ctx.fillText('IFVG MID: $' + fmt(radarState.ifvgMid), 235, ifvgY - 4);
   }
 
-  // CANDLES DRAWING
   viewCandles.forEach(function(c, i){
     var x = i * cW + cW/2;
     var oY = getY(c.o), cY = getY(c.c);
@@ -629,9 +634,7 @@ function updateUI(){
   
   document.getElementById('sessionLbl').textContent = sjTime.display + ' · ' + sess.name + ' (' + (sess.ast || 'Cerrado') + ')';
 
-  // ACTUALIZAR OVERLAY RADAR DASHBOARD
   document.getElementById('rdTime').textContent = sjTime.display.split(' ')[0];
-  
   var elSess = document.getElementById('rdSession');
   elSess.textContent = radarState.inSession ? "ACTIVO" : "INACTIVO";
   elSess.className = "status-pill " + (radarState.inSession ? "bg-green" : "bg-gray");
