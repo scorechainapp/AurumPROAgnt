@@ -1,204 +1,65 @@
-#region Using declarations
-using System;
-using System.ComponentModel;
-using System.Windows.Media;
-using NinjaTrader.NinjaScript;
-using NinjaTrader.Data;
-using NinjaTrader.Cbi;
-using NinjaTrader.NinjaScript.Indicators;
-using NinjaTrader.NinjaScript.DrawingTools;
-using NinjaTrader.Gui;
-using NinjaTrader.Gui.Chart;
-#endregion
+// Nucleo de Estrategia BCL_NQ_AutoBot_V2 (JavaScript / Node.js)
 
-namespace NinjaTrader.NinjaScript.Indicators
-{
-    public class BCL_NQ_Radar_V3 : Indicator
-    {
-        private string htfBias = "Neutral";
-        private bool sweepDetected = false;
-        private bool ftdConfirmed = false;
-        private bool ifvgDetected = false;
-        private double ifvgMid = 0;
-        private double currentEqualHigh = 0;
-        private double currentEqualLow = 0;
-        private DateTime lastAlertTime = DateTime.MinValue;
+function evaluateStrategy(candles3M, close1H, sma1H, close4H, sma4H, currentTime) {
+    const response = {
+        timeValid: false,
+        htfBias: "Neutral",
+        sweepDetected: false,
+        ftdConfirmed: false,
+        ifvgDetected: false,
+        ifvgMid: null,
+        signal: "NO_TRADE"
+    };
 
-        protected override void OnStateChange()
-        {
-            if (State == State.SetDefaults)
-            {
-                Name = "BCL_NQ_Radar_V3";
-                Calculate = Calculate.OnBarClose;
-                IsOverlay = true;
-                
-                ProximityTicks = 12; // Alerta cuando esté a <= 12 ticks de la zona
-                SoundFile = "Alert1.wav";
-            }
-            else if (State == State.Configure)
-            {
-                // Configurar DataSeries en el mismo orden exacto de tu Bot original
-                AddDataSeries(BarsPeriodType.Minute, 60);   // DataSeries 1: 1H
-                AddDataSeries(BarsPeriodType.Minute, 240);  // DataSeries 2: 4H
-            }
-        }
-
-        protected override void OnBarUpdate()
-        {
-            // Garantizar barras suficientes en las 3 series
-            if (CurrentBars[0] < 20 || CurrentBars[1] < 20 || CurrentBars[2] < 20)
-                return;
-
-            // Resetear estados al iniciar sesión
-            if (Bars.IsFirstBarOfSession)
-            {
-                ResetRadarState();
-            }
-
-            // Ejecutar lógica analítica cuando cierra la vela primaria de 3M (BarsInProgress == 0)
-            if (BarsInProgress == 0)
-            {
-                // 1. Filtro de Horario (9:30 AM - 11:00 AM)
-                int time = ToTime(Time[0]);
-                if (time < 93000 || time > 110000)
-                {
-                    htfBias = "Fuera de Horario";
-                    ResetRadarState();
-                    RenderDashboard();
-                    return;
-                }
-
-                // 2. Evaluador HTF BIAS (Sincronización por horario relativo)
-                int bar1H = BarsArray[1].GetBar(Time[0]);
-                int bar4H = BarsArray[2].GetBar(Time[0]);
-
-                if (bar1H >= 20 && bar4H >= 20)
-                {
-                    double close1H = Closes[1][bar1H];
-                    double sma1H   = SMA(Closes[1], 20)[bar1H];
-
-                    double close4H = Closes[2][bar4H];
-                    double sma4H   = SMA(Closes[2], 20)[bar4H];
-
-                    if (close1H < sma1H && close4H < sma4H)
-                        htfBias = "Bearish";
-                    else if (close1H > sma1H && close4H > sma4H)
-                        htfBias = "Bullish";
-                    else
-                        htfBias = "Neutral";
-                }
-
-                if (htfBias == "Neutral")
-                {
-                    ResetRadarState();
-                    RenderDashboard();
-                    return;
-                }
-
-                // 3. Liquidity Engine (Igual a la lógica C# original)
-                currentEqualHigh = MAX(High, 10)[1];
-                currentEqualLow  = MIN(Low, 10)[1];
-
-                sweepDetected = false;
-                if (htfBias == "Bearish" && High[0] > currentEqualHigh && Close[0] < currentEqualHigh)
-                    sweepDetected = true;
-
-                if (htfBias == "Bullish" && Low[0] < currentEqualLow && Close[0] > currentEqualLow)
-                    sweepDetected = true;
-
-                // 4. FTD Engine
-                ftdConfirmed = false;
-                if (sweepDetected)
-                {
-                    if (htfBias == "Bearish" && Close[0] < Open[0]) ftdConfirmed = true;
-                    if (htfBias == "Bullish" && Close[0] > Open[0]) ftdConfirmed = true;
-                }
-
-                // 5. Displacement + IFVG
-                double body = Math.Abs(Close[0] - Open[0]);
-                double avgBody = SMA(Math.Abs(Close[0] - Open[0]), 10)[0];
-
-                if (ftdConfirmed && body > (avgBody * 1.5))
-                {
-                    if (htfBias == "Bearish" && Low[0] > High[2])
-                    {
-                        ifvgDetected = true;
-                        ifvgMid = (Low[0] + High[2]) / 2.0;
-                    }
-                    else if (htfBias == "Bullish" && High[0] < Low[2])
-                    {
-                        ifvgDetected = true;
-                        ifvgMid = (High[0] + Low[2]) / 2.0;
-                    }
-                }
-
-                // 6. Evaluador de Alerta y Proximidad
-                if (ifvgDetected && ifvgMid > 0)
-                {
-                    double distTicks = Math.Abs(Close[0] - ifvgMid) / TickSize;
-
-                    // Dibujar nivel de radar en gráfico
-                    Draw.Line(this, "IFVG_Radar_Line", false, 3, ifvgMid, -3, ifvgMid, 
-                        htfBias == "Bullish" ? Brushes.Cyan : Brushes.OrangeRed, DashStyleHelper.Solid, 2);
-
-                    // Reproducir alerta de sonido al aproximarse a la zona
-                    if (distTicks <= ProximityTicks && Time[0] != lastAlertTime)
-                    {
-                        PlaySound(NinjaTrader.Core.Globals.InstallDir + @"\sounds\" + SoundFile);
-                        lastAlertTime = Time[0];
-                    }
-                }
-
-                // Dibujar Panel Dashboard
-                RenderDashboard();
-            }
-        }
-
-        private void ResetRadarState()
-        {
-            sweepDetected = false;
-            ftdConfirmed = false;
-            ifvgDetected = false;
-            ifvgMid = 0;
-            RemoveDrawObject("IFVG_Radar_Line");
-        }
-
-        private void RenderDashboard()
-        {
-            double distTicks = ifvgMid > 0 ? Math.Abs(Close[0] - ifvgMid) / TickSize : 0;
-            
-            string dashText = string.Format(
-                "=== BCL NQ RADAR V3 ===\n" +
-                " Horario: {0}\n" +
-                " HTF Bias (1H/4H): {1}\n" +
-                " Sweep Liquidez: {2}\n" +
-                " FTD Confirmado: {3}\n" +
-                " Zona IFVG Mid: {4}\n" +
-                " Distancia Zona: {5}",
-                (ToTime(Time[0]) >= 93000 && ToTime(Time[0]) <= 110000) ? "DENTRO (9:30-11:00)" : "INACTIVO",
-                htfBias,
-                sweepDetected ? "CUMPLIDO" : "Buscando...",
-                ftdConfirmed ? "CONFIRMADO" : "Esperando...",
-                ifvgMid > 0 ? ifvgMid.ToString("F2") : "Sin Zona",
-                ifvgMid > 0 ? distTicks.ToString("F0") + " Ticks" : "N/A"
-            );
-
-            Brush bgBrush = ifvgDetected ? (htfBias == "Bullish" ? Brushes.DarkGreen : Brushes.DarkRed) : Brushes.DarkSlateGray;
-
-            Draw.TextFixed(this, "BCL_Dashboard", dashText, TextPosition.TopRight, 
-                Brushes.White, new SimpleFont("Arial", 11) { Bold = true }, 
-                Brushes.Black, bgBrush, 80);
-        }
-
-        #region Properties
-        [NinjaScriptProperty]
-        [Range(1, 100)]
-        [Display(Name = "Proximidad en Ticks", Description = "Distancia en ticks para activar la alerta de sonido", GroupName = "Radar Config", Order = 1)]
-        public int ProximityTicks { get; set; }
-
-        [NinjaScriptProperty]
-        [Display(Name = "Archivo de Sonido", Description = "Archivo .wav en NinjaTrader/sounds/", GroupName = "Radar Config", Order = 2)]
-        public string SoundFile { get; set; }
-        #endregion
+    // 0. Horario (9:30 AM - 11:00 AM -> 93000 a 110000)
+    if (currentTime < 93000 || currentTime > 110000) {
+        return { ...response, status: "Fuera de Horario Operativo" };
     }
+    response.timeValid = true;
+
+    // 1. HTF Bias Engine
+    if (close1H > sma1H && close4H > sma4H) response.htfBias = "Bullish";
+    else if (close1H < sma1H && close4H < sma4H) response.htfBias = "Bearish";
+
+    if (response.htfBias === "Neutral") return response;
+
+    // 2. Liquidity Engine (10 velas previas)
+    const current = candles3M[0]; // Vela actual
+    const prev10High = Math.max(...candles3M.slice(1, 11).map(c => c.high));
+    const prev10Low = Math.min(...candles3M.slice(1, 11).map(c => c.low));
+
+    if (response.htfBias === "Bearish" && current.high > prev10High && current.close < prev10High) {
+        response.sweepDetected = true;
+    }
+    if (response.htfBias === "Bullish" && current.low < prev10Low && current.close > prev10Low) {
+        response.sweepDetected = true;
+    }
+
+    if (!response.sweepDetected) return response;
+
+    // 3. FTD Engine
+    if (response.htfBias === "Bearish" && current.close < current.open) response.ftdConfirmed = true;
+    if (response.htfBias === "Bullish" && current.close > current.open) response.ftdConfirmed = true;
+
+    if (!response.ftdConfirmed) return response;
+
+    // 4. Displacement + IFVG Engine
+    const body = Math.abs(current.close - current.open);
+    const avgBody = candles3M.slice(0, 10).reduce((acc, c) => acc + Math.abs(c.close - c.open), 0) / 10;
+    const twoBarsAgo = candles3M[2];
+
+    if (body > (avgBody * 1.5)) {
+        if (response.htfBias === "Bearish" && current.low > twoBarsAgo.high) {
+            response.ifvgDetected = true;
+            response.ifvgMid = (current.low + twoBarsAgo.high) / 2;
+            response.signal = "SHORT_ZONE";
+        }
+        if (response.htfBias === "Bullish" && current.high < twoBarsAgo.low) {
+            response.ifvgDetected = true;
+            response.ifvgMid = (current.high + twoBarsAgo.low) / 2;
+            response.signal = "LONG_ZONE";
+        }
+    }
+
+    return response;
 }
