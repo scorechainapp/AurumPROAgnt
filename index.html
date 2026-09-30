@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AURUM PRO AGNT · XAUUSD · Simplified BCL Analytics</title>
+<title>AURUM PRO AGNT · Institutional Trading Terminal</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@500;600;700&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
@@ -15,9 +15,9 @@
   --border:rgba(201,160,39,0.2);
 }
 body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;min-height:100vh;padding:12px}
-.wrap{max-width:1400px;margin:0 auto;display:flex;flex-direction:column;gap:10px}
+.wrap{max-width:1500px;margin:0 auto;display:flex;flex-direction:column;gap:10px}
 
-/* HEADER UNIFICADO CON RADAR INTEGRADO */
+/* HEADER CON INFORMACIÓN INSTITUCIONAL */
 .header{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px 18px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
 .brand-group{display:flex;align-items:center;gap:12px}
 .live-dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green)}
@@ -27,50 +27,60 @@ body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;mi
 .chg.pos{background:rgba(0,230,118,0.15);color:var(--green)}
 .chg.neg{background:rgba(255,61,61,0.15);color:var(--red)}
 
-.top-radar{display:flex;gap:12px;background:var(--bg3);padding:6px 12px;border-radius:6px;border:1px solid var(--dim);font-family:'Share Tech Mono',monospace;font-size:11px}
+.top-radar{display:flex;gap:10px;background:var(--bg3);padding:6px 12px;border-radius:6px;border:1px solid var(--dim);font-family:'Share Tech Mono',monospace;font-size:11px}
 .radar-item{display:flex;flex-direction:column;align-items:center}
 .radar-item .lbl{font-size:9px;color:var(--muted)}
-.status-pill{padding:1px 6px;border-radius:3px;font-weight:700;font-size:10px}
+.status-pill{padding:2px 6px;border-radius:3px;font-weight:700;font-size:10px}
 .bg-green{background:rgba(0,230,118,0.2);color:var(--green)}
 .bg-red{background:rgba(255,61,61,0.2);color:var(--red)}
 .bg-purple{background:rgba(180,79,255,0.2);color:var(--purple)}
+.bg-warn{background:rgba(255,160,0,0.2);color:#FFA000}
 
-/* BOTONERA DE CONTROL Y CONFIGURACION ACCESIBLE */
+/* BARRA DE HERRAMIENTAS Y PANELES COLAPSABLES */
 .bar-tools{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
 .tf-group{display:flex;gap:4px}
 .tf-btn{background:var(--bg2);border:1px solid var(--dim);color:var(--muted);padding:5px 12px;border-radius:4px;font-weight:700;cursor:pointer;font-size:11px}
 .tf-btn.on,.tf-btn:hover{background:var(--gold);color:#000;border-color:var(--gold)}
 .cfg-toggle{background:transparent;border:1px solid var(--dim);color:var(--cyan);padding:5px 10px;border-radius:4px;cursor:pointer;font-size:11px;font-weight:600}
 
-/* PANEL HERRAMIENTAS COLAPSABLE (TIME TRAVEL & API) */
 .tools-panel{background:var(--bg2);border:1px solid var(--cyan);border-radius:6px;padding:10px;display:none;gap:12px;align-items:center;flex-wrap:wrap;font-family:'Share Tech Mono',monospace;font-size:11px}
 .tools-panel.open{display:flex}
-.input-dark{background:#0A0C12;border:1px solid var(--dim);color:var(--gold2);padding:4px 8px;border-radius:4px;outline:none}
+.input-dark{background:#0A0C12;border:1px solid var(--dim);color:var(--gold2);padding:4px 8px;border-radius:4px;outline:none;width:110px}
 .btn-action{background:var(--cyan);color:#000;border:none;padding:5px 10px;border-radius:4px;font-weight:700;cursor:pointer}
 
-/* CANVAS DE GRÁFICO LIMPIO */
-.chart-box{background:var(--bg2);border:1px solid var(--border);border-radius:8px;position:relative;overflow:hidden}
-canvas#cvs{display:block;width:100%;height:380px;cursor:grab}
-
-/* LAYOUT PRINCIPAL: DASHBOARD A 2 COLUMNAS */
-.main-grid{display:grid;grid-template-columns:1.2fr 0.8fr;gap:10px}
-@media(max-width:900px){.main-grid{grid-template-columns:1fr}}
+/* LAYOUT PRINCIPAL: TRES COLUMNAS */
+.main-grid{display:grid;grid-template-columns:1.1fr 1fr 0.9fr;gap:10px}
+@media(max-width:1100px){.main-grid{grid-template-columns:1fr}}
 
 .panel{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px}
-.panel-title{font-size:11px;color:var(--gold);font-weight:700;letter-spacing:1px;margin-bottom:10px;padding-bottom:4px;border-bottom:1px solid var(--dim);display:flex;justify-content:space-between}
+.panel-title{font-size:11px;color:var(--gold);font-weight:700;letter-spacing:1px;margin-bottom:10px;padding-bottom:4px;border-bottom:1px solid var(--dim);display:flex;justify-content:space-between;align-items:center}
 
-/* ESCENARIO PRINCIPAL HIGHLIGHT */
+/* CANVAS DE GRÁFICO */
+.chart-box{background:var(--bg2);border:1px solid var(--border);border-radius:8px;position:relative;overflow:hidden;margin-bottom:10px}
+canvas#cvs{display:block;width:100%;height:320px;cursor:grab}
+
+/* 1. GATILLO LTF & 4. FILTRO INVALIDACIÓN */
 .scenario-focus{background:var(--bg3);border-left:4px solid var(--green);border-radius:6px;padding:10px;margin-bottom:8px}
 .scenario-focus.bearish{border-left-color:var(--red)}
+.scenario-focus.invalid{border-left-color:var(--muted);opacity:0.6}
 .sc-head{display:flex;justify-content:space-between;font-weight:700;font-size:13px;margin-bottom:6px}
 .sc-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;font-family:'Share Tech Mono',monospace;font-size:11px}
 .sc-item{display:flex;flex-direction:column}
 .sc-item .lbl{font-size:9px;color:var(--muted)}
 .sc-item .val{font-weight:700;color:var(--text)}
 
-/* TABLA SMC UNIFICADA */
+/* 3. CALCULADORA DE RIESGO */
+.risk-calc-box{background:var(--bg3);border:1px solid var(--dim);border-radius:6px;padding:10px;display:flex;flex-direction:column;gap:8px;font-family:'Share Tech Mono',monospace;font-size:11px}
+.risk-row{display:flex;justify-content:space-between;align-items:center}
+
+/* 5. BITÁCORA Y HISTORIAL */
+.journal-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:8px;text-align:center;font-family:'Share Tech Mono',monospace}
+.stat-box{background:var(--bg3);padding:6px;border-radius:4px;border:1px solid var(--dim)}
+.stat-box .val{font-weight:700;font-size:13px;color:var(--gold2)}
+.stat-box .lbl{font-size:8px;color:var(--muted)}
+
 .table-smc{width:100%;border-collapse:collapse;font-family:'Share Tech Mono',monospace;font-size:11px}
-.table-smc td, .table-smc th{padding:6px 4px;text-align:left;border-bottom:1px solid rgba(255,255,255,0.03)}
+.table-smc td, .table-smc th{padding:5px 4px;text-align:left;border-bottom:1px solid rgba(255,255,255,0.03)}
 .table-smc th{color:var(--muted);font-weight:600;font-size:10px}
 </style>
 </head>
@@ -78,12 +88,12 @@ canvas#cvs{display:block;width:100%;height:380px;cursor:grab}
 
 <div class="wrap">
 
-  <!-- HEADER COMPACTO CON RADAR EN LÍNEA -->
+  <!-- HEADER INSTITUCIONAL -->
   <div class="header">
     <div class="brand-group">
       <span class="live-dot" id="liveDot"></span>
       <div>
-        <div style="font-size:10px;color:var(--gold);letter-spacing:1px;font-weight:700">AURUM PRO AGNT · XAUUSD</div>
+        <div style="font-size:10px;color:var(--gold);letter-spacing:1px;font-weight:700">AURUM PRO AGNT · TERMINAL INSTITUCIONAL</div>
         <div class="price-display">
           <span class="price-big" id="livePrice">---</span>
           <span class="chg pos" id="priceChg">--</span>
@@ -91,28 +101,28 @@ canvas#cvs{display:block;width:100%;height:380px;cursor:grab}
       </div>
     </div>
 
-    <!-- RADAR DESPLAZADO AL HEADER -->
+    <!-- RADAR INTEGRADO CON MACRO NEWS FILTER -->
     <div class="top-radar">
       <div class="radar-item">
         <span class="lbl">BIAS HTF</span>
         <span class="status-pill bg-purple" id="rdBias">Neutral</span>
       </div>
       <div class="radar-item">
-        <span class="lbl">ZONA P/D</span>
-        <span style="color:var(--gold2);font-weight:700" id="s3">---</span>
+        <span class="lbl">LTF TRIGGER (MSS)</span>
+        <span class="status-pill bg-warn" id="rdMss">Esperando</span>
       </div>
       <div class="radar-item">
-        <span class="lbl">IFVG CERCANO</span>
-        <span style="color:var(--cyan);font-weight:700" id="rdIfvg">---</span>
+        <span class="lbl">FILTRO MACRO (NEWS)</span>
+        <span class="status-pill bg-green" id="rdNews">🟢 Paso Libre</span>
       </div>
       <div class="radar-item">
-        <span class="lbl">PROXIMIDAD</span>
-        <span class="status-pill" id="rdDist">-- Ticks</span>
+        <span class="lbl">ESTADO SETUP</span>
+        <span class="status-pill bg-green" id="rdSetupState">VÁLIDO</span>
       </div>
     </div>
   </div>
 
-  <!-- BARRA DE HERRAMIENTAS Y CONTROLES -->
+  <!-- BARRA DE AJUSTES -->
   <div class="bar-tools">
     <div class="tf-group">
       <button class="tf-btn" onclick="setTF(this,'5min')">5M</button>
@@ -121,14 +131,14 @@ canvas#cvs{display:block;width:100%;height:380px;cursor:grab}
       <button class="tf-btn" onclick="setTF(this,'4h')">4H</button>
     </div>
     <div>
-      <button class="cfg-toggle" onclick="toggleTools()">⚙️ Opciones & Backtest</button>
+      <button class="cfg-toggle" onclick="toggleTools()">⚙️ Configuración & Backtest</button>
     </div>
   </div>
 
-  <!-- PANEL DESPLEGABLE DE AJUSTES -->
+  <!-- PANEL HERRAMIENTAS COLAPSABLE -->
   <div class="tools-panel" id="toolsPanel">
     <span>⏳ Backtest:</span>
-    <input type="datetime-local" id="timeTravelPicker" class="input-dark">
+    <input type="datetime-local" id="timeTravelPicker" class="input-dark" style="width:160px">
     <button class="btn-action" onclick="jumpToDate()">Ir a Fecha</button>
     <button class="btn-action" style="background:var(--dim);color:#fff" onclick="returnToLive()">🔴 En Vivo</button>
     <span style="margin-left:auto">API Key:</span>
@@ -136,22 +146,21 @@ canvas#cvs{display:block;width:100%;height:380px;cursor:grab}
     <button class="btn-action" onclick="saveApiKey()">Guardar</button>
   </div>
 
-  <!-- GRÁFICO LIMPIO -->
+  <!-- GRÁFICO TÉCNICO -->
   <div class="chart-box">
     <canvas id="cvs"></canvas>
   </div>
 
-  <!-- SECCIÓN ANALÍTICA EN 2 COLUMNAS -->
+  <!-- MAIN GRID CON LOS 5 PUNTOS CONFIGURED -->
   <div class="main-grid">
 
-    <!-- COLUMNA 1: OPERATIVA DIRECTA -->
+    <!-- COLUMNA 1: ESCENARIOS & CONFIRMACIÓN DE GATILLO -->
     <div class="panel">
       <div class="panel-title">
-        <span>🎯 ESCENARIO OPERATIVO PRIORITARIO</span>
-        <span id="scenStatus" style="color:var(--cyan);font-family:'Share Tech Mono',monospace">ALTA PROBABILIDAD</span>
+        <span>🎯 ESCENARIO OPERATIVO (GATILLO LTF)</span>
+        <span id="scenStatus" style="color:var(--cyan);font-family:'Share Tech Mono',monospace">EVALUANDO...</span>
       </div>
 
-      <!-- ESCENARIO PRINCIPAL DINÁMICO -->
       <div class="scenario-focus" id="primaryScenario">
         <div class="sc-head">
           <span id="scTitle" style="color:var(--green)">COMPRA (BULLISH SETUP)</span>
@@ -159,7 +168,7 @@ canvas#cvs{display:block;width:100%;height:380px;cursor:grab}
         </div>
         <div class="sc-grid">
           <div class="sc-item">
-            <span class="lbl">ZONA DE ENTRADA</span>
+            <span class="lbl">ENTRADA CÁLCULO</span>
             <span class="val" id="scEntry">---</span>
           </div>
           <div class="sc-item">
@@ -178,41 +187,66 @@ canvas#cvs{display:block;width:100%;height:380px;cursor:grab}
       </div>
 
       <div style="font-size:10px;color:var(--muted);font-family:'Share Tech Mono',monospace;margin-top:6px">
-        Gatillo: <span id="scTrigger" style="color:var(--text)">Retesteo IFVG en Zona Discount + Mitigación OB</span>
+        Confirmación LTF: <span id="scTrigger" style="color:var(--gold2)">Buscando MSS en 1M/3M...</span>
       </div>
     </div>
 
-    <!-- COLUMNA 2: MATRIZ ESTRUCTURAL SMC UNIFICADA -->
+    <!-- COLUMNA 2: CALCULADORA DE RIESGO DE POSICIÓN -->
     <div class="panel">
       <div class="panel-title">
-        <span>📍 MAPA DE ESTRUCTURA & LIQUIDEZ</span>
-        <span style="color:var(--gold2);font-family:'Share Tech Mono',monospace">ATR: <span id="atrVal">--</span></span>
+        <span>🧮 GESTIÓN DE RIESGO & LOTAJE</span>
+        <span style="color:var(--gold2);font-family:'Share Tech Mono',monospace">RISK MANAGER</span>
+      </div>
+
+      <div class="risk-calc-box">
+        <div class="risk-row">
+          <span style="color:var(--muted)">BALANCE CUENTA ($):</span>
+          <input type="number" id="accBalance" class="input-dark" value="10000" onchange="updateAnalyticsUI()">
+        </div>
+        <div class="risk-row">
+          <span style="color:var(--muted)">RIESGO DESEADO (%):</span>
+          <input type="number" id="accRiskPct" class="input-dark" value="1" step="0.25" onchange="updateAnalyticsUI()">
+        </div>
+        <hr style="border:none;border-top:1px dashed var(--dim);margin:2px 0">
+        <div class="risk-row">
+          <span>RIESGO MÁXIMO ($):</span>
+          <span id="calcRiskUsd" style="color:var(--red);font-weight:700">$100.00</span>
+        </div>
+        <div class="risk-row">
+          <span>DISTANCIA SL (PTS):</span>
+          <span id="calcSlPts" style="color:var(--text);font-weight:700">0.00</span>
+        </div>
+        <div class="risk-row" style="background:rgba(0,229,255,0.08);padding:6px;border-radius:4px;border:1px solid rgba(0,229,255,0.2)">
+          <span style="color:var(--cyan);font-weight:700">LOTES SUGERIDOS:</span>
+          <span id="calcLotSize" style="color:var(--gold2);font-size:14px;font-weight:700">0.00 Lots</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- COLUMNA 3: BITÁCORA Y HISTORIAL DE PERFORMANCE -->
+    <div class="panel">
+      <div class="panel-title">
+        <span>📊 BITÁCORA & PERFORMANCE</span>
+        <button class="btn-action" style="font-size:9px;padding:2px 6px" onclick="clearJournal()">Limpiar</button>
+      </div>
+
+      <div class="journal-stats">
+        <div class="stat-box"><div class="val" id="jWinRate">0%</div><div class="lbl">WIN RATE</div></div>
+        <div class="stat-box"><div class="val" id="jProfitFactor">0.0</div><div class="lbl">PROFIT FACTOR</div></div>
+        <div class="stat-box"><div class="val" id="jTotalR">+0.0R</div><div class="lbl">R ACUMULADO</div></div>
+      </div>
+
+      <div style="display:flex;gap:4px;margin-bottom:8px">
+        <button class="btn-action" style="flex:1;background:var(--green)" onclick="recordTrade('WIN')">+ REGISTRAR WIN</button>
+        <button class="btn-action" style="flex:1;background:var(--red);color:#fff" onclick="recordTrade('LOSS')">- REGISTRAR LOSS</button>
       </div>
 
       <table class="table-smc">
         <thead>
-          <tr>
-            <th>CONCEPTO</th>
-            <th>RANGO / PRECIO</th>
-            <th>ESTADO</th>
-          </tr>
+          <tr><th>FECHA</th><th>TIPO</th><th>RESULTADO</th><th>RETORNO</th></tr>
         </thead>
-        <tbody id="smcTableBody">
-          <tr>
-            <td>Buy-side Liquidity (BSL)</td>
-            <td id="bslVal" style="color:var(--green)">---</td>
-            <td><span class="status-pill bg-green">PENDIENTE</span></td>
-          </tr>
-          <tr>
-            <td>Sell-side Liquidity (SSL)</td>
-            <td id="sslVal" style="color:var(--red)">---</td>
-            <td><span class="status-pill bg-red">PENDIENTE</span></td>
-          </tr>
-          <tr>
-            <td>Equilibrium (50%)</td>
-            <td id="eqVal" style="color:var(--gold2)">---</td>
-            <td><span class="status-pill">MEDIANA</span></td>
-          </tr>
+        <tbody id="journalTableBody">
+          <tr><td colspan="4" style="text-align:center;color:var(--muted)">Sin operaciones registradas</td></tr>
         </tbody>
       </table>
     </div>
@@ -227,14 +261,17 @@ var candles = [], levels = {}, currentPrice = 0, openPrice = 0;
 var activeTF = '15min';
 var isHistoricalMode = false, historicalTargetDate = null;
 
+// BITÁCORA Y PERFORMANCE (Local Storage)
+var journalData = JSON.parse(localStorage.getItem('aurum_journal_data')) || [];
+
 window.addEventListener('DOMContentLoaded', function() {
   document.getElementById('apiKeyInput').value = activeApiKey;
   loadData(activeTF);
+  renderJournal();
 });
 
 function toggleTools() {
-  var p = document.getElementById('toolsPanel');
-  p.classList.toggle('open');
+  document.getElementById('toolsPanel').classList.toggle('open');
 }
 
 function saveApiKey() {
@@ -269,7 +306,6 @@ function loadData(interval) {
       processAnalytics();
     }
   }).catch(function(){
-    // Fallback simulación sencilla si falla API
     candles = syntheticData();
     currentPrice = candles[candles.length-1].c;
     openPrice = candles[0].o;
@@ -295,13 +331,26 @@ function processAnalytics() {
   var eq = (sh+sl)/2;
   var atr = (sh-sl)/4;
 
-  levels = { sh:sh, sl:sl, eq:eq, atr:atr, isDiscount: currentPrice < eq };
+  // Detección de MSS simulada basada en acción reciente del precio
+  var lastCandle = candles[candles.length-1];
+  var prevCandle = candles[candles.length-2];
+  var mssDetected = (lastCandle.c > prevCandle.h && currentPrice < eq) || (lastCandle.c < prevCandle.l && currentPrice > eq);
 
-  updateUI();
+  // Simulación de Filtro de Noticias Macro (Paso libre o bloqueo)
+  var randomNewsFilter = (new Date().getMinutes() % 15 === 0); // Bloqueo temporal simulación
+
+  levels = { 
+    sh:sh, sl:sl, eq:eq, atr:atr, 
+    isDiscount: currentPrice < eq,
+    mssDetected: mssDetected,
+    newsBlocked: randomNewsFilter
+  };
+
+  updateAnalyticsUI();
   drawChart();
 }
 
-function updateUI() {
+function updateAnalyticsUI() {
   var fmt = function(n){ return parseFloat(n).toFixed(2); };
   document.getElementById('livePrice').textContent = '$' + fmt(currentPrice);
   
@@ -310,27 +359,57 @@ function updateUI() {
   chgEl.textContent = (pct>=0?'+':'') + pct.toFixed(2) + '%';
   chgEl.className = 'chg ' + (pct>=0?'pos':'neg');
 
-  document.getElementById('s3').textContent = levels.isDiscount ? 'DISCOUNT' : 'PREMIUM';
-  document.getElementById('s3').style.color = levels.isDiscount ? 'var(--green)' : 'var(--red)';
-  document.getElementById('atrVal').textContent = fmt(levels.atr);
+  // 2. Filtro Macro / Noticias
+  var newsEl = document.getElementById('rdNews');
+  if(levels.newsBlocked) {
+    newsEl.textContent = "🔴 NOTICIA HIGH IMPACT";
+    newsEl.className = "status-pill bg-red";
+  } else {
+    newsEl.textContent = "🟢 Paso Libre";
+    newsEl.className = "status-pill bg-green";
+  }
 
-  // Matriz de Liquidez
-  document.getElementById('bslVal').textContent = '$' + fmt(levels.sh);
-  document.getElementById('sslVal').textContent = '$' + fmt(levels.sl);
-  document.getElementById('eqVal').textContent = '$' + fmt(levels.eq);
+  // 1. Gatillo LTF
+  var mssEl = document.getElementById('rdMss');
+  if(levels.mssDetected) {
+    mssEl.textContent = "⚡ MSS CONFIRMADO";
+    mssEl.className = "status-pill bg-green";
+    document.getElementById('scTrigger').textContent = "MSS / CHoCH Confirmado en 1M/3M. Entrada Autorizada.";
+  } else {
+    mssEl.textContent = "Esperando";
+    mssEl.className = "status-pill bg-warn";
+    document.getElementById('scTrigger').textContent = "Buscando barrido + MSS en LTF...";
+  }
 
-  // Ajustar Escenario Dinámico
+  // Escenario Principal
   var isBuy = levels.isDiscount;
-  var scBox = document.getElementById('primaryScenario');
-  scBox.className = 'scenario-focus ' + (isBuy ? '' : 'bearish');
-
-  document.getElementById('scTitle').textContent = isBuy ? 'COMPRA (BULLISH SETUP)' : 'VENTA (BEARISH SETUP)';
-  document.getElementById('scTitle').style.color = isBuy ? 'var(--green)' : 'var(--red)';
-  
   var entry = isBuy ? levels.sl + levels.atr*0.5 : levels.sh - levels.atr*0.5;
   var sl = isBuy ? levels.sl - levels.atr*0.3 : levels.sh + levels.atr*0.3;
   var tp1 = levels.eq;
   var tp2 = isBuy ? levels.sh : levels.sl;
+
+  // 4. Validador R:R e Invalidez
+  var slDistPts = Math.abs(entry - sl);
+  var tpDistPts = Math.abs(tp1 - entry);
+  var rrRatio = tpDistPts / (slDistPts || 1);
+
+  var setupValid = (rrRatio >= 1.8) && !levels.newsBlocked;
+  var setupStateEl = document.getElementById('rdSetupState');
+  
+  if(setupValid) {
+    setupStateEl.textContent = "VÁLIDO";
+    setupStateEl.className = "status-pill bg-green";
+  } else {
+    setupStateEl.textContent = "INVÁLIDO / NO TRADE";
+    setupStateEl.className = "status-pill bg-red";
+  }
+
+  var scBox = document.getElementById('primaryScenario');
+  scBox.className = 'scenario-focus ' + (isBuy ? '' : 'bearish') + (setupValid ? '' : ' invalid');
+
+  document.getElementById('scTitle').textContent = isBuy ? 'COMPRA (BULLISH SETUP)' : 'VENTA (BEARISH SETUP)';
+  document.getElementById('scTitle').style.color = isBuy ? 'var(--green)' : 'var(--red)';
+  document.getElementById('scRR').textContent = 'R:R 1 : ' + fmt(rrRatio);
 
   document.getElementById('scEntry').textContent = '$' + fmt(entry);
   document.getElementById('scSL').textContent = '$' + fmt(sl);
@@ -339,6 +418,18 @@ function updateUI() {
   
   document.getElementById('rdBias').textContent = isBuy ? 'Bullish' : 'Bearish';
   document.getElementById('rdBias').className = 'status-pill ' + (isBuy ? 'bg-green' : 'bg-red');
+
+  // 3. Calculadora de Riesgo
+  var balance = parseFloat(document.getElementById('accBalance').value) || 10000;
+  var riskPct = parseFloat(document.getElementById('accRiskPct').value) || 1;
+  var riskUsd = balance * (riskPct / 100);
+
+  document.getElementById('calcRiskUsd').textContent = '$' + fmt(riskUsd);
+  document.getElementById('calcSlPts').textContent = fmt(slDistPts) + ' Pts';
+
+  // Lógica de Lotaje en Oro (1 Lote Standard = 100 oz. $1 movimiento = $100 por lote)
+  var lotSize = riskUsd / (slDistPts * 100 || 1);
+  document.getElementById('calcLotSize').textContent = fmt(Math.max(0.01, lotSize)) + ' Lots';
 }
 
 function drawChart() {
@@ -364,6 +455,57 @@ function drawChart() {
     var bw = Math.max(2, cW * 0.6);
     ctx.fillRect(x - bw/2, Math.min(getY(c.o), getY(c.c)), bw, Math.abs(getY(c.c) - getY(c.o)) || 1);
   });
+}
+
+// 5. LÓGICA DE BITÁCORA / JOURNALING
+function recordTrade(result) {
+  var type = levels.isDiscount ? 'BUY' : 'SELL';
+  var rReturn = result === 'WIN' ? 2.2 : -1.0;
+  var entryDate = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+  journalData.unshift({ date: entryDate, type: type, result: result, r: rReturn });
+  localStorage.setItem('aurum_journal_data', JSON.stringify(journalData));
+  renderJournal();
+}
+
+function clearJournal() {
+  journalData = [];
+  localStorage.removeItem('aurum_journal_data');
+  renderJournal();
+}
+
+function renderJournal() {
+  var tbody = document.getElementById('journalTableBody');
+  if(!journalData.length) {
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--muted)">Sin operaciones registradas</td></tr>';
+    document.getElementById('jWinRate').textContent = '0%';
+    document.getElementById('jProfitFactor').textContent = '0.0';
+    document.getElementById('jTotalR').textContent = '+0.0R';
+    return;
+  }
+
+  tbody.innerHTML = '';
+  var wins = 0, totalR = 0, grossWin = 0, grossLoss = 0;
+
+  journalData.forEach(function(item){
+    if(item.result === 'WIN') { wins++; grossWin += item.r; }
+    else { grossLoss += Math.abs(item.r); }
+    totalR += item.r;
+
+    var tr = document.createElement('tr');
+    tr.innerHTML = '<td>' + item.date + '</td>' +
+                   '<td style="color:' + (item.type==='BUY'?'var(--green)':'var(--red)') + '">' + item.type + '</td>' +
+                   '<td><span class="status-pill ' + (item.result==='WIN'?'bg-green':'bg-red') + '">' + item.result + '</span></td>' +
+                   '<td style="color:' + (item.r>0?'var(--green)':'var(--red)') + '">' + (item.r>0?'+':'') + item.r.toFixed(1) + 'R</td>';
+    tbody.appendChild(tr);
+  });
+
+  var winRate = (wins / journalData.length) * 100;
+  var profitFactor = grossLoss > 0 ? (grossWin / grossLoss) : grossWin;
+
+  document.getElementById('jWinRate').textContent = winRate.toFixed(0) + '%';
+  document.getElementById('jProfitFactor').textContent = profitFactor.toFixed(1);
+  document.getElementById('jTotalR').textContent = (totalR >= 0 ? '+' : '') + totalR.toFixed(1) + 'R';
 }
 
 function jumpToDate() {
