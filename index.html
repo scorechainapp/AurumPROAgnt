@@ -83,6 +83,18 @@ th,td{text-align:left;padding:7px 6px;border-bottom:1px solid var(--line)}th{col
 td button{background:none;border:0;color:var(--mute)}
 .empty{color:var(--mute);padding:12px 0}
 @media(prefers-reduced-motion:no-preference){.price{transition:color .3s}}
+.lower{display:grid;grid-template-columns:minmax(0,1fr) 420px;gap:14px;align-items:start}
+@media(max-width:980px){.lower{grid-template-columns:1fr}}
+.nhead{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}.nhead h2{margin:0}
+.nctl{display:flex;gap:6px}.nctl select{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:6px;color:var(--text)}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%}.d-High{background:var(--sell)}.d-Medium{background:var(--warn)}.d-Low,.d-Holiday{background:var(--mute)}
+tr.past{opacity:.45}tr.nx{background:rgba(210,169,75,.12)}
+.cotrow{display:grid;grid-template-columns:1fr 84px 70px;gap:2px 10px;align-items:center;margin-bottom:10px}
+.cotrow .bar{grid-column:1/-1;height:6px;background:var(--bg);border-radius:4px;overflow:hidden}.cotrow .bar i{display:block;height:100%;background:var(--brass)}
+.cotrow small{grid-column:1/-1;color:var(--mute);font-size:12px}
+#cotCv{height:70px;margin:4px 0 8px}
+.mrow{display:grid;grid-template-columns:1fr 62px 62px 70px;gap:6px;padding:6px 0;border-bottom:1px solid var(--line)}.mrow.h{color:var(--mute);font-size:12px}
+.card p.note{margin-top:8px}
 </style>
 </head>
 <body>
@@ -110,7 +122,7 @@ td button{background:none;border:0;color:var(--mute)}
       <button data-tf="5min">5m</button><button data-tf="15min" class="on">15m</button>
       <button data-tf="1h">1h</button><button data-tf="4h">4h</button>
     </div>
-    <button class="ghost" id="toggleSet">Ajustes y backtest</button>
+    <span style="display:flex;gap:8px"><button class="ghost" id="refNow">Actualizar ahora</button><button class="ghost" id="toggleSet">Ajustes y backtest</button></span>
   </div>
 
   <section class="settings" id="settings">
@@ -121,7 +133,9 @@ td button{background:none;border:0;color:var(--mute)}
       <span class="row"><input type="datetime-local" id="histDate"><button class="prim" id="goHist">Ir</button><button class="ghost" id="goLive">Volver a vivo</button></span>
     </label>
     <label>Noticia de alto impacto (hora local)
-      <span class="row"><input type="datetime-local" id="newsAt"><input type="number" id="newsWin" value="15" min="1" style="width:70px" title="Minutos antes y después"><button class="prim" id="saveNews">Bloquear</button><button class="ghost" id="clearNews">Quitar</button></span>
+      <span class="row"><input type="datetime-local" id="newsAt"><input type="number" id="newsWin" value="15" min="1" style="width:70px" title="Minutos antes y después"><button class="prim" id="saveNews">Bloquear</button><button class="ghost" id="clearNews">Quitar</button></span></label>
+    <label style="flex-direction:row;display:flex;gap:6px;align-items:center"><input type="checkbox" id="autoNews" checked> Bloquear con noticias USD de alto impacto</label>
+    <label>Proxy CORS para ForexFactory (opcional)<span class="row"><input id="proxy" placeholder="https://…?url=" style="width:220px"><button class="prim" id="saveProxy">Guardar</button><button class="ghost" id="pasteFF">Pegar JSON</button></span>
     </label>
   </section>
 
@@ -152,6 +166,21 @@ td button{background:none;border:0;color:var(--mute)}
       </div>
     </aside>
   </div>
+  <div class="lower">
+    <section class="card">
+      <div class="nhead"><h2>Noticias de hoy · ForexFactory</h2>
+        <span class="nctl"><select id="nfCur" aria-label="Moneda"><option value="USD">USD</option><option value="ALL">Todas</option></select>
+        <select id="nfImp" aria-label="Impacto"><option value="hm">Alto y medio</option><option value="all">Todos</option></select>
+        <button class="ghost" id="nfRef">Actualizar</button></span></div>
+      <p class="note" id="nfNext"></p><p class="note" id="nfMsg"></p>
+      <table><thead><tr><th>Hora</th><th>Mon.</th><th></th><th>Evento</th><th>Pronóstico</th><th>Previo</th></tr></thead><tbody id="nfBody"></tbody></table>
+      <p class="note">El feed público trae pronóstico y previo, pero no el dato ya publicado.</p>
+    </section>
+    <div class="side">
+      <section class="card"><h2>Posicionamiento COT del oro (COMEX)</h2><div id="cotBody"></div><canvas id="cotCv"></canvas><p class="note" id="cotTxt"></p><p class="warn" id="cotMsg"></p></section>
+      <section class="card"><h2>Contexto macro</h2><div id="macBody"></div><p class="note" id="macTxt"></p><p class="warn" id="macMsg"></p></section>
+    </div>
+  </div>
 
   <section class="card">
     <h2>Bitácora</h2>
@@ -172,7 +201,7 @@ td button{background:none;border:0;color:var(--mute)}
 
 <script>
 const $ = id => document.getElementById(id);
-const MIN_RR = 1.8, RANGE_N = 40, OZ = 100, REFRESH_MS = 120000;
+const MIN_RR = 1.8, RANGE_N = 40, OZ = 100, REFRESH_MS = 240000;
 const store = {
   get(k, d){ try{ const v = localStorage.getItem(k); return v === null ? d : v; }catch(e){ return d; } },
   set(k, v){ try{ localStorage.setItem(k, v); }catch(e){} },
@@ -193,14 +222,14 @@ async function load(){
     const d = await (await fetch(url)).json();
     if(d.status === 'error' || !Array.isArray(d.values) || d.values.length < 30) throw new Error(d.message || 'La respuesta no trajo velas suficientes');
     S.candles = d.values.slice().reverse().map(v => ({o:+v.open,h:+v.high,l:+v.low,c:+v.close,t:v.datetime}));
-    S.src = S.hist ? 'hist' : 'live';
+    S.src = S.hist ? 'hist' : 'live'; await loadLTF();
     analyze();
   }catch(e){ sim('No se pudo cargar: ' + e.message); }
 }
 function sim(msg){
   let p = 3300; const out = [];
   for(let i=0;i<120;i++){ const c = p + (Math.random()-.49)*4 + Math.sin(i/9)*1.2; out.push({o:p,h:Math.max(p,c)+Math.random()*2,l:Math.min(p,c)-Math.random()*2,c,t:'simulada'}); p = c; }
-  S.candles = out; S.src = 'sim'; S.msg = msg; analyze();
+  S.candles = out; S.ltf = []; S.src = 'sim'; S.msg = msg; analyze();
 }
 function setSrc(text, cls){ const el = $('src'); el.textContent = text; el.className = 'src ' + cls; }
 
@@ -240,9 +269,11 @@ function findMSS(c, sw, side){
   return null;
 }
 function newsBlocked(){
-  if(!S.news || S.hist) return false;
-  const t = new Date(S.news.at).getTime(), w = S.news.win*60000, now = Date.now();
-  return now >= t-w && now <= t+w;
+  if(S.hist) return false;
+  const now = Date.now();
+  if(S.news){ const t = new Date(S.news.at).getTime(), w = S.news.win*60000; if(now>=t-w && now<=t+w) return true; }
+  const w2 = (S.news ? S.news.win : 15)*60000;
+  return $('autoNews').checked && S.ff.some(e => e.impact==='High' && e.country==='USD' && Math.abs(new Date(e.date)-now)<=w2);
 }
 function analyze(){
   const c = S.candles, price = c[c.length-1].c, A = atr(c), sw = swings(c);
@@ -255,7 +286,8 @@ function analyze(){
     else if(H[1].p<H[0].p && L[1].p<L[0].p) bias = 'Bajista';
   }
   const side = price < eq ? 'buy' : 'sell', buy = side==='buy';
-  const mss = findMSS(c, sw, side), confirmed = !!(mss && mss.broke!==null);
+  const mss = findMSS(c, sw, side), hasL = S.ltf.length>30, lt = hasL ? findMSS(S.ltf, swings(S.ltf,3), side) : null;
+  const confirmed = hasL ? !!(lt && lt.broke!==null) : !!(mss && mss.broke!==null);
   const entry = confirmed ? price : (buy ? Math.min(price, lo+.5*A) : Math.max(price, hi-.5*A));
   const sl = buy ? lo-.3*A : hi+.3*A;
   const tp1 = eq, tp2 = buy ? hi : lo;
@@ -269,7 +301,7 @@ function analyze(){
   else if(confirmed){ state='ok'; why='Barrido y MSS confirmados, R:R dentro del mínimo.'; }
   else if(mss){ why='Hubo barrido; espera un cierre que rompa ' + fmt(mss.lvl) + '.'; }
   else why = 'Aún no hay barrido de liquidez reciente.';
-  S.a = {price,A,hi,lo,eq,bias,side,buy,mss,confirmed,entry,sl,tp1,tp2,risk,rr1,rr2,blocked,state,why,sw};
+  S.a = {lt,ltf:hasL,price,A,hi,lo,eq,bias,side,buy,mss,confirmed,entry,sl,tp1,tp2,risk,rr1,rr2,blocked,state,why,sw};
   render();
 }
 
@@ -284,7 +316,8 @@ function render(){
   const srcTxt = {live:'En vivo',hist:'Histórico',sim:'Datos simulados'}[S.src];
   setSrc(srcTxt, S.src); $('src').title = S.msg;
   chip('cBias', a.bias, a.bias==='Alcista'?'ok':a.bias==='Bajista'?'bad':'wait');
-  chip('cMss', a.confirmed?'MSS confirmado':a.mss?'Barrido, falta MSS':'Sin barrido', a.confirmed?'ok':a.mss?'wait':'');
+  const tfl = a.ltf?'1m':S.tf, sw1 = a.ltf?a.lt:a.mss;
+  chip('cMss', a.confirmed?`MSS ${tfl} confirmado`:sw1?`Barrido ${tfl}, falta MSS`:`Sin barrido ${tfl}`, a.confirmed?'ok':sw1?'wait':'');
   chip('cNews', a.blocked?'Bloqueado':S.news?'Programada':'Sin bloqueo', a.blocked?'bad':'ok');
   chip('cSetup', a.state==='ok'?'Válido':a.state==='wait'?'En espera':'No operar', a.state);
   const t = $('ticket'); t.className = 'card ticket ' + (a.buy?'':'sell ') + (a.state==='bad'?'off':'');
@@ -387,9 +420,122 @@ $('saveNews').onclick = () => { const v=$('newsAt').value; if(v){ S.news={at:v,w
 $('clearNews').onclick = () => { S.news=null; store.del('aurum_news'); $('newsAt').value=''; if(S.a) analyze(); };
 $('bal').oninput = $('riskPct').oninput = risk;
 
+/* ---------- Gatillo 1m ---------- */
+async function loadLTF(){
+  S.ltf = [];
+  try{
+    const end = S.hist ? '&end_date=' + S.hist.toISOString().slice(0,19).replace('T',' ') : '';
+    const d = await (await fetch(`https://api.twelvedata.com/time_series?symbol=XAU/USD&interval=1min&outputsize=120&timezone=UTC${end}&apikey=${encodeURIComponent(S.key)}`)).json();
+    if(Array.isArray(d.values)) S.ltf = d.values.slice().reverse().map(v => ({o:+v.open,h:+v.high,l:+v.low,c:+v.close,t:v.datetime}));
+  }catch(e){}
+}
+
+/* ---------- Noticias (ForexFactory) ---------- */
+const FF_URL = 'https://nfs.faireconomy.media/ff_calendar_thisweek.json';
+S.ff = []; S.proxy = store.get('ff_proxy','');
+const esc = t => String(t??'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const dur = ms => { const m = Math.round(ms/60000); return m>=60 ? Math.floor(m/60)+' h '+(m%60)+' min' : m+' min'; };
+async function loadNews(force){
+  const cached = JSON.parse(store.get('ff_cache','null'));
+  if(!force && cached && Date.now()-cached.at < 1800000){ S.ff = cached.ev; renderNews('Caché de las ' + new Date(cached.at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) + '.'); if(S.a) analyze(); return; }
+  try{
+    const r = await fetch(S.proxy ? S.proxy + encodeURIComponent(FF_URL) : FF_URL);
+    if(!r.ok) throw new Error('HTTP ' + r.status);
+    setFF(await r.json());
+  }catch(e){
+    if(cached) S.ff = cached.ev;
+    renderNews('No se pudo conectar (' + e.message + '). Si es un bloqueo CORS, pon un proxy en Ajustes o usa Pegar JSON con el contenido de ' + FF_URL, true);
+    if(S.a) analyze();
+  }
+}
+function setFF(arr){
+  if(!Array.isArray(arr)) throw new Error('formato inesperado');
+  S.ff = arr; store.set('ff_cache', JSON.stringify({at:Date.now(), ev:arr})); renderNews(); if(S.a) analyze();
+}
+function renderNews(msg, err){
+  const cur = $('nfCur').value, imp = $('nfImp').value, now = Date.now(), today = new Date().toDateString();
+  const day = S.ff.filter(e => new Date(e.date).toDateString()===today).sort((a,b) => new Date(a.date)-new Date(b.date));
+  const rows = day.filter(e => (cur==='ALL' || e.country===cur) && (imp==='all' || e.impact==='High' || e.impact==='Medium'));
+  const nx = day.find(e => e.impact==='High' && e.country==='USD' && new Date(e.date)>now);
+  $('nfNext').textContent = nx ? `Próxima de alto impacto en USD: ${nx.title}, en ${dur(new Date(nx.date)-now)}.` : (S.ff.length ? 'No quedan eventos USD de alto impacto hoy.' : '');
+  $('nfMsg').textContent = msg || ''; $('nfMsg').className = err ? 'warn' : 'note';
+  $('nfBody').innerHTML = rows.length ? rows.map(e => `<tr class="${new Date(e.date)<now?'past':''} ${e===nx?'nx':''}"><td>${new Date(e.date).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</td><td>${esc(e.country)}</td><td><span class="dot d-${esc(e.impact)}" title="${esc(e.impact)}"></span></td><td>${esc(e.title)}</td><td>${esc(e.forecast)||'—'}</td><td>${esc(e.previous)||'—'}</td></tr>`).join('')
+    : `<tr><td colspan="6" class="empty">${S.ff.length ? 'No hay eventos con esos filtros hoy.' : 'Aún no hay noticias cargadas.'}</td></tr>`;
+}
+
+/* ---------- COT del oro (CFTC, Disaggregated Futures Only) ---------- */
+const COT_URL = 'https://publicreporting.cftc.gov/resource/72hh-3qpy.json?cftc_contract_market_code=088691&$order=report_date_as_yyyy_mm_dd%20DESC&$limit=52';
+const pick = (r,re) => { const k = Object.keys(r).find(x => re.test(x)); return k ? +r[k] : NaN; };
+const COTG = [['mm','Fondos (managed money)'],['sw','Bancos y swap dealers'],['pm','Productores y mineras'],['nr','Pequeños especuladores']];
+async function loadCOT(){
+  try{
+    const rows = await (await fetch(COT_URL)).json();
+    if(!Array.isArray(rows) || !rows.length) throw new Error(rows.message || 'sin filas');
+    const g = rows.map(r => ({d:(r.report_date_as_yyyy_mm_dd||'').slice(0,10),
+      mm: pick(r,/^m_money_positions_long_all$/) - pick(r,/^m_money_positions_short_all$/),
+      sw: pick(r,/^swap_+positions_long_all$/) - pick(r,/^swap_+positions_short_all$/),
+      pm: pick(r,/^prod_merc_positions_long$/) - pick(r,/^prod_merc_positions_short$/),
+      nr: pick(r,/^nonrept_positions_long_all$/) - pick(r,/^nonrept_positions_short_all$/)})).reverse();
+    if(g.some(x => isNaN(x.mm))) throw new Error('los campos no coinciden con los esperados');
+    S.cot = g; $('cotMsg').textContent = ''; renderCOT();
+  }catch(e){ $('cotMsg').textContent = 'No se pudo cargar el COT: ' + e.message; }
+}
+function renderCOT(){
+  const g = S.cot, L = g[g.length-1], P = g[g.length-2] || L, sg = n => (n>=0?'+':'') + n.toLocaleString('es');
+  const idxOf = k => { const v = g.map(x=>x[k]), mn = Math.min(...v), mx = Math.max(...v); return mx>mn ? Math.round((L[k]-mn)/(mx-mn)*100) : 50; };
+  $('cotBody').innerHTML = COTG.map(([k,n]) => { const ch = L[k]-P[k], i = idxOf(k);
+    return `<div class="cotrow"><span>${n}</span><b>${L[k].toLocaleString('es')}</b><span class="${ch>=0?'up':'down'}">${sg(ch)}</span><div class="bar"><i style="width:${i}%"></i></div><small>Posición neta en contratos · índice de 52 semanas: ${i}</small></div>`; }).join('');
+  const i = idxOf('mm');
+  $('cotTxt').textContent = (i>=80 ? 'Los fondos están en el extremo largo de su rango anual: hay respaldo a la tendencia, pero la posición está cargada y una ruptura de soporte puede provocar liquidaciones.'
+    : i<=20 ? 'Los fondos están en el extremo corto: queda poco combustible vendedor y crece el riesgo de recompras bruscas si el precio sube.'
+    : 'Los fondos están en zona intermedia: el posicionamiento no es una señal por sí solo.') + ` Datos del martes ${L.d}; la CFTC los publica los viernes.`;
+  const cv = $('cotCv'), dpr = window.devicePixelRatio||1, W = cv.clientWidth, H = cv.clientHeight; cv.width = W*dpr; cv.height = H*dpr;
+  const x = cv.getContext('2d'); x.scale(dpr,dpr); const v = g.map(q=>q.mm), mn = Math.min(...v), mx = Math.max(...v);
+  x.strokeStyle = '#D2A94B'; x.lineWidth = 1.6; x.beginPath();
+  v.forEach((q,j) => { const px = j/(v.length-1)*W, py = H-4-(q-mn)/((mx-mn)||1)*(H-8); j ? x.lineTo(px,py) : x.moveTo(px,py); }); x.stroke();
+}
+
+/* ---------- Contexto macro (ETF como proxies, Twelve Data) ---------- */
+const MAC = [['UUP','Dólar (UUP)'],['TLT','Bonos largos (TLT)'],['GLD','Oro ETF (GLD)'],['SPY','Acciones (SPY)']];
+async function loadMacro(){
+  if(!S.key){ $('macMsg').textContent = 'Agrega tu API key para cargar el contexto macro.'; return; }
+  try{
+    const d = await (await fetch(`https://api.twelvedata.com/time_series?symbol=${MAC.map(m=>m[0]).join(',')}&interval=1day&outputsize=30&apikey=${encodeURIComponent(S.key)}`)).json();
+    const o = {};
+    for(const [s] of MAC){ const q = d[s]; if(!q || !q.values) throw new Error((q && q.message) || d.message || 'sin datos de ' + s); o[s] = q.values.slice().reverse().map(v => +v.close); }
+    S.macro = o; renderMacro();
+  }catch(e){ $('macMsg').textContent = 'No se pudo cargar: ' + e.message; }
+}
+const ret = a => a.slice(1).map((x,i) => x/a[i]-1);
+function corr(a,b){ const n = Math.min(a.length,b.length); a = a.slice(-n); b = b.slice(-n);
+  const ma = a.reduce((s,x)=>s+x,0)/n, mb = b.reduce((s,x)=>s+x,0)/n; let c=0, va=0, vb=0;
+  for(let i=0;i<n;i++){ c += (a[i]-ma)*(b[i]-mb); va += (a[i]-ma)**2; vb += (b[i]-mb)**2; } return c/Math.sqrt(va*vb || 1); }
+function renderMacro(){
+  const M = S.macro, pc = (a,n) => (a[a.length-1]/a[a.length-1-n]-1)*100, g = ret(M.GLD).slice(-20);
+  let h = '<div class="mrow h"><span></span><span>1 día</span><span>5 días</span><span>Corr. oro</span></div>';
+  MAC.forEach(([s,n]) => { const a = M[s], d1 = pc(a,1), d5 = pc(a,5), c = s==='GLD' ? 1 : corr(ret(a).slice(-20), g);
+    h += `<div class="mrow"><span>${n}</span><span class="${d1>=0?'up':'down'}">${d1.toFixed(2)}%</span><span class="${d5>=0?'up':'down'}">${d5.toFixed(2)}%</span><span>${c.toFixed(2)}</span></div>`; });
+  $('macBody').innerHTML = h;
+  const usd = pc(M.UUP,5), bnd = pc(M.TLT,5), sc = (usd<0?1:-1) + (bnd>0?1:-1);
+  $('macTxt').textContent = (sc>=2 ? 'Viento a favor del oro: ' : sc<=-2 ? 'Viento en contra del oro: ' : 'Señales mixtas: ') +
+    `en 5 sesiones el dólar ${usd<0?'cae':'sube'} y los bonos largos ${bnd>0?'suben (rendimientos a la baja)':'caen (rendimientos al alza)'}. Son ETF usados como proxy, no el DXY ni el rendimiento real.`;
+  $('macMsg').textContent = '';
+}
+
+/* ---------- Eventos de las nuevas secciones ---------- */
+$('nfCur').onchange = $('nfImp').onchange = () => renderNews();
+$('nfRef').onclick = () => loadNews(true);
+$('refNow').onclick = () => { load(); loadMacro(); };
+$('autoNews').onchange = () => { if(S.a) analyze(); };
+$('proxy').value = S.proxy;
+$('saveProxy').onclick = () => { S.proxy = $('proxy').value.trim(); store.set('ff_proxy', S.proxy); loadNews(true); };
+$('pasteFF').onclick = () => { const t = prompt('Pega aquí el JSON de ' + FF_URL); if(t){ try{ setFF(JSON.parse(t)); }catch(e){ renderNews('JSON inválido: ' + e.message, true); } } };
+setInterval(() => { if(!document.hidden){ loadNews(); loadMacro(); } }, 900000);
+window.addEventListener('resize', () => { if(S.cot) renderCOT(); });
+
 $('apiKey').value = S.key;
 if(S.news){ $('newsAt').value = S.news.at; $('newsWin').value = S.news.win; }
-renderJ(); load();
+renderJ(); load(); loadNews(); loadCOT(); loadMacro();
 setInterval(() => { if(!S.hist && S.key && !document.hidden) load(); }, REFRESH_MS);
 </script>
 </body>
