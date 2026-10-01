@@ -95,6 +95,10 @@ tr.past{opacity:.45}tr.nx{background:rgba(210,169,75,.12)}
 #cotCv{height:70px;margin:4px 0 8px}
 .mrow{display:grid;grid-template-columns:1fr 62px 62px 70px;gap:6px;padding:6px 0;border-bottom:1px solid var(--line)}.mrow.h{color:var(--mute);font-size:12px}
 .card p.note{margin-top:8px}
+canvas#cv{touch-action:pan-y;cursor:grab}
+.cnav{position:absolute;right:72px;top:8px;display:flex;gap:4px;z-index:2}
+.cnav button{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:3px 10px;font-size:13px;color:var(--text)}
+.cnav button:hover{border-color:var(--brass)}
 </style>
 </head>
 <body>
@@ -140,7 +144,8 @@ tr.past{opacity:.45}tr.nx{background:rgba(210,169,75,.12)}
   </section>
 
   <div class="main">
-    <div class="chartbox"><canvas id="cv"></canvas><div id="readout"></div></div>
+    <div class="chartbox"><canvas id="cv"></canvas><div id="readout"></div>
+      <div class="cnav"><button id="goNow" hidden>Ir al presente ▶▶</button><button id="panL" aria-label="Ver velas anteriores">◀</button><button id="panR" aria-label="Ver velas recientes">▶</button><button id="zOut" aria-label="Alejar">−</button><button id="zIn" aria-label="Acercar">+</button></div></div>
 
     <aside class="side">
       <div class="card ticket" id="ticket">
@@ -218,7 +223,7 @@ async function load(){
   setSrc('Cargando…','sim');
   try{
     const end = S.hist ? '&end_date=' + S.hist.toISOString().slice(0,19).replace('T',' ') : '';
-    const url = `https://api.twelvedata.com/time_series?symbol=XAU/USD&interval=${S.tf}&outputsize=120&timezone=UTC${end}&apikey=${encodeURIComponent(S.key)}`;
+    const url = `https://api.twelvedata.com/time_series?symbol=XAU/USD&interval=${S.tf}&outputsize=300&timezone=UTC${end}&apikey=${encodeURIComponent(S.key)}`;
     const d = await (await fetch(url)).json();
     if(d.status === 'error' || !Array.isArray(d.values) || d.values.length < 30) throw new Error(d.message || 'La respuesta no trajo velas suficientes');
     S.candles = d.values.slice().reverse().map(v => ({o:+v.open,h:+v.high,l:+v.low,c:+v.close,t:v.datetime}));
@@ -228,7 +233,7 @@ async function load(){
 }
 function sim(msg){
   let p = 3300; const out = [];
-  for(let i=0;i<120;i++){ const c = p + (Math.random()-.49)*4 + Math.sin(i/9)*1.2; out.push({o:p,h:Math.max(p,c)+Math.random()*2,l:Math.min(p,c)-Math.random()*2,c,t:'simulada'}); p = c; }
+  for(let i=0;i<300;i++){ const c = p + (Math.random()-.49)*4 + Math.sin(i/9)*1.2; out.push({o:p,h:Math.max(p,c)+Math.random()*2,l:Math.min(p,c)-Math.random()*2,c,t:'simulada'}); p = c; }
   S.candles = out; S.ltf = []; S.src = 'sim'; S.msg = msg; analyze();
 }
 function setSrc(text, cls){ const el = $('src'); el.textContent = text; el.className = 'src ' + cls; }
@@ -341,51 +346,112 @@ function risk(){
 }
 
 /* ---------- Gráfico ---------- */
+/* Gráfico con desplazamiento: arrastrar, rueda, flechas del teclado o botones */
+S.vw = {n:90, off:0}; const FUT = 16, PR = 62;
+function span(){
+  const c = S.candles, vis = S.vw.n - FUT, maxOff = Math.max(0, c.length - vis);
+  S.vw.off = Math.max(0, Math.min(maxOff, S.vw.off));
+  const end = c.length - S.vw.off; return {start:end-vis, end};
+}
+function pill(x,px,py,w,h,fill,stroke,txt,tcol){
+  const r = 4, x0 = px, y0 = py-h/2;
+  x.beginPath(); x.moveTo(x0+r,y0); x.arcTo(x0+w,y0,x0+w,y0+h,r); x.arcTo(x0+w,y0+h,x0,y0+h,r); x.arcTo(x0,y0+h,x0,y0,r); x.arcTo(x0,y0,x0+w,y0,r); x.closePath();
+  x.fillStyle = fill; x.fill(); if(stroke){ x.strokeStyle = stroke; x.lineWidth = 1; x.stroke(); }
+  x.fillStyle = tcol; x.textAlign = 'center'; x.fillText(txt, x0+w/2, py+.5); x.textAlign = 'left';
+}
+/* Separa etiquetas que quedarían encimadas: baja las que chocan y sube las que se salen */
+function spread(arr, key, gap, yMax){
+  arr.sort((p,q) => p.y-q.y);
+  arr.forEach((it,i) => { it[key] = i && it.y < arr[i-1][key]+gap ? arr[i-1][key]+gap : it.y; });
+  for(let i=arr.length-1;i>=0;i--){ const lim = i===arr.length-1 ? yMax : arr[i+1][key]-gap; if(arr[i][key]>lim) arr[i][key] = lim; }
+}
 function draw(){
   const cv = $('cv'), dpr = window.devicePixelRatio||1, W = cv.clientWidth, H = cv.clientHeight;
   cv.width = W*dpr; cv.height = H*dpr;
   const x = cv.getContext('2d'); x.scale(dpr,dpr); x.clearRect(0,0,W,H);
-  const a = S.a, c = S.candles, PR = 62, PT = 28, PB = 18, cw = (W-PR)/c.length;
-  const min = Math.min(a.lo-a.A*.4, a.sl, ...c.map(v=>v.l)), max = Math.max(a.hi+a.A*.4, ...c.map(v=>v.h));
-  const Y = p => PT + (max-p)/(max-min)*(H-PT-PB), X = i => i*cw + cw/2;
-  x.font = '11px IBM Plex Sans'; x.textBaseline = 'middle';
-  // rejilla y eje
-  for(let i=0;i<=5;i++){ const p = min+(max-min)*i/5, y=Y(p); x.strokeStyle='#1d3135'; x.beginPath(); x.moveTo(0,y); x.lineTo(W-PR,y); x.stroke(); x.fillStyle='#8FA0A0'; x.fillText(fmt(p), W-PR+6, y); }
-  // caja de la operación
-  const bx = X(c.length-1), bw = W-PR-bx;
-  const box = (p1,p2,col) => { x.fillStyle = col; x.fillRect(bx, Math.min(Y(p1),Y(p2)), bw, Math.abs(Y(p1)-Y(p2))); };
-  if(a.state!=='bad'){ box(a.entry,a.tp1,'rgba(86,194,163,.14)'); box(a.entry,a.sl,'rgba(232,112,92,.16)'); }
-  // niveles
-  const line = (p,col,label,dash) => { const y=Y(p); x.strokeStyle=col; x.setLineDash(dash||[]); x.beginPath(); x.moveTo(0,y); x.lineTo(W-PR,y); x.stroke(); x.setLineDash([]); x.fillStyle=col; x.fillText(label, 8, y-8); };
-  line(a.hi,'#D2A94B66','Máximo del rango',[2,4]); line(a.lo,'#D2A94B66','Mínimo del rango',[2,4]); line(a.eq,'#D2A94B','Equilibrio',[6,4]);
-  if(a.state!=='bad'){ line(a.entry,'#EDE6D3','Entrada',[3,3]); line(a.sl,'#E8705C','SL'); line(a.tp1,'#56C2A3','TP1'); }
-  // velas
-  c.forEach((v,i)=>{
-    const up = v.c>=v.o, col = up?'#56C2A3':'#E8705C'; x.strokeStyle = x.fillStyle = col;
+  const a = S.a, c = S.candles, PT = 28, PB = 22, n = S.vw.n, cw = (W-PR)/n, {start,end} = span(), live = S.vw.off===0;
+  const vis = c.slice(Math.max(0,start), end);
+  let min = Math.min(...vis.map(v=>v.l)), max = Math.max(...vis.map(v=>v.h));
+  if(live){ min = Math.min(min, a.lo-a.A*.4, a.sl); max = Math.max(max, a.hi+a.A*.4); }
+  const pad = (max-min)*.05; min -= pad; max += pad;
+  const Y = p => PT + (max-p)/(max-min)*(H-PT-PB), X = i => (i-start)*cw + cw/2, inY = p => p>=min && p<=max;
+  x.font = '600 11px IBM Plex Sans'; x.textBaseline = 'middle';
+
+  /* Niveles: los que coinciden en precio se funden en uno solo (p. ej. TP1 · Equilibrio) */
+  const L = [], tol = (max-min)*.004, showTrade = live && a.state!=='bad';
+  const add = (p,name,col,w,dash) => { if(!inY(p)) return; const f = L.find(l => Math.abs(l.p-p)<tol);
+    if(f){ f.name += ' · ' + name; if(w>f.w) Object.assign(f,{col,w,dash}); } else L.push({p,name,col,w,dash,y:Y(p)}); };
+  if(showTrade){ add(a.sl,'SL','#E8705C',4,[]); add(a.entry,a.confirmed?'Entrada':'Entrada (límite)','#EDE6D3',3,[6,4]); add(a.tp1,'TP1','#56C2A3',2,[6,4]); add(a.tp2,'TP2','#56C2A3',2,[6,4]); }
+  add(a.eq,'Equilibrio','#D2A94B',1,[6,4]); add(a.hi,'Máx. rango','#B8964A',.5,[2,4]); add(a.lo,'Mín. rango','#B8964A',.5,[2,4]);
+  const cur = inY(a.price) ? {cur:true,p:a.price,y:Y(a.price)} : null, axis = cur ? L.concat([cur]) : L.slice();
+  spread(axis,'ay',17,H-PB-8); spread(L,'ny',17,H-PB-8);
+
+  for(let i=0;i<=5;i++){ const p = min+(max-min)*i/5, y = Y(p); x.strokeStyle='#1d3135'; x.lineWidth=1; x.beginPath(); x.moveTo(0,y); x.lineTo(W-PR,y); x.stroke();
+    if(!axis.some(it => Math.abs(it.ay-y)<11)){ x.fillStyle='#8FA0A0'; x.fillText(fmt(p), W-PR+6, y); } }
+  x.textAlign = 'center';
+  for(let k=0;k<=5;k++){ const idx = start + Math.round(k*(n-FUT-1)/5), v = c[idx]; if(v && v.t.length>10){ x.fillStyle='#8FA0A0'; x.fillText(v.t.slice(5,16), Math.min(Math.max(X(idx),34),W-PR-34), H-9); } }
+  x.textAlign = 'left';
+
+  x.save(); x.beginPath(); x.rect(0,0,W-PR,H); x.clip();
+  if(showTrade){
+    const bx = X(c.length-1), bw = W-PR-bx, box = (p1,p2,col) => { x.fillStyle = col; x.fillRect(bx, Math.min(Y(p1),Y(p2)), bw, Math.abs(Y(p1)-Y(p2))); };
+    box(a.entry,a.tp1,'rgba(86,194,163,.14)'); box(a.entry,a.sl,'rgba(232,112,92,.16)');
+  }
+  L.forEach(l => { x.globalAlpha = l.w<1 ? .75 : 1; x.strokeStyle = l.col; x.lineWidth = l.w>=4 ? 1.6 : 1.1; x.setLineDash(l.dash); x.beginPath(); x.moveTo(0,l.y); x.lineTo(W-PR,l.y); x.stroke(); });
+  x.globalAlpha = 1; x.setLineDash([]); x.lineWidth = 1;
+  for(let i=Math.max(0,start); i<end; i++){
+    const v = c[i], col = v.c>=v.o ? '#56C2A3' : '#E8705C'; x.strokeStyle = x.fillStyle = col;
     x.beginPath(); x.moveTo(X(i),Y(v.h)); x.lineTo(X(i),Y(v.l)); x.stroke();
-    const bw2 = Math.max(2,cw*.64); x.fillRect(X(i)-bw2/2, Math.min(Y(v.o),Y(v.c)), bw2, Math.max(1,Math.abs(Y(v.c)-Y(v.o))));
-  });
-  // marcas de barrido y MSS
+    const b = Math.max(2,cw*.64); x.fillRect(X(i)-b/2, Math.min(Y(v.o),Y(v.c)), b, Math.max(1,Math.abs(Y(v.c)-Y(v.o))));
+  }
   if(a.mss){
     const m = a.mss, v = c[m.swept];
-    x.fillStyle = '#E3B341'; x.beginPath(); const sy = a.buy ? Y(v.l)+10 : Y(v.h)-10; x.arc(X(m.swept), sy, 4, 0, 7); x.fill();
-    x.fillText('Barrido', X(m.swept)+8, sy);
-    x.strokeStyle='#E3B341'; x.setLineDash([3,3]); x.beginPath(); x.moveTo(X(m.swept),Y(m.lvl)); x.lineTo(X(m.broke ?? c.length-1),Y(m.lvl)); x.stroke(); x.setLineDash([]);
-    if(m.broke!==null){ x.fillStyle='#E3B341'; x.fillText('MSS', X(m.broke), Y(m.lvl)-9); }
+    if(v && m.swept>=start && m.swept<end){ const sy = a.buy ? Y(v.l)+10 : Y(v.h)-10; x.fillStyle='#E3B341'; x.beginPath(); x.arc(X(m.swept),sy,4,0,7); x.fill(); x.fillText('Barrido', X(m.swept)+8, sy); }
+    if(inY(m.lvl)){ x.strokeStyle='#E3B341'; x.setLineDash([3,3]); x.beginPath(); x.moveTo(X(m.swept),Y(m.lvl)); x.lineTo(X(m.broke ?? c.length-1),Y(m.lvl)); x.stroke(); x.setLineDash([]);
+      if(m.broke!==null && m.broke>=start && m.broke<end){ x.fillStyle='#E3B341'; x.fillText('MSS', X(m.broke), Y(m.lvl)-9); } }
   }
-  // precio actual
-  x.fillStyle='#D2A94B'; const py=Y(a.price); x.fillRect(W-PR,py-9,PR,18); x.fillStyle='#1a1405'; x.fillText(fmt(a.price), W-PR+6, py);
-  // cursor
-  if(S.hover>=0 && S.hover<c.length){ x.strokeStyle='#8FA0A055'; x.beginPath(); x.moveTo(X(S.hover),PT); x.lineTo(X(S.hover),H-PB); x.stroke(); }
+  if(S.hover>=start && S.hover<end){ x.strokeStyle='#8FA0A055'; x.beginPath(); x.moveTo(X(S.hover),PT); x.lineTo(X(S.hover),H-PB); x.stroke(); }
+  x.restore();
+
+  /* Etiquetas con nombre, a la izquierda, con un pequeño conector si hubo que moverlas */
+  L.forEach(l => { const w = x.measureText(l.name).width + 14;
+    if(Math.abs(l.ny-l.y)>2){ x.strokeStyle = l.col; x.lineWidth = 1; x.beginPath(); x.moveTo(8+w,l.ny); x.lineTo(16+w,l.y); x.stroke(); }
+    pill(x, 8, l.ny, w, 17, 'rgba(15,27,29,.92)', l.col, l.name, l.col); });
+  /* Etiquetas de precio sobre el eje: llenas para operación, con borde para referencias */
+  axis.forEach(it => { if(Math.abs(it.ay-it.y)>2){ x.strokeStyle = it.cur?'#D2A94B':it.col; x.beginPath(); x.moveTo(W-PR,it.y); x.lineTo(W-PR+3,it.ay); x.stroke(); }
+    const solid = it.cur || it.w>=2;
+    pill(x, W-PR+3, it.ay, PR-5, 17, it.cur ? '#D2A94B' : solid ? it.col : '#0F1B1D', it.cur||solid ? null : it.col, fmt(it.p), it.cur||solid ? '#10150f' : it.col); });
+  $('goNow').hidden = live;
 }
-$('cv').addEventListener('mousemove', e => {
-  if(!S.a) return; const r = e.target.getBoundingClientRect(), i = Math.floor((e.clientX-r.left)/((r.width-62)/S.candles.length));
-  S.hover = i; const v = S.candles[i];
+const cv0 = $('cv'); let drag = null;
+const redraw = () => { if(S.a) draw(); };
+cv0.tabIndex = 0;
+cv0.addEventListener('pointerdown', e => { drag = {x:e.clientX, off:S.vw.off}; cv0.setPointerCapture(e.pointerId); cv0.style.cursor = 'grabbing'; });
+cv0.addEventListener('pointermove', e => {
+  if(!S.a) return;
+  const r = cv0.getBoundingClientRect(), cw = (r.width-PR)/S.vw.n;
+  if(drag) S.vw.off = drag.off + Math.round((e.clientX-drag.x)/cw);
+  const {start} = span(); S.hover = start + Math.floor((e.clientX-r.left)/cw); const v = S.candles[S.hover];
   $('readout').textContent = v ? `${v.t}  A ${fmt(v.o)}  Máx ${fmt(v.h)}  Mín ${fmt(v.l)}  C ${fmt(v.c)}` : '';
   draw();
 });
-$('cv').addEventListener('mouseleave', () => { S.hover=-1; $('readout').textContent=''; if(S.a) draw(); });
-window.addEventListener('resize', () => { if(S.a) draw(); });
+const endDrag = () => { drag = null; cv0.style.cursor = 'grab'; };
+cv0.addEventListener('pointerup', endDrag); cv0.addEventListener('pointercancel', endDrag);
+cv0.addEventListener('pointerleave', () => { if(!drag){ S.hover = -1; $('readout').textContent = ''; redraw(); } });
+cv0.addEventListener('wheel', e => {
+  if(!S.a) return; e.preventDefault();
+  const d = e.deltaX || (e.shiftKey ? e.deltaY : 0);
+  if(d){ S.vw.off -= Math.sign(d)*Math.max(1,Math.round(Math.abs(d)/25)); }
+  else S.vw.n = Math.max(FUT+20, Math.min(220, S.vw.n + (e.deltaY>0 ? 10 : -10)));
+  draw();
+}, {passive:false});
+cv0.addEventListener('keydown', e => { const k = {ArrowLeft:5, ArrowRight:-5, Home:1e4, End:-1e4}[e.key]; if(k===undefined) return; e.preventDefault(); S.vw.off += k; redraw(); });
+$('panL').onclick = () => { S.vw.off += 20; redraw(); };
+$('panR').onclick = () => { S.vw.off -= 20; redraw(); };
+$('goNow').onclick = () => { S.vw.off = 0; redraw(); };
+$('zIn').onclick = () => { S.vw.n = Math.max(FUT+20, S.vw.n-15); redraw(); };
+$('zOut').onclick = () => { S.vw.n = Math.min(220, S.vw.n+15); redraw(); };
+window.addEventListener('resize', redraw);
 
 /* ---------- Bitácora ---------- */
 function saveJ(){ store.set('aurum_journal', JSON.stringify(S.journal)); renderJ(); }
@@ -411,7 +477,7 @@ $('bWin').onclick = () => record('WIN'); $('bLoss').onclick = () => record('LOSS
 $('bClear').onclick = () => { if(S.journal.length && confirm('¿Borrar toda la bitácora?')){ S.journal=[]; saveJ(); } };
 
 /* ---------- Controles ---------- */
-$('tfs').addEventListener('click', e => { const b=e.target.closest('button'); if(!b) return; S.tf=b.dataset.tf; [...$('tfs').children].forEach(x=>x.classList.toggle('on',x===b)); load(); });
+$('tfs').addEventListener('click', e => { const b=e.target.closest('button'); if(!b) return; S.tf=b.dataset.tf; S.vw.off=0; [...$('tfs').children].forEach(x=>x.classList.toggle('on',x===b)); load(); });
 $('toggleSet').onclick = () => $('settings').classList.toggle('open');
 $('saveKey').onclick = () => { const k=$('apiKey').value.trim(); if(k){ S.key=k; store.set('td_key',k); load(); } };
 $('goHist').onclick = () => { const v=$('histDate').value; if(v){ S.hist=new Date(v); load(); } };
