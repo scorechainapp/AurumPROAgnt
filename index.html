@@ -99,16 +99,18 @@ canvas#cv{touch-action:pan-y;cursor:grab}
 .cnav{position:absolute;right:72px;top:8px;display:flex;gap:4px;z-index:2}
 .cnav button{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:3px 10px;font-size:13px;color:var(--text)}
 .cnav button:hover{border-color:var(--brass)}
+#instTabs button{padding:9px 22px;font-weight:600}
 </style>
 </head>
 <body>
 <div class="wrap">
 
+  <div class="seg" id="instTabs" style="width:max-content" role="group" aria-label="Instrumento"><button data-i="XAU" class="on" aria-pressed="true">Oro · XAU/USD</button><button data-i="NQ" aria-pressed="false">Nasdaq · NQ</button></div>
   <header class="head">
     <div>
       <div class="price" id="price">—</div>
       <div class="sub">
-        <span>XAU/USD</span>
+        <span id="instName">XAU/USD</span>
         <span class="delta" id="delta">—</span>
         <span class="src sim" id="src">Sin datos</span>
       </div>
@@ -132,6 +134,9 @@ canvas#cv{touch-action:pan-y;cursor:grab}
   <section class="settings" id="settings">
     <label>API key de Twelve Data
       <span class="row"><input type="password" id="apiKey" placeholder="Pega tu key" autocomplete="off"><button class="prim" id="saveKey">Guardar</button></span>
+    </label>
+    <label>Símbolo de datos de este instrumento
+      <span class="row"><input id="symIn" style="width:130px"><button class="prim" id="saveSym">Guardar</button></span><small id="symHint" style="max-width:260px"></small>
     </label>
     <label>Ver el mercado en una fecha (hora local)
       <span class="row"><input type="datetime-local" id="histDate"><button class="prim" id="goHist">Ir</button><button class="ghost" id="goLive">Volver a vivo</button></span>
@@ -165,7 +170,7 @@ canvas#cv{touch-action:pan-y;cursor:grab}
         <div class="field"><span>Riesgo (%)</span><input type="number" id="riskPct" value="1" step="0.25" min="0"></div>
         <div class="field"><span>Riesgo máximo</span><b id="riskUsd" class="sell-c">—</b></div>
         <div class="field"><span>Distancia al SL</span><b id="slDist">—</b></div>
-        <div class="lots"><span>Lotes sugeridos</span><b id="lots">—</b></div>
+        <div class="lots"><span id="sizeLbl">Lotes sugeridos</span><b id="lots">—</b></div>
         <div class="field" style="margin:10px 0 0"><span>Ganancia en TP1 / TP2</span><b id="pl">—</b></div>
         <p class="warn" id="lotWarn" hidden></p>
       </div>
@@ -182,13 +187,13 @@ canvas#cv{touch-action:pan-y;cursor:grab}
       <p class="note">El feed público trae pronóstico y previo, pero no el dato ya publicado.</p>
     </section>
     <div class="side">
-      <section class="card"><h2>Posicionamiento COT del oro (COMEX)</h2><div id="cotBody"></div><canvas id="cotCv"></canvas><p class="note" id="cotTxt"></p><p class="warn" id="cotMsg"></p></section>
+      <section class="card"><h2 id="cotTitle">Posicionamiento COT del oro (COMEX)</h2><div id="cotBody"></div><canvas id="cotCv"></canvas><p class="note" id="cotTxt"></p><p class="warn" id="cotMsg"></p></section>
       <section class="card"><h2>Contexto macro</h2><div id="macBody"></div><p class="note" id="macTxt"></p><p class="warn" id="macMsg"></p></section>
     </div>
   </div>
 
   <section class="card">
-    <h2>Bitácora</h2>
+    <h2 id="jTitle">Bitácora</h2>
     <div class="stats">
       <div class="stat"><small>Win rate</small><b id="jWR">0%</b></div>
       <div class="stat"><small>Profit factor</small><b id="jPF">—</b></div>
@@ -218,22 +223,22 @@ const S = { key: store.get('td_key',''), tf:'15min', hist:null, candles:[], src:
 const fmt = n => Number(n).toFixed(2);
 
 /* ---------- Datos ---------- */
-async function load(){
+async function load(){ const k0 = S.inst;
   if(!S.key){ return sim('Agrega tu API key en Ajustes para ver datos reales.'); }
   setSrc('Cargando…','sim');
   try{
     const end = S.hist ? '&end_date=' + S.hist.toISOString().slice(0,19).replace('T',' ') : '';
-    const url = `https://api.twelvedata.com/time_series?symbol=XAU/USD&interval=${S.tf}&outputsize=300&timezone=UTC${end}&apikey=${encodeURIComponent(S.key)}`;
-    const d = await (await fetch(url)).json();
+    const url = `https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(sym())}&interval=${S.tf}&outputsize=300&timezone=UTC${end}&apikey=${encodeURIComponent(S.key)}`;
+    const d = await (await fetch(url)).json(); if(k0 !== S.inst) return;
     if(d.status === 'error' || !Array.isArray(d.values) || d.values.length < 30) throw new Error(d.message || 'La respuesta no trajo velas suficientes');
     S.candles = d.values.slice().reverse().map(v => ({o:+v.open,h:+v.high,l:+v.low,c:+v.close,t:v.datetime}));
     S.src = S.hist ? 'hist' : 'live'; await loadLTF();
     analyze();
-  }catch(e){ sim('No se pudo cargar: ' + e.message); }
+  }catch(e){ if(k0 !== S.inst) return; sim('No se pudo cargar: ' + e.message); }
 }
 function sim(msg){
-  let p = 3300; const out = [];
-  for(let i=0;i<300;i++){ const c = p + (Math.random()-.49)*4 + Math.sin(i/9)*1.2; out.push({o:p,h:Math.max(p,c)+Math.random()*2,l:Math.min(p,c)-Math.random()*2,c,t:'simulada'}); p = c; }
+  const I = INSTR[S.inst], k = I.simK; let p = I.simBase; const out = [];
+  for(let i=0;i<300;i++){ const c = p + ((Math.random()-.49)*4 + Math.sin(i/9)*1.2)*k; out.push({o:p,h:Math.max(p,c)+Math.random()*2*k,l:Math.min(p,c)-Math.random()*2*k,c,t:'simulada'}); p = c; }
   S.candles = out; S.ltf = []; S.src = 'sim'; S.msg = msg; analyze();
 }
 function setSrc(text, cls){ const el = $('src'); el.textContent = text; el.className = 'src ' + cls; }
@@ -314,7 +319,7 @@ function analyze(){
 function chip(id, text, cls){ const e=$(id); e.className='chip '+cls; e.querySelector('b').textContent=text; }
 function render(){
   const a = S.a, c = S.candles;
-  $('price').textContent = '$' + fmt(a.price);
+  $('price').textContent = INSTR[S.inst].pre + fmt(a.price);
   const pct = (a.price - c[0].o)/c[0].o*100;
   $('delta').textContent = (pct>=0?'+':'') + pct.toFixed(2) + '% en el periodo';
   $('delta').className = 'delta ' + (pct>=0?'up':'down');
@@ -328,21 +333,24 @@ function render(){
   const t = $('ticket'); t.className = 'card ticket ' + (a.buy?'':'sell ') + (a.state==='bad'?'off':'');
   $('tkSide').textContent = a.buy ? 'Compra' : 'Venta'; $('tkSide').className = 'tk-side ' + (a.buy?'buy-c':'sell-c');
   $('tkRR').textContent = `R:R 1 : ${fmt(a.rr1)} · TP2 1 : ${fmt(a.rr2)}`;
-  $('tkEntry').textContent = '$' + fmt(a.entry) + (a.confirmed?'':' (límite)');
-  $('tkSL').textContent = '$'+fmt(a.sl); $('tkTP1').textContent = '$'+fmt(a.tp1); $('tkTP2').textContent = '$'+fmt(a.tp2);
+  $('tkEntry').textContent = INSTR[S.inst].pre + fmt(a.entry) + (a.confirmed?'':' (límite)');
+  $('tkSL').textContent = INSTR[S.inst].pre+fmt(a.sl); $('tkTP1').textContent = INSTR[S.inst].pre+fmt(a.tp1); $('tkTP2').textContent = INSTR[S.inst].pre+fmt(a.tp2);
   $('tkNote').textContent = a.why + (S.src==='sim' && S.msg ? ' ' + S.msg : '');
   risk(); draw();
 }
 function risk(){
   const a = S.a; if(!a) return;
+  const I = INSTR[S.inst], gold = S.inst==='XAU', rk = a.risk || 1;
   const bal = parseFloat($('bal').value)||0, pct = parseFloat($('riskPct').value)||0, usd = bal*pct/100;
-  const raw = usd/((a.risk||1)*OZ), lots = Math.floor(raw*100)/100;
+  let qty, perQ, txt, ok;
+  if(gold){ qty = Math.floor(usd/(rk*I.per)*100)/100; perQ = I.per; ok = qty>=0.01; txt = fmt(qty); }
+  else { const nq = Math.floor(usd/(rk*I.per)), mn = Math.floor(usd/(rk*I.mper)); qty = nq>=1 ? nq : mn; perQ = nq>=1 ? I.per : I.mper; ok = qty>=1; txt = `${nq} NQ · ${mn} MNQ`; }
   $('riskUsd').textContent = '$'+fmt(usd); $('slDist').textContent = fmt(a.risk)+' pts';
-  $('lots').textContent = fmt(lots);
-  const w = $('lotWarn');
-  if(lots<0.01){ w.hidden=false; w.textContent='Con ese riesgo el SL pide menos de 0.01 lotes. Sube el riesgo, el balance o espera un SL más corto.'; }
-  else w.hidden=true;
-  $('pl').textContent = '$'+fmt(lots*OZ*Math.max(0,Math.abs(a.tp1-a.entry)))+' / $'+fmt(lots*OZ*Math.abs(a.tp2-a.entry));
+  $('lots').textContent = txt; $('lots').style.fontSize = gold ? '28px' : '20px';
+  $('pl').textContent = ok ? '$'+fmt(qty*perQ*Math.abs(a.tp1-a.entry))+' / $'+fmt(qty*perQ*Math.abs(a.tp2-a.entry)) : '—';
+  const w = $('lotWarn'); w.hidden = ok;
+  w.textContent = gold ? 'Con ese riesgo el SL pide menos de 0.01 lotes. Sube el riesgo, el balance o espera un SL más corto.'
+    : 'Con ese riesgo no alcanza ni para 1 contrato micro (MNQ). Sube el riesgo o el balance, o espera un SL más corto.';
 }
 
 /* ---------- Gráfico ---------- */
@@ -454,7 +462,7 @@ $('zOut').onclick = () => { S.vw.n = Math.min(220, S.vw.n+15); redraw(); };
 window.addEventListener('resize', redraw);
 
 /* ---------- Bitácora ---------- */
-function saveJ(){ store.set('aurum_journal', JSON.stringify(S.journal)); renderJ(); }
+function saveJ(){ store.set(jkey(), JSON.stringify(S.journal)); renderJ(); }
 function record(res){
   if(!S.a) return;
   S.journal.unshift({ts:Date.now(), side:S.a.buy?'Compra':'Venta', res, r: res==='WIN' ? +S.a.rr1.toFixed(2) : -1});
@@ -487,12 +495,12 @@ $('clearNews').onclick = () => { S.news=null; store.del('aurum_news'); $('newsAt
 $('bal').oninput = $('riskPct').oninput = risk;
 
 /* ---------- Gatillo 1m ---------- */
-async function loadLTF(){
+async function loadLTF(){ const k0 = S.inst;
   S.ltf = [];
   try{
     const end = S.hist ? '&end_date=' + S.hist.toISOString().slice(0,19).replace('T',' ') : '';
-    const d = await (await fetch(`https://api.twelvedata.com/time_series?symbol=XAU/USD&interval=1min&outputsize=120&timezone=UTC${end}&apikey=${encodeURIComponent(S.key)}`)).json();
-    if(Array.isArray(d.values)) S.ltf = d.values.slice().reverse().map(v => ({o:+v.open,h:+v.high,l:+v.low,c:+v.close,t:v.datetime}));
+    const d = await (await fetch(`https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(sym())}&interval=1min&outputsize=120&timezone=UTC${end}&apikey=${encodeURIComponent(S.key)}`)).json();
+    if(Array.isArray(d.values) && k0 === S.inst) S.ltf = d.values.slice().reverse().map(v => ({o:+v.open,h:+v.high,l:+v.low,c:+v.close,t:v.datetime}));
   }catch(e){}
 }
 
@@ -529,63 +537,85 @@ function renderNews(msg, err){
     : `<tr><td colspan="6" class="empty">${S.ff.length ? 'No hay eventos con esos filtros hoy.' : 'Aún no hay noticias cargadas.'}</td></tr>`;
 }
 
-/* ---------- COT del oro (CFTC, Disaggregated Futures Only) ---------- */
-const COT_URL = 'https://publicreporting.cftc.gov/resource/72hh-3qpy.json?cftc_contract_market_code=088691&$order=report_date_as_yyyy_mm_dd%20DESC&$limit=52';
+/* ---------- COT (CFTC) por instrumento ---------- */
 const pick = (r,re) => { const k = Object.keys(r).find(x => re.test(x)); return k ? +r[k] : NaN; };
-const COTG = [['mm','Fondos (managed money)'],['sw','Bancos y swap dealers'],['pm','Productores y mineras'],['nr','Pequeños especuladores']];
+const net = (r,l,sh) => pick(r,l) - pick(r,sh);
+const CFTC = 'https://publicreporting.cftc.gov/resource/';
+const COTCFG = {
+  XAU:{ title:'Posicionamiento COT del oro (COMEX)', main:'mm',
+    url: CFTC+'72hh-3qpy.json?cftc_contract_market_code=088691&$order=report_date_as_yyyy_mm_dd%20DESC&$limit=52',
+    groups:[['mm','Fondos (managed money)'],['sw','Bancos y swap dealers'],['pm','Productores y mineras'],['nr','Pequeños especuladores']],
+    row: r => ({mm:net(r,/^m_money_positions_long_all$/,/^m_money_positions_short_all$/), sw:net(r,/^swap_+positions_long_all$/,/^swap_+positions_short_all$/),
+                pm:net(r,/^prod_merc_positions_long$/,/^prod_merc_positions_short$/), nr:net(r,/^nonrept_positions_long_all$/,/^nonrept_positions_short_all$/)}),
+    hi:'Los fondos están en el extremo largo de su rango anual: hay respaldo a la tendencia, pero la posición está cargada y una ruptura de soporte puede provocar liquidaciones.',
+    lo:'Los fondos están en el extremo corto: queda poco combustible vendedor y crece el riesgo de recompras bruscas si el precio sube.',
+    mid:'Los fondos están en zona intermedia: el posicionamiento no es una señal por sí solo.' },
+  NQ:{ title:'Posicionamiento COT del Nasdaq 100 (E-mini, CME)', main:'lf',
+    url: CFTC+'gpe5-46if.json?cftc_contract_market_code=209742&$order=report_date_as_yyyy_mm_dd%20DESC&$limit=52',
+    groups:[['lf','Fondos apalancados (hedge funds, CTA)'],['am','Gestores de activos (institucionales)'],['dl','Dealers (bancos)'],['or','Otros reportables'],['nr','Pequeños especuladores']],
+    row: r => ({lf:net(r,/^lev_money_positions_long(_all)?$/,/^lev_money_positions_short(_all)?$/), am:net(r,/^asset_mgr_positions_long(_all)?$/,/^asset_mgr_positions_short(_all)?$/),
+                dl:net(r,/^dealer_positions_long(_all)?$/,/^dealer_positions_short(_all)?$/), or:net(r,/^other_rept_positions_long(_all)?$/,/^other_rept_positions_short(_all)?$/),
+                nr:net(r,/^nonrept_positions_long(_all)?$/,/^nonrept_positions_short(_all)?$/)}),
+    hi:'Los fondos apalancados están en el extremo largo de su rango anual: posición cargada y vulnerable a toma de ganancias si el precio pierde un soporte.',
+    lo:'Los fondos apalancados están en el extremo corto de su rango anual: hay combustible para un squeeze si el precio sube. Una posición corta grande no es por sí sola una señal bajista.',
+    mid:'Los fondos apalancados están en zona intermedia: el posicionamiento no es una señal por sí solo.' }
+};
 async function loadCOT(){
+  const k0 = S.inst, C = COTCFG[k0];
   try{
-    const rows = await (await fetch(COT_URL)).json();
+    const rows = await (await fetch(C.url)).json();
+    if(k0 !== S.inst) return;
     if(!Array.isArray(rows) || !rows.length) throw new Error(rows.message || 'sin filas');
-    const g = rows.map(r => ({d:(r.report_date_as_yyyy_mm_dd||'').slice(0,10),
-      mm: pick(r,/^m_money_positions_long_all$/) - pick(r,/^m_money_positions_short_all$/),
-      sw: pick(r,/^swap_+positions_long_all$/) - pick(r,/^swap_+positions_short_all$/),
-      pm: pick(r,/^prod_merc_positions_long$/) - pick(r,/^prod_merc_positions_short$/),
-      nr: pick(r,/^nonrept_positions_long_all$/) - pick(r,/^nonrept_positions_short_all$/)})).reverse();
-    if(g.some(x => isNaN(x.mm))) throw new Error('los campos no coinciden con los esperados');
+    const g = rows.map(r => Object.assign({d:(r.report_date_as_yyyy_mm_dd||'').slice(0,10)}, C.row(r))).reverse();
+    if(g.some(x => isNaN(x[C.main]))) throw new Error('los campos no coinciden con los esperados');
     S.cot = g; $('cotMsg').textContent = ''; renderCOT();
-  }catch(e){ $('cotMsg').textContent = 'No se pudo cargar el COT: ' + e.message; }
+  }catch(e){ if(k0 === S.inst) $('cotMsg').textContent = 'No se pudo cargar el COT: ' + e.message; }
 }
 function renderCOT(){
-  const g = S.cot, L = g[g.length-1], P = g[g.length-2] || L, sg = n => (n>=0?'+':'') + n.toLocaleString('es');
+  const C = COTCFG[S.inst], g = S.cot, L = g[g.length-1], P = g[g.length-2] || L, sg = n => (n>=0?'+':'') + n.toLocaleString('es');
   const idxOf = k => { const v = g.map(x=>x[k]), mn = Math.min(...v), mx = Math.max(...v); return mx>mn ? Math.round((L[k]-mn)/(mx-mn)*100) : 50; };
-  $('cotBody').innerHTML = COTG.map(([k,n]) => { const ch = L[k]-P[k], i = idxOf(k);
+  $('cotBody').innerHTML = C.groups.map(([k,n]) => { const ch = L[k]-P[k], i = idxOf(k);
     return `<div class="cotrow"><span>${n}</span><b>${L[k].toLocaleString('es')}</b><span class="${ch>=0?'up':'down'}">${sg(ch)}</span><div class="bar"><i style="width:${i}%"></i></div><small>Posición neta en contratos · índice de 52 semanas: ${i}</small></div>`; }).join('');
-  const i = idxOf('mm');
-  $('cotTxt').textContent = (i>=80 ? 'Los fondos están en el extremo largo de su rango anual: hay respaldo a la tendencia, pero la posición está cargada y una ruptura de soporte puede provocar liquidaciones.'
-    : i<=20 ? 'Los fondos están en el extremo corto: queda poco combustible vendedor y crece el riesgo de recompras bruscas si el precio sube.'
-    : 'Los fondos están en zona intermedia: el posicionamiento no es una señal por sí solo.') + ` Datos del martes ${L.d}; la CFTC los publica los viernes.`;
+  const i = idxOf(C.main);
+  $('cotTxt').textContent = (i>=80 ? C.hi : i<=20 ? C.lo : C.mid) + ` Datos del martes ${L.d}; la CFTC los publica los viernes.`;
   const cv = $('cotCv'), dpr = window.devicePixelRatio||1, W = cv.clientWidth, H = cv.clientHeight; cv.width = W*dpr; cv.height = H*dpr;
-  const x = cv.getContext('2d'); x.scale(dpr,dpr); const v = g.map(q=>q.mm), mn = Math.min(...v), mx = Math.max(...v);
+  const x = cv.getContext('2d'); x.scale(dpr,dpr); const v = g.map(q=>q[C.main]), mn = Math.min(...v), mx = Math.max(...v);
   x.strokeStyle = '#D2A94B'; x.lineWidth = 1.6; x.beginPath();
   v.forEach((q,j) => { const px = j/(v.length-1)*W, py = H-4-(q-mn)/((mx-mn)||1)*(H-8); j ? x.lineTo(px,py) : x.moveTo(px,py); }); x.stroke();
 }
 
-/* ---------- Contexto macro (ETF como proxies, Twelve Data) ---------- */
-const MAC = [['UUP','Dólar (UUP)'],['TLT','Bonos largos (TLT)'],['GLD','Oro ETF (GLD)'],['SPY','Acciones (SPY)']];
+/* ---------- Contexto macro por instrumento (ETF como proxies, Twelve Data) ---------- */
+const MACCFG = {
+  XAU:{ syms:[['UUP','Dólar (UUP)'],['TLT','Bonos largos (TLT)'],['GLD','Oro ETF (GLD)'],['SPY','Acciones (SPY)']], ref:'GLD', refName:'oro',
+    verdict:(pc,M) => { const usd = pc(M.UUP,5), bnd = pc(M.TLT,5), sc = (usd<0?1:-1) + (bnd>0?1:-1);
+      return (sc>=2 ? 'Viento a favor del oro: ' : sc<=-2 ? 'Viento en contra del oro: ' : 'Señales mixtas: ') +
+        `en 5 sesiones el dólar ${usd<0?'cae':'sube'} y los bonos largos ${bnd>0?'suben (rendimientos a la baja)':'caen (rendimientos al alza)'}. Son ETF usados como proxy, no el DXY ni el rendimiento real.`; } },
+  NQ:{ syms:[['QQQ','Nasdaq 100 (QQQ)'],['SPY','S&P 500 (SPY)'],['TLT','Bonos largos (TLT)'],['UUP','Dólar (UUP)']], ref:'QQQ', refName:'QQQ',
+    verdict:(pc,M) => { const bnd = pc(M.TLT,5), usd = pc(M.UUP,5), spy = pc(M.SPY,5), sc = (bnd>0?1:-1) + (usd<0?1:-1) + (spy>0?1:-1);
+      return (sc===3 ? 'Viento a favor del Nasdaq: ' : sc===-3 ? 'Viento en contra del Nasdaq: ' : sc>0 ? 'Inclinación a favor: ' : 'Inclinación en contra: ') +
+        `en 5 sesiones los bonos largos ${bnd>0?'suben (rendimientos a la baja)':'caen (rendimientos al alza)'}, el dólar ${usd<0?'cae':'sube'} y el S&P 500 ${spy>0?'avanza':'retrocede'}. Son ETF usados como proxy.`; } }
+};
 async function loadMacro(){
+  const k0 = S.inst, C = MACCFG[k0];
   if(!S.key){ $('macMsg').textContent = 'Agrega tu API key para cargar el contexto macro.'; return; }
   try{
-    const d = await (await fetch(`https://api.twelvedata.com/time_series?symbol=${MAC.map(m=>m[0]).join(',')}&interval=1day&outputsize=30&apikey=${encodeURIComponent(S.key)}`)).json();
+    const d = await (await fetch(`https://api.twelvedata.com/time_series?symbol=${C.syms.map(m=>m[0]).join(',')}&interval=1day&outputsize=30&apikey=${encodeURIComponent(S.key)}`)).json();
+    if(k0 !== S.inst) return;
     const o = {};
-    for(const [s] of MAC){ const q = d[s]; if(!q || !q.values) throw new Error((q && q.message) || d.message || 'sin datos de ' + s); o[s] = q.values.slice().reverse().map(v => +v.close); }
+    for(const [s] of C.syms){ const q = d[s]; if(!q || !q.values) throw new Error((q && q.message) || d.message || 'sin datos de ' + s); o[s] = q.values.slice().reverse().map(v => +v.close); }
     S.macro = o; renderMacro();
-  }catch(e){ $('macMsg').textContent = 'No se pudo cargar: ' + e.message; }
+  }catch(e){ if(k0 === S.inst) $('macMsg').textContent = 'No se pudo cargar: ' + e.message; }
 }
 const ret = a => a.slice(1).map((x,i) => x/a[i]-1);
 function corr(a,b){ const n = Math.min(a.length,b.length); a = a.slice(-n); b = b.slice(-n);
   const ma = a.reduce((s,x)=>s+x,0)/n, mb = b.reduce((s,x)=>s+x,0)/n; let c=0, va=0, vb=0;
   for(let i=0;i<n;i++){ c += (a[i]-ma)*(b[i]-mb); va += (a[i]-ma)**2; vb += (b[i]-mb)**2; } return c/Math.sqrt(va*vb || 1); }
 function renderMacro(){
-  const M = S.macro, pc = (a,n) => (a[a.length-1]/a[a.length-1-n]-1)*100, g = ret(M.GLD).slice(-20);
-  let h = '<div class="mrow h"><span></span><span>1 día</span><span>5 días</span><span>Corr. oro</span></div>';
-  MAC.forEach(([s,n]) => { const a = M[s], d1 = pc(a,1), d5 = pc(a,5), c = s==='GLD' ? 1 : corr(ret(a).slice(-20), g);
+  const C = MACCFG[S.inst], M = S.macro, pc = (a,n) => (a[a.length-1]/a[a.length-1-n]-1)*100, g = ret(M[C.ref]).slice(-20);
+  let h = `<div class="mrow h"><span></span><span>1 día</span><span>5 días</span><span>Corr. ${C.refName}</span></div>`;
+  C.syms.forEach(([s,n]) => { const a = M[s], d1 = pc(a,1), d5 = pc(a,5), c = s===C.ref ? 1 : corr(ret(a).slice(-20), g);
     h += `<div class="mrow"><span>${n}</span><span class="${d1>=0?'up':'down'}">${d1.toFixed(2)}%</span><span class="${d5>=0?'up':'down'}">${d5.toFixed(2)}%</span><span>${c.toFixed(2)}</span></div>`; });
-  $('macBody').innerHTML = h;
-  const usd = pc(M.UUP,5), bnd = pc(M.TLT,5), sc = (usd<0?1:-1) + (bnd>0?1:-1);
-  $('macTxt').textContent = (sc>=2 ? 'Viento a favor del oro: ' : sc<=-2 ? 'Viento en contra del oro: ' : 'Señales mixtas: ') +
-    `en 5 sesiones el dólar ${usd<0?'cae':'sube'} y los bonos largos ${bnd>0?'suben (rendimientos a la baja)':'caen (rendimientos al alza)'}. Son ETF usados como proxy, no el DXY ni el rendimiento real.`;
-  $('macMsg').textContent = '';
+  $('macBody').innerHTML = h; $('macTxt').textContent = C.verdict(pc, M); $('macMsg').textContent = '';
 }
 
 /* ---------- Eventos de las nuevas secciones ---------- */
@@ -599,6 +629,46 @@ $('pasteFF').onclick = () => { const t = prompt('Pega aquí el JSON de ' + FF_UR
 setInterval(() => { if(!document.hidden){ loadNews(); loadMacro(); } }, 900000);
 window.addEventListener('resize', () => { if(S.cot) renderCOT(); });
 
+/* ---------- Instrumentos y pestañas ---------- */
+const INSTR = {
+  XAU:{ tick:'XAU/USD', sym:'XAU/USD', pre:'$', per:100, sizeLbl:'Lotes sugeridos', simBase:3300, simK:1, cotTitle:COTCFG.XAU.title,
+        hint:'Oro spot. 1 lote estándar = 100 oz.' },
+  NQ:{ tick:'NQ · Nasdaq 100', sym:'NDX', pre:'', per:20, mper:2, sizeLbl:'Contratos sugeridos', simBase:24000, simK:12, cotTitle:COTCFG.NQ.title,
+       hint:'NDX es el índice, no el futuro: puede diferir del NQ por la base. Si tu plan no lo incluye, cambia el símbolo (QQQ tiene otra escala y no sirve para el lotaje). 1 punto = $20 (NQ) o $2 (MNQ).' }
+};
+S.inst = 'XAU'; S.store = {};
+const sym = () => store.get('sym_' + S.inst, INSTR[S.inst].sym);
+function jkey(){ return S.inst==='XAU' ? 'aurum_journal' : 'aurum_journal_' + S.inst; }
+const KEEP = ['candles','ltf','a','src','msg','cot','macro','vw','hover','journal'];
+function applyInstUI(){
+  const I = INSTR[S.inst];
+  [...$('instTabs').children].forEach(b => { const on = b.dataset.i===S.inst; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
+  $('instName').textContent = I.tick; document.title = 'AURUM · ' + I.tick;
+  $('sizeLbl').textContent = I.sizeLbl; $('cotTitle').textContent = I.cotTitle; $('jTitle').textContent = 'Bitácora · ' + I.tick;
+  $('symIn').value = sym(); $('symHint').textContent = I.hint;
+}
+function clearPanels(){
+  $('price').textContent = '—'; $('delta').textContent = '—'; $('delta').className = 'delta'; setSrc('Cargando…','sim');
+  ['cBias','cMss','cNews','cSetup'].forEach(id => chip(id,'—',''));
+  ['tkSide','tkRR','tkEntry','tkSL','tkTP1','tkTP2','tkNote','riskUsd','slDist','lots','pl'].forEach(id => $(id).textContent = '—');
+  $('ticket').className = 'card ticket off'; $('lotWarn').hidden = true;
+  const c = $('cv'); c.getContext('2d').clearRect(0,0,c.width,c.height);
+}
+function switchInst(k){
+  if(k === S.inst) return;
+  S.store[S.inst] = Object.fromEntries(KEEP.map(f => [f, S[f]]));
+  S.inst = k;
+  const sv = S.store[k], def = {candles:[],ltf:[],a:null,src:'sim',msg:'',cot:null,macro:null,vw:{n:90,off:0},hover:-1,journal:JSON.parse(store.get(jkey(),'[]'))};
+  KEEP.forEach(f => S[f] = sv ? sv[f] : def[f]);
+  applyInstUI(); renderJ();
+  if(S.a) render(); else clearPanels();
+  if(S.cot) renderCOT(); else { $('cotBody').innerHTML = ''; $('cotTxt').textContent = ''; $('cotMsg').textContent = ''; const cc = $('cotCv'); cc.getContext('2d').clearRect(0,0,cc.width,cc.height); }
+  if(S.macro) renderMacro(); else { $('macBody').innerHTML = ''; $('macTxt').textContent = ''; $('macMsg').textContent = ''; }
+  load(); loadCOT(); loadMacro();
+}
+$('instTabs').addEventListener('click', e => { const b = e.target.closest('button'); if(b) switchInst(b.dataset.i); });
+$('saveSym').onclick = () => { const v = $('symIn').value.trim(); if(v){ store.set('sym_' + S.inst, v); load(); } };
+applyInstUI();
 $('apiKey').value = S.key;
 if(S.news){ $('newsAt').value = S.news.at; $('newsWin').value = S.news.win; }
 renderJ(); load(); loadNews(); loadCOT(); loadMacro();
