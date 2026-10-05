@@ -100,6 +100,14 @@ canvas#cv{touch-action:pan-y;cursor:grab}
 .cnav button{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:3px 10px;font-size:13px;color:var(--text)}
 .cnav button:hover{border-color:var(--brass)}
 #instTabs button{padding:9px 22px;font-weight:600}
+.layers{display:flex;gap:6px;flex-wrap:wrap}
+.layers button{background:none;border:1px solid var(--line);border-radius:99px;padding:5px 12px;color:var(--mute);font-size:13px}
+.layers button.on{border-color:var(--brass);color:var(--text);background:rgba(210,169,75,.12)}
+#mtfBtn[aria-pressed="true"]{border-color:var(--brass);background:rgba(210,169,75,.12)}
+.multi{display:none;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.multi.on{display:grid}
+@media(max-width:980px){.multi.on{grid-template-columns:1fr}}
+.mbox{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px}
+.mt{font-weight:600;margin-bottom:6px}.mbox canvas{height:220px}
 </style>
 </head>
 <body>
@@ -117,6 +125,7 @@ canvas#cv{touch-action:pan-y;cursor:grab}
     </div>
     <div class="chips">
       <div class="chip" id="cBias"><small>Sesgo de estructura</small><b>—</b></div>
+      <div class="chip" id="cHb"><small>Sesgo 4H · Diario</small><b>—</b></div>
       <div class="chip" id="cMss"><small>Barrido + MSS</small><b>—</b></div>
       <div class="chip" id="cNews"><small>Noticias</small><b>—</b></div>
       <div class="chip" id="cSetup"><small>Setup</small><b>—</b></div>
@@ -128,7 +137,13 @@ canvas#cv{touch-action:pan-y;cursor:grab}
       <button data-tf="5min">5m</button><button data-tf="15min" class="on">15m</button>
       <button data-tf="1h">1h</button><button data-tf="4h">4h</button>
     </div>
-    <span style="display:flex;gap:8px"><button class="ghost" id="refNow">Actualizar ahora</button><button class="ghost" id="toggleSet">Ajustes y backtest</button></span>
+    <div class="layers" id="layers" role="group" aria-label="Capas del gráfico">
+      <button data-l="ses" class="on" aria-pressed="true" title="Día previo, Asia, Londres y apertura de NY">Sesiones</button>
+      <button data-l="zon" class="on" aria-pressed="true" title="Fair value gaps y order blocks sin mitigar">FVG / OB</button>
+      <button data-l="liq" class="on" aria-pressed="true" title="Máximos y mínimos iguales">Liquidez EQH/EQL</button>
+      <button data-l="hb" class="on" aria-pressed="true" title="No operar contra el sesgo de 4H">Filtro 4H/D</button>
+    </div>
+    <span style="display:flex;gap:8px"><button class="ghost" id="mtfBtn" aria-pressed="false">Vista múltiple</button><button class="ghost" id="refNow">Actualizar ahora</button><button class="ghost" id="toggleSet">Ajustes y backtest</button></span>
   </div>
 
   <section class="settings" id="settings">
@@ -176,6 +191,12 @@ canvas#cv{touch-action:pan-y;cursor:grab}
       </div>
     </aside>
   </div>
+  <section class="multi" id="multi" aria-label="Vista múltiple">
+    <div class="mbox"><div class="mt" id="mt4">4H</div><canvas id="mc4"></canvas></div>
+    <div class="mbox"><div class="mt" id="mt15">15m</div><canvas id="mc15"></canvas></div>
+    <div class="mbox"><div class="mt" id="mt1">1m</div><canvas id="mc1"></canvas></div>
+  </section>
+
   <div class="lower">
     <section class="card">
       <div class="nhead"><h2>Noticias de hoy · ForexFactory</h2>
@@ -228,12 +249,11 @@ async function load(){ const k0 = S.inst;
   setSrc('Cargando…','sim');
   try{
     const end = S.hist ? '&end_date=' + S.hist.toISOString().slice(0,19).replace('T',' ') : '';
-    const url = `https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(sym())}&interval=${S.tf}&outputsize=300&timezone=UTC${end}&apikey=${encodeURIComponent(S.key)}`;
+    const url = `https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(sym())}&interval=${S.tf}&outputsize=${OUT[S.tf]||300}&timezone=UTC${end}&apikey=${encodeURIComponent(S.key)}`;
     const d = await (await fetch(url)).json(); if(k0 !== S.inst) return;
     if(d.status === 'error' || !Array.isArray(d.values) || d.values.length < 30) throw new Error(d.message || 'La respuesta no trajo velas suficientes');
     S.candles = d.values.slice().reverse().map(v => ({o:+v.open,h:+v.high,l:+v.low,c:+v.close,t:v.datetime}));
-    S.src = S.hist ? 'hist' : 'live'; await loadLTF();
-    analyze();
+    S.src = S.hist ? 'hist' : 'live'; await loadLTF(); analyze(); loadHB().then(() => { if(k0 === S.inst) analyze(); }); if(S.mtfOn) loadMTF();
   }catch(e){ if(k0 !== S.inst) return; sim('No se pudo cargar: ' + e.message); }
 }
 function sim(msg){
@@ -296,6 +316,7 @@ function analyze(){
     else if(H[1].p<H[0].p && L[1].p<L[0].p) bias = 'Bajista';
   }
   const side = price < eq ? 'buy' : 'sell', buy = side==='buy';
+  const ctx = buildCtx(c, sw, A, price, buy);
   const mss = findMSS(c, sw, side), hasL = S.ltf.length>30, lt = hasL ? findMSS(S.ltf, swings(S.ltf,3), side) : null;
   const confirmed = hasL ? !!(lt && lt.broke!==null) : !!(mss && mss.broke!==null);
   const entry = confirmed ? price : (buy ? Math.min(price, lo+.5*A) : Math.max(price, hi-.5*A));
@@ -304,14 +325,16 @@ function analyze(){
   const risk = Math.abs(entry-sl), room = buy ? tp1-entry : entry-tp1;
   const rr1 = room>0 ? room/(risk||1) : 0, rr2 = (buy ? tp2-entry : entry-tp2)/(risk||1);
   const blocked = newsBlocked();
+  const hb = S.hb, want = buy ? 'Alcista' : 'Bajista', opp = !!(S.layers.hb && hb && hb.h4!=='Rango' && hb.h4!==want);
   let state = 'wait', why = 'Falta el cierre que rompe la estructura en contra del barrido.';
   if(blocked){ state='bad'; why='Hay una noticia de alto impacto en la ventana que definiste.'; }
+  else if(opp){ state='bad'; why = `Va contra el sesgo de 4H (${hb.h4}; diario: ${hb.d1}). Puedes desactivar el filtro arriba.`; }
   else if(room<=0){ state='bad'; why='El precio ya pasó el equilibrio; no queda recorrido hacia TP1.'; }
   else if(rr1<MIN_RR){ state='bad'; why=`R:R a TP1 (${fmt(rr1)}) menor que el mínimo de ${MIN_RR}.`; }
   else if(confirmed){ state='ok'; why='Barrido y MSS confirmados, R:R dentro del mínimo.'; }
   else if(mss){ why='Hubo barrido; espera un cierre que rompa ' + fmt(mss.lvl) + '.'; }
   else why = 'Aún no hay barrido de liquidez reciente.';
-  S.a = {lt,ltf:hasL,price,A,hi,lo,eq,bias,side,buy,mss,confirmed,entry,sl,tp1,tp2,risk,rr1,rr2,blocked,state,why,sw};
+  S.a = {ctx,opp,lt,ltf:hasL,price,A,hi,lo,eq,bias,side,buy,mss,confirmed,entry,sl,tp1,tp2,risk,rr1,rr2,blocked,state,why,sw};
   render();
 }
 
@@ -320,12 +343,13 @@ function chip(id, text, cls){ const e=$(id); e.className='chip '+cls; e.querySel
 function render(){
   const a = S.a, c = S.candles;
   $('price').textContent = INSTR[S.inst].pre + fmt(a.price);
-  const pct = (a.price - c[0].o)/c[0].o*100;
-  $('delta').textContent = (pct>=0?'+':'') + pct.toFixed(2) + '% en el periodo';
+  const l0 = c[c.length-1], i0 = l0.dk != null ? c.findIndex(v => v.dk===l0.dk) : 0, base0 = c[Math.max(0,i0)].o, pct = (a.price - base0)/base0*100;
+  $('delta').textContent = (pct>=0?'+':'') + pct.toFixed(2) + (l0.dk != null ? '% en el día de trading' : '% en el periodo');
   $('delta').className = 'delta ' + (pct>=0?'up':'down');
   const srcTxt = {live:'En vivo',hist:'Histórico',sim:'Datos simulados'}[S.src];
   setSrc(srcTxt, S.src); $('src').title = S.msg;
   chip('cBias', a.bias, a.bias==='Alcista'?'ok':a.bias==='Bajista'?'bad':'wait');
+  const hb = S.hb; chip('cHb', hb ? `${hb.h4} · ${hb.d1}` : 'Cargando…', hb ? (hb.h4===hb.d1 && hb.h4!=='Rango' ? (hb.h4==='Alcista'?'ok':'bad') : 'wait') : '');
   const tfl = a.ltf?'1m':S.tf, sw1 = a.ltf?a.lt:a.mss;
   chip('cMss', a.confirmed?`MSS ${tfl} confirmado`:sw1?`Barrido ${tfl}, falta MSS`:`Sin barrido ${tfl}`, a.confirmed?'ok':sw1?'wait':'');
   chip('cNews', a.blocked?'Bloqueado':S.news?'Programada':'Sin bloqueo', a.blocked?'bad':'ok');
@@ -335,8 +359,8 @@ function render(){
   $('tkRR').textContent = `R:R 1 : ${fmt(a.rr1)} · TP2 1 : ${fmt(a.rr2)}`;
   $('tkEntry').textContent = INSTR[S.inst].pre + fmt(a.entry) + (a.confirmed?'':' (límite)');
   $('tkSL').textContent = INSTR[S.inst].pre+fmt(a.sl); $('tkTP1').textContent = INSTR[S.inst].pre+fmt(a.tp1); $('tkTP2').textContent = INSTR[S.inst].pre+fmt(a.tp2);
-  $('tkNote').textContent = a.why + (S.src==='sim' && S.msg ? ' ' + S.msg : '');
-  risk(); draw();
+  $('tkNote').textContent = a.why + (a.ctx.conf ? ' ' + a.ctx.conf : '') + (S.src==='sim' && S.msg ? ' ' + S.msg : '');
+  risk(); draw(); drawMulti();
 }
 function risk(){
   const a = S.a; if(!a) return;
@@ -405,6 +429,18 @@ function draw(){
     const bx = X(c.length-1), bw = W-PR-bx, box = (p1,p2,col) => { x.fillStyle = col; x.fillRect(bx, Math.min(Y(p1),Y(p2)), bw, Math.abs(Y(p1)-Y(p2))); };
     box(a.entry,a.tp1,'rgba(86,194,163,.14)'); box(a.entry,a.sl,'rgba(232,112,92,.16)');
   }
+  const CX = a.ctx, ly = S.layers;
+  if(ly.zon){
+    const zr = (z,nm) => { if(z.hi<min || z.lo>max) return; const x0 = Math.max(0,X(z.i)), top = Y(z.hi), h = Math.max(2,Y(z.lo)-top), col = z.dir==='bull' ? '86,194,163' : '232,112,92';
+      x.fillStyle = `rgba(${col},${nm==='OB'?.17:.1})`; x.fillRect(x0,top,W-PR-x0,h);
+      if(nm==='OB'){ x.strokeStyle = `rgba(${col},.5)`; x.lineWidth = 1; x.strokeRect(x0+.5,top,W-PR-x0,h); }
+      x.fillStyle = `rgba(${col},1)`; x.font = '600 10px IBM Plex Sans'; x.fillText(nm, Math.max(x0+4,132), top+8); };
+    CX.fvg.forEach(z => zr(z,'FVG')); CX.ob.forEach(z => zr(z,'OB'));
+  }
+  if(ly.ses) CX.lv.forEach(l => { if(!inY(l.p)) return; x.globalAlpha = l.taken ? .35 : .9; x.strokeStyle = l.col; x.lineWidth = 1; x.setLineDash([2,3]); x.beginPath(); x.moveTo(Math.max(0,X(l.i0)),Y(l.p)); x.lineTo(W-PR,Y(l.p)); x.stroke(); });
+  if(ly.liq) CX.eq.forEach(q => { if(!inY(q.p)) return; x.globalAlpha = 1; x.strokeStyle = '#E3B341'; x.lineWidth = 1; x.setLineDash([5,3]); x.beginPath(); x.moveTo(Math.max(0,X(q.i0)),Y(q.p)); x.lineTo(W-PR,Y(q.p)); x.stroke();
+    x.setLineDash([]); x.fillStyle = '#E3B341'; [q.i0,q.i1].forEach(i => { if(i>=start && i<end){ x.beginPath(); x.arc(X(i),Y(q.p),3,0,7); x.fill(); } }); });
+  x.setLineDash([]); x.globalAlpha = 1; x.font = '600 11px IBM Plex Sans';
   L.forEach(l => { x.globalAlpha = l.w<1 ? .75 : 1; x.strokeStyle = l.col; x.lineWidth = l.w>=4 ? 1.6 : 1.1; x.setLineDash(l.dash); x.beginPath(); x.moveTo(0,l.y); x.lineTo(W-PR,l.y); x.stroke(); });
   x.globalAlpha = 1; x.setLineDash([]); x.lineWidth = 1;
   for(let i=Math.max(0,start); i<end; i++){
@@ -420,6 +456,14 @@ function draw(){
   }
   if(S.hover>=start && S.hover<end){ x.strokeStyle='#8FA0A055'; x.beginPath(); x.moveTo(X(S.hover),PT); x.lineTo(X(S.hover),H-PB); x.stroke(); }
   x.restore();
+
+  /* Etiquetas de sesiones y liquidez: a la derecha, sobre su línea, separadas entre sí */
+  const tags = [];
+  if(ly.ses) CX.lv.forEach(l => { if(inY(l.p)) tags.push({y:Y(l.p), t:l.name + (l.taken?' ✓':''), col:l.col, al:l.taken?.55:1}); });
+  if(ly.liq) CX.eq.forEach(q => { if(inY(q.p)) tags.push({y:Y(q.p), t:q.name, col:'#E3B341', al:1}); });
+  spread(tags,'ty',12,H-PB-6); x.font = '600 10px IBM Plex Sans'; x.textAlign = 'right';
+  tags.forEach(t => { x.globalAlpha = t.al; x.fillStyle = t.col; x.fillText(t.t, W-PR-6, t.ty-7); });
+  x.globalAlpha = 1; x.textAlign = 'left'; x.font = '600 11px IBM Plex Sans';
 
   /* Etiquetas con nombre, a la izquierda, con un pequeño conector si hubo que moverlas */
   L.forEach(l => { const w = x.measureText(l.name).width + 14;
@@ -626,8 +670,9 @@ $('autoNews').onchange = () => { if(S.a) analyze(); };
 $('proxy').value = S.proxy;
 $('saveProxy').onclick = () => { S.proxy = $('proxy').value.trim(); store.set('ff_proxy', S.proxy); loadNews(true); };
 $('pasteFF').onclick = () => { const t = prompt('Pega aquí el JSON de ' + FF_URL); if(t){ try{ setFF(JSON.parse(t)); }catch(e){ renderNews('JSON inválido: ' + e.message, true); } } };
-setInterval(() => { if(!document.hidden){ loadNews(); loadMacro(); } }, 900000);
-window.addEventListener('resize', () => { if(S.cot) renderCOT(); });
+setInterval(() => { if(!document.hidden) loadNews(); }, 900000);
+setInterval(() => { if(!document.hidden) loadMacro(); }, 1800000);
+window.addEventListener('resize', () => { if(S.cot) renderCOT(); drawMulti(); });
 
 /* ---------- Instrumentos y pestañas ---------- */
 const INSTR = {
@@ -639,7 +684,7 @@ const INSTR = {
 S.inst = 'XAU'; S.store = {};
 const sym = () => store.get('sym_' + S.inst, INSTR[S.inst].sym);
 function jkey(){ return S.inst==='XAU' ? 'aurum_journal' : 'aurum_journal_' + S.inst; }
-const KEEP = ['candles','ltf','a','src','msg','cot','macro','vw','hover','journal'];
+const KEEP = ['candles','ltf','a','src','msg','cot','macro','vw','hover','journal','hb','mtf'];
 function applyInstUI(){
   const I = INSTR[S.inst];
   [...$('instTabs').children].forEach(b => { const on = b.dataset.i===S.inst; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
@@ -649,7 +694,7 @@ function applyInstUI(){
 }
 function clearPanels(){
   $('price').textContent = '—'; $('delta').textContent = '—'; $('delta').className = 'delta'; setSrc('Cargando…','sim');
-  ['cBias','cMss','cNews','cSetup'].forEach(id => chip(id,'—',''));
+  ['cBias','cHb','cMss','cNews','cSetup'].forEach(id => chip(id,'—',''));
   ['tkSide','tkRR','tkEntry','tkSL','tkTP1','tkTP2','tkNote','riskUsd','slDist','lots','pl'].forEach(id => $(id).textContent = '—');
   $('ticket').className = 'card ticket off'; $('lotWarn').hidden = true;
   const c = $('cv'); c.getContext('2d').clearRect(0,0,c.width,c.height);
@@ -658,9 +703,9 @@ function switchInst(k){
   if(k === S.inst) return;
   S.store[S.inst] = Object.fromEntries(KEEP.map(f => [f, S[f]]));
   S.inst = k;
-  const sv = S.store[k], def = {candles:[],ltf:[],a:null,src:'sim',msg:'',cot:null,macro:null,vw:{n:90,off:0},hover:-1,journal:JSON.parse(store.get(jkey(),'[]'))};
+  const sv = S.store[k], def = {candles:[],ltf:[],a:null,src:'sim',msg:'',cot:null,macro:null,vw:{n:90,off:0},hover:-1,hb:null,mtf:null,journal:JSON.parse(store.get(jkey(),'[]'))};
   KEEP.forEach(f => S[f] = sv ? sv[f] : def[f]);
-  applyInstUI(); renderJ();
+  applyInstUI(); renderJ(); drawMulti();
   if(S.a) render(); else clearPanels();
   if(S.cot) renderCOT(); else { $('cotBody').innerHTML = ''; $('cotTxt').textContent = ''; $('cotMsg').textContent = ''; const cc = $('cotCv'); cc.getContext('2d').clearRect(0,0,cc.width,cc.height); }
   if(S.macro) renderMacro(); else { $('macBody').innerHTML = ''; $('macTxt').textContent = ''; $('macMsg').textContent = ''; }
@@ -669,6 +714,131 @@ function switchInst(k){
 $('instTabs').addEventListener('click', e => { const b = e.target.closest('button'); if(b) switchInst(b.dataset.i); });
 $('saveSym').onclick = () => { const v = $('symIn').value.trim(); if(v){ store.set('sym_' + S.inst, v); load(); } };
 applyInstUI();
+/* ---------- Contexto de mercado: sesiones, zonas, liquidez, sesgo mayor y vista múltiple ---------- */
+const OUT = {'5min':1000, '15min':500};
+S.layers = Object.assign({ses:true, zon:true, liq:true, hb:true}, JSON.parse(store.get('aurum_layers','{}')));
+S.mtfOn = false;
+let _etf;
+function etInfo(t){
+  _etf = _etf || new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',hourCycle:'h23',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+  const d = new Date(t.replace(' ','T') + 'Z'); if(isNaN(d)) return null;
+  const q = {}; _etf.formatToParts(d).forEach(p => q[p.type] = p.value);
+  const em = (+q.hour)*60 + (+q.minute);
+  /* El día de trading de futuros y oro empieza a las 18:00 ET */
+  return {em, dk: Math.round((Date.UTC(+q.year, +q.month-1, +q.day) + (em>=1080 ? 86400000 : 0))/86400000)};
+}
+function enrich(c){ c.forEach(v => { if(v.dk === undefined){ const e = v.t.length>=16 ? etInfo(v.t) : null; v.dk = e ? e.dk : null; v.em = e ? e.em : null; } }); }
+function biasOf(c){
+  const sw = swings(c), H = sw.H.slice(-2), L = sw.L.slice(-2);
+  if(H.length===2 && L.length===2){ if(H[1].p>H[0].p && L[1].p>L[0].p) return 'Alcista'; if(H[1].p<H[0].p && L[1].p<L[0].p) return 'Bajista'; }
+  return 'Rango';
+}
+function buildCtx(c, sw, A, price, buy){
+  enrich(c);
+  const ctx = {lv:[], fvg:[], ob:[], eq:[], conf:''}, last = c.length-1, dk = c[last].dk;
+  /* Niveles de sesión (horas de Nueva York): Asia 20:00-00:00, Londres 02:00-05:00, apertura NY 09:30-09:45 */
+  if(dk !== null){
+    const idx = f => { const r = []; c.forEach((v,i) => { if(f(v)) r.push(i); }); return r; };
+    const add = (arr, nh, nl, col) => { if(!arr.length) return; const i0 = arr[0], i1 = arr[arr.length-1];
+      const h = Math.max(...arr.map(i=>c[i].h)), l = Math.min(...arr.map(i=>c[i].l)), after = c.slice(i1+1);
+      ctx.lv.push({name:nh, p:h, i0, col, taken:after.some(v => v.h>h)}); ctx.lv.push({name:nl, p:l, i0, col, taken:after.some(v => v.l<l)}); };
+    const prev = [...new Set(c.map(v=>v.dk).filter(d => d!==null && d<dk))].pop();
+    if(prev !== undefined) add(idx(v => v.dk===prev), 'PDH', 'PDL', '#9CB8FF');
+    if(S.tf !== '4h'){
+      add(idx(v => v.dk===dk && v.em>=1200), 'Asia H', 'Asia L', '#C792EA');
+      add(idx(v => v.dk===dk && v.em>=120 && v.em<300), 'Londres H', 'Londres L', '#F2A65A');
+      add(idx(v => v.dk===dk && v.em>=570 && v.em<585), 'OR NY H', 'OR NY L', '#7FD1E8');
+    }
+  }
+  /* Fair value gaps sin llenar */
+  for(let i=Math.max(2,last-150); i<last; i++){
+    const p0 = c[i-1], n0 = c[i+1];
+    if(n0.l - p0.h >= .15*A){ const z = {lo:p0.h, hi:n0.l, i, dir:'bull'}; if(!c.slice(i+2).some(v => v.l<=z.lo)) ctx.fvg.push(z); }
+    else if(p0.l - n0.h >= .15*A){ const z = {lo:n0.h, hi:p0.l, i, dir:'bear'}; if(!c.slice(i+2).some(v => v.h>=z.hi)) ctx.fvg.push(z); }
+  }
+  /* Order blocks: última vela contraria antes del desplazamiento que rompe un swing; vigente si no fue mitigado */
+  sw.H.slice(-8).forEach(h => { const k = c.findIndex((v,i) => i>h.i && v.c>h.p); if(k<0 || c[k].c-c[k].o < .8*A) return;
+    for(let j=k-1; j>=Math.max(0,k-12); j--) if(c[j].c<c[j].o){ const z = {lo:c[j].l, hi:c[j].h, i:j, dir:'bull'}; if(!c.slice(k+1).some(v => v.l<=z.hi)) ctx.ob.push(z); break; } });
+  sw.L.slice(-8).forEach(h => { const k = c.findIndex((v,i) => i>h.i && v.c<h.p); if(k<0 || c[k].o-c[k].c < .8*A) return;
+    for(let j=k-1; j>=Math.max(0,k-12); j--) if(c[j].c>c[j].o){ const z = {lo:c[j].l, hi:c[j].h, i:j, dir:'bear'}; if(!c.slice(k+1).some(v => v.h>=z.lo)) ctx.ob.push(z); break; } });
+  const near = z => Math.abs((z.lo+z.hi)/2 - price);
+  ctx.fvg = ctx.fvg.sort((a,b) => near(a)-near(b)).slice(0,5);
+  ctx.ob = ctx.ob.filter((z,i,arr) => arr.findIndex(q => q.i===z.i)===i).sort((a,b) => near(a)-near(b)).slice(0,4);
+  /* Máximos y mínimos iguales aún sin barrer */
+  const tol = .12*A;
+  [['EQH', sw.H, 'h', 1], ['EQL', sw.L, 'l', -1]].forEach(([nm, pts, k, sgn]) => {
+    const r = pts.filter(q => q.i>=last-100);
+    for(let a=0;a<r.length;a++) for(let b=a+1;b<r.length;b++){
+      if(Math.abs(r[a].p-r[b].p) > tol) continue;
+      const p = sgn>0 ? Math.max(r[a].p,r[b].p) : Math.min(r[a].p,r[b].p);
+      if(c.slice(r[b].i+1).some(v => sgn>0 ? v.h>p+tol*.3 : v.l<p-tol*.3)) continue;
+      if(!ctx.eq.some(q => q.name===nm && Math.abs(q.p-p)<tol)) ctx.eq.push({name:nm, p, i0:r[a].i, i1:r[b].i});
+    } });
+  ctx.eq = ctx.eq.sort((a,b) => Math.abs(a.p-price)-Math.abs(b.p-price)).slice(0,4);
+  /* Confluencia con el precio actual */
+  const want = buy ? 'bull' : 'bear', inZ = z => z.dir===want && price>=z.lo-.25*A && price<=z.hi+.25*A;
+  const hit = [...(ctx.ob.some(inZ)?['OB']:[]), ...(ctx.fvg.some(inZ)?['FVG']:[])];
+  if(hit.length) ctx.conf = `Confluencia: el precio está en una zona ${hit.join(' + ')} ${buy?'alcista':'bajista'}.`;
+  const lq = ctx.lv.find(l => !l.taken && Math.abs(l.p-price) < .5*A);
+  if(lq) ctx.conf += (ctx.conf?' ':'') + `Liquidez sin barrer cerca: ${lq.name}.`;
+  return ctx;
+}
+
+/* Sesgo de estructura en 4H y diario (se refresca cada 30 min) */
+async function fetchC(iv, size){
+  const end = S.hist ? '&end_date=' + S.hist.toISOString().slice(0,19).replace('T',' ') : '';
+  const d = await (await fetch(`https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(sym())}&interval=${iv}&outputsize=${size}&timezone=UTC${end}&apikey=${encodeURIComponent(S.key)}`)).json();
+  return Array.isArray(d.values) ? d.values.slice().reverse().map(v => ({o:+v.open,h:+v.high,l:+v.low,c:+v.close,t:v.datetime})) : null;
+}
+async function loadHB(){
+  const k0 = S.inst, hk = S.hist ? S.hist.getTime() : 0;
+  if(!S.key || S.src==='sim') return;
+  if(S.hb && S.hb.hk===hk && Date.now()-S.hb.at < 1800000) return;
+  try{
+    const c4 = await fetchC('4h',150), d1 = await fetchC('1day',80);
+    if(k0 !== S.inst) return;
+    if(c4 && d1){ S.hb = {at:Date.now(), hk, h4:biasOf(c4), d1:biasOf(d1)}; S.mtf = S.mtf || {}; S.mtf['4h'] = c4; }
+  }catch(e){}
+}
+async function loadMTF(){
+  const k0 = S.inst;
+  if(!S.key || S.src==='sim'){ drawMulti(); return; }
+  try{
+    S.mtf = S.mtf || {};
+    const c15 = S.tf==='15min' ? S.candles : await fetchC('15min',150);
+    if(k0 !== S.inst) return;
+    if(c15) S.mtf['15min'] = c15;
+    if(!S.mtf['4h']){ const c4 = await fetchC('4h',150); if(k0 !== S.inst) return; if(c4) S.mtf['4h'] = c4; }
+  }catch(e){}
+  drawMulti();
+}
+function mini(id, c){
+  const cv = $(id); if(!cv) return;
+  const dpr = window.devicePixelRatio||1, W = cv.clientWidth, H = cv.clientHeight; cv.width = W*dpr; cv.height = H*dpr;
+  const x = cv.getContext('2d'); x.scale(dpr,dpr); x.clearRect(0,0,W,H); x.font = '11px IBM Plex Sans'; x.textBaseline = 'middle';
+  if(!c || c.length<5){ x.fillStyle = '#8FA0A0'; x.fillText('Sin datos reales: agrega tu API key o espera la carga.', 12, H/2); return; }
+  const vis = c.slice(-70), MP = 52, cw = (W-MP)/(vis.length+8);
+  let min = Math.min(...vis.map(v=>v.l)), max = Math.max(...vis.map(v=>v.h)); const pad = (max-min)*.06; min -= pad; max += pad;
+  const Y = p => 6 + (max-p)/(max-min)*(H-12);
+  for(let i=0;i<=3;i++){ const p = min+(max-min)*i/3, y = Y(p); x.strokeStyle = '#1d3135'; x.beginPath(); x.moveTo(0,y); x.lineTo(W-MP,y); x.stroke(); x.fillStyle = '#8FA0A0'; x.fillText(fmt(p), W-MP+4, y); }
+  const a = S.a;
+  if(a && !S.hist) [[a.eq,'#D2A94B',[6,4]],[a.entry,'#EDE6D3',[4,3]],[a.tp1,'#56C2A3',[4,3]],[a.sl,'#E8705C',[]]].forEach(([p,col,d]) => {
+    if(p<min || p>max) return; x.strokeStyle = col; x.setLineDash(d); x.beginPath(); x.moveTo(0,Y(p)); x.lineTo(W-MP,Y(p)); x.stroke(); x.setLineDash([]); });
+  vis.forEach((v,i) => { const X = i*cw + cw/2, col = v.c>=v.o ? '#56C2A3' : '#E8705C'; x.strokeStyle = x.fillStyle = col;
+    x.beginPath(); x.moveTo(X,Y(v.h)); x.lineTo(X,Y(v.l)); x.stroke(); const b = Math.max(2,cw*.64); x.fillRect(X-b/2, Math.min(Y(v.o),Y(v.c)), b, Math.max(1,Math.abs(Y(v.c)-Y(v.o)))); });
+}
+function drawMulti(){
+  if(!S.mtfOn) return;
+  const m = S.mtf || {};
+  [['mc4','mt4','4H',m['4h']],['mc15','mt15','15m',m['15min']],['mc1','mt1','1m',S.ltf]].forEach(([cv,tt,nm,c]) => {
+    $(tt).textContent = nm + (c && c.length>10 ? ' · ' + biasOf(c) : ''); mini(cv, c); });
+}
+$('mtfBtn').onclick = () => { S.mtfOn = !S.mtfOn; $('mtfBtn').setAttribute('aria-pressed', S.mtfOn); $('multi').classList.toggle('on', S.mtfOn); if(S.mtfOn){ drawMulti(); loadMTF(); } };
+const syncLayers = () => [...$('layers').children].forEach(b => { b.classList.toggle('on', !!S.layers[b.dataset.l]); b.setAttribute('aria-pressed', !!S.layers[b.dataset.l]); });
+$('layers').addEventListener('click', e => { const b = e.target.closest('button'); if(!b) return; const k = b.dataset.l;
+  S.layers[k] = !S.layers[k]; store.set('aurum_layers', JSON.stringify(S.layers)); syncLayers(); if(k==='hb' && S.a) analyze(); else redraw(); });
+syncLayers();
+
 $('apiKey').value = S.key;
 if(S.news){ $('newsAt').value = S.news.at; $('newsWin').value = S.news.win; }
 renderJ(); load(); loadNews(); loadCOT(); loadMacro();
