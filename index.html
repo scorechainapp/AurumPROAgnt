@@ -108,6 +108,60 @@ canvas#cv{touch-action:pan-y;cursor:grab}
 @media(max-width:980px){.multi.on{grid-template-columns:1fr}}
 .mbox{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px}
 .mt{font-weight:600;margin-bottom:6px}.mbox canvas{height:220px}
+.src.mt5{color:var(--buy);border-color:var(--buy)}
+.ncal{display:grid;grid-template-columns:minmax(0,1fr) 250px;gap:16px;align-items:start;margin-bottom:14px}
+@media(max-width:760px){.ncal{grid-template-columns:1fr}}
+.neyebrow{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:6px}
+.nh1{font:700 clamp(24px,3.4vw,34px)/1.1 'Fraunces',serif;margin:0 0 6px}.nh1 em{font-style:normal;color:var(--brass)}
+.feat{border-radius:14px;padding:14px 16px;border:1px solid var(--line);background:linear-gradient(160deg,rgba(210,169,75,.32),rgba(86,194,163,.14) 60%,var(--bg))}
+.feat small{display:block;color:var(--mute);font-size:11px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}
+.feat b{display:block;font:700 18px/1.2 'Fraunces',serif;margin-bottom:4px}.feat div{font-size:13px;color:var(--mute)}.feat .frel{color:var(--text);font-weight:600;margin-top:6px}
+.pills{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.pill{border:1px solid var(--line);border-radius:99px;padding:5px 13px;background:none;color:var(--mute);font-size:13px}
+.pill b{margin-left:4px;color:var(--text)}
+.pill.on{border-color:var(--brass);color:var(--text);background:rgba(210,169,75,.12)}
+.pill.High.on{border-color:var(--sell);background:rgba(232,112,92,.14)}.pill.Medium.on{border-color:var(--warn);background:rgba(227,179,65,.14)}.pill.Low.on{border-color:#8FB3E8;background:rgba(143,179,232,.14)}
+.days{display:flex;gap:6px;overflow-x:auto;padding:2px 0 8px}
+.dbtn{flex:0 0 auto;min-width:66px;text-align:center;border:1px solid var(--line);border-radius:12px;padding:6px 8px;background:none;color:var(--mute)}
+.dbtn.on{border-color:var(--brass);color:var(--text);background:rgba(210,169,75,.12)}
+.dbtn b{display:block;font-weight:600;color:inherit}.dbtn small{display:block;font-size:11px}
+.dots{display:flex;gap:2px;justify-content:center;min-height:8px;margin-top:3px}.dots i{width:5px;height:5px;border-radius:50%;display:block}
+.legend{font-size:12px;color:var(--mute);display:flex;gap:14px;flex-wrap:wrap;margin-bottom:8px}
+.cfilter{border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:13px;color:var(--mute);display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.cfilter .pill{padding:2px 10px;font-size:12px}
+.nday{font:600 20px 'Fraunces',serif;margin:14px 0 4px}
+.ntl{display:grid;gap:10px;margin-top:10px}
+.nrow{display:grid;grid-template-columns:78px minmax(0,1fr);gap:12px;align-items:start}
+.nrow.past{opacity:.5}
+.ntime{text-align:right;font-weight:600;padding-top:10px}.ntime small{display:block;color:var(--mute);font-size:11px;font-weight:400}
+.ncard{background:var(--bg);border:1px solid var(--line);border-left:3px solid var(--mute);border-radius:12px;padding:10px 12px}
+.ncard.High{border-left-color:var(--sell)}.ncard.Medium{border-left-color:var(--warn)}.ncard.Low{border-left-color:#8FB3E8}
+.ncard summary{cursor:pointer;list-style:none}.ncard summary::-webkit-details-marker{display:none}
+.tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:5px;align-items:center}
+.tag{font-size:11px;padding:1px 8px;border-radius:99px;border:1px solid var(--line);color:var(--mute)}
+.tag.High{color:var(--sell);border-color:var(--sell)}.tag.Medium{color:var(--warn);border-color:var(--warn)}.tag.Low{color:#8FB3E8;border-color:#8FB3E8}.tag.gold{color:var(--brass);border-color:var(--brass)}
+.nrel{margin-left:auto;font-size:12px;color:var(--mute)}
+.ntitle{font-weight:600}.nsub{font-size:12px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ntab{margin-top:8px}.ntab th,.ntab td{padding:5px 4px;font-size:12px}.ntab small{color:var(--mute)}
+.nnow{grid-column:1/-1;display:flex;align-items:center;gap:8px;color:var(--sell);font-size:11px;font-weight:600;letter-spacing:.06em}.nnow i{flex:1;height:1px;background:var(--sell)}
+.bothead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.bothead h2{margin:0}
+.botcfg{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:12px 0}
+.botcfg label{display:grid;gap:4px;color:var(--mute);font-size:12px}
+.botcfg input[type=number]{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:7px 9px;color:var(--text);width:100%}
+.chk{display:flex;gap:6px;align-items:center;color:var(--text);font-size:13px}
+.switch{display:flex;gap:8px;align-items:center;font-weight:600}
+.profs{display:flex;gap:6px 18px;flex-wrap:wrap;margin:4px 0 14px}.profs small{color:var(--mute)}
+#pCv{height:120px;margin:10px 0}
+.card h3{font:600 14px 'IBM Plex Sans';margin:14px 0 6px}
+.sbar{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.sbar select{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:6px;color:var(--text)}
+.tscroll{overflow-x:auto}
+.snaprow td{background:var(--bg);padding:12px}
+.snapgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:14px}
+@media(max-width:900px){.snapgrid{grid-template-columns:1fr}}
+.snapul{margin:6px 0 0 18px;font-size:13px;display:grid;gap:4px}
+.snapcvs{display:grid;grid-template-columns:1fr 1fr;gap:8px}.snapcvs small{color:var(--mute);font-size:11px}
+.snapcv{width:100%;height:190px;display:block;background:var(--panel);border:1px solid var(--line);border-radius:8px}
 </style>
 </head>
 <body>
@@ -129,6 +183,7 @@ canvas#cv{touch-action:pan-y;cursor:grab}
       <div class="chip" id="cMss"><small>Barrido + MSS</small><b>—</b></div>
       <div class="chip" id="cNews"><small>Noticias</small><b>—</b></div>
       <div class="chip" id="cSetup"><small>Setup</small><b>—</b></div>
+      <div class="chip" id="cBot" style="cursor:pointer" title="Ir al bot de paper trading"><small>Bot paper</small><b>—</b></div>
     </div>
   </header>
 
@@ -152,6 +207,12 @@ canvas#cv{touch-action:pan-y;cursor:grab}
     </label>
     <label>Símbolo de datos de este instrumento
       <span class="row"><input id="symIn" style="width:130px"><button class="prim" id="saveSym">Guardar</button></span><small id="symHint" style="max-width:260px"></small>
+    </label>
+    <label>MT5 · Axi (archivo del EA AurumBridge)
+      <span class="row"><button class="prim" id="brConnect">Conectar archivo</button><button class="ghost" id="brOff">Desconectar</button></span><small id="brMsg" style="max-width:300px">Sin conectar.</small>
+    </label>
+    <label>Símbolos en MT5 (Oro / NQ)
+      <span class="row"><input id="brSymXAU" style="width:90px" placeholder="XAUUSD"><input id="brSymNQ" style="width:90px" placeholder="NAS100"><button class="prim" id="brSaveSym">Guardar</button></span>
     </label>
     <label>Ver el mercado en una fecha (hora local)
       <span class="row"><input type="datetime-local" id="histDate"><button class="prim" id="goHist">Ir</button><button class="ghost" id="goLive">Volver a vivo</button></span>
@@ -189,6 +250,7 @@ canvas#cv{touch-action:pan-y;cursor:grab}
         <div class="field" style="margin:10px 0 0"><span>Ganancia en TP1 / TP2</span><b id="pl">—</b></div>
         <p class="warn" id="lotWarn" hidden></p>
       </div>
+    <div class="card" id="brCard" hidden><h2>Cuenta MT5 · Axi</h2><div id="brAcc"></div><div id="brPos"></div></div>
     </aside>
   </div>
   <section class="multi" id="multi" aria-label="Vista múltiple">
@@ -198,20 +260,54 @@ canvas#cv{touch-action:pan-y;cursor:grab}
   </section>
 
   <div class="lower">
-    <section class="card">
-      <div class="nhead"><h2>Noticias de hoy · ForexFactory</h2>
-        <span class="nctl"><select id="nfCur" aria-label="Moneda"><option value="USD">USD</option><option value="ALL">Todas</option></select>
-        <select id="nfImp" aria-label="Impacto"><option value="hm">Alto y medio</option><option value="all">Todos</option></select>
-        <button class="ghost" id="nfRef">Actualizar</button></span></div>
+    <section class="card" id="newsCard">
+      <div class="ncal">
+        <div>
+          <div class="neyebrow"><span>Calendario económico · ForexFactory</span><button class="ghost" id="nfRef">Actualizar</button></div>
+          <h2 class="nh1">Las noticias que <em>mueven</em> el mercado.</h2>
+          <p class="note" style="margin-top:0">Por defecto ves solo lo de alto impacto; activa medio o bajo cuando quieras el resto. Las horas están en tu zona horaria.</p>
+        </div>
+        <div class="feat" id="nfFeat"></div>
+      </div>
+      <div class="pills" id="nfPills"></div>
+      <div class="days" id="nfDays"></div>
+      <div class="legend"><span style="color:var(--sell)">● Alto: puede mover fuerte el precio</span><span style="color:var(--warn)">● Medio: puede moverlo</span><span style="color:#8FB3E8">● Bajo: casi nunca lo mueve</span></div>
+      <div class="cfilter" id="nfCountry"></div>
+      <div class="nday" id="nfDay"></div>
       <p class="note" id="nfNext"></p><p class="note" id="nfMsg"></p>
-      <table><thead><tr><th>Hora</th><th>Mon.</th><th></th><th>Evento</th><th>Pronóstico</th><th>Previo</th></tr></thead><tbody id="nfBody"></tbody></table>
-      <p class="note">El feed público trae pronóstico y previo, pero no el dato ya publicado.</p>
+      <div class="ntl" id="nfList"></div>
+      <p class="note">El feed público trae pronóstico y previo, pero no el dato ya publicado ni titulares de última hora.</p>
     </section>
     <div class="side">
       <section class="card"><h2 id="cotTitle">Posicionamiento COT del oro (COMEX)</h2><div id="cotBody"></div><canvas id="cotCv"></canvas><p class="note" id="cotTxt"></p><p class="warn" id="cotMsg"></p></section>
       <section class="card"><h2>Contexto macro</h2><div id="macBody"></div><p class="note" id="macTxt"></p><p class="warn" id="macMsg"></p></section>
     </div>
   </div>
+
+  <section class="card" id="botCard">
+    <div class="bothead"><h2 id="botTitle">Bot de paper trading</h2>
+      <label class="switch"><input type="checkbox" id="botOn"> <span id="botState">Apagado</span></label></div>
+    <p class="note" id="botMsg" style="margin-top:6px"></p>
+    <div class="botcfg">
+      <label>Balance paper ($)<input type="number" id="pBal" min="100"></label>
+      <label>Riesgo por operación (%)<input type="number" id="pRisk" step=".25" min=".1"></label>
+      <label>Máx. operaciones por día y estrategia<input type="number" id="pMax" min="1"></label>
+      <label>Pérdida diaria máxima (R)<input type="number" id="pLoss" step=".5" min=".5"></label>
+      <label>Costo por operación (pts)<input type="number" id="pCost" step=".1" min="0"></label>
+      <label class="chk" style="align-self:end"><input type="checkbox" id="pPart"> Parcial 50% en TP1 y SL a breakeven</label>
+    </div>
+    <div class="profs" id="pProfs"></div>
+    <div class="stats" id="pStats"></div>
+    <canvas id="pCv"></canvas>
+    <h3>Posiciones abiertas</h3><div class="tscroll" id="pOpen"></div>
+    <div class="sbar"><h3>Rendimiento por…</h3>
+      <span><select id="pGroup" aria-label="Agrupar por"><option value="prof">Estrategia</option><option value="ses">Sesión</option><option value="side">Lado</option><option value="dow">Día de la semana</option><option value="b4">Sesgo 4H</option><option value="conf">Confluencia OB/FVG</option><option value="reason">Tipo de salida</option></select></span></div>
+    <div class="tscroll" id="pBreak"></div>
+    <div class="sbar"><h3>Diario del bot</h3><span style="display:flex;gap:8px"><button class="ghost" id="pCsv">Exportar CSV</button><button class="ghost" id="pReset">Reiniciar</button></span></div>
+    <div class="tscroll" id="pJournal"></div>
+    <details style="margin-top:10px"><summary id="pSkipsS" style="cursor:pointer;color:var(--mute)">Señales no tomadas</summary><div class="tscroll" id="pSkips"></div></details>
+    <p class="note">Simulación con datos reales, sin dinero. Las operaciones se evalúan con velas: si una vela toca el SL y un objetivo, se asume que primero tocó el SL. No modela deslizamiento en noticias ni el redondeo de lotes.</p>
+  </section>
 
   <section class="card">
     <h2 id="jTitle">Bitácora</h2>
@@ -226,6 +322,8 @@ canvas#cv{touch-action:pan-y;cursor:grab}
       <button style="background:var(--sell)" id="bLoss">Registrar loss</button>
       <button class="ghost" style="flex:0 0 auto" id="bClear">Limpiar</button>
     </div>
+    <div style="margin-bottom:8px;color:var(--mute);font-size:13px">Mostrar
+      <select id="jSrc" style="background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:5px 8px;color:var(--text);margin-left:6px"><option value="all">Todas</option><option value="real">Reales (MT5 y manuales)</option><option value="paper">Bot paper</option></select></div>
     <div id="jTable"></div>
   </section>
 </div>
@@ -245,7 +343,7 @@ const fmt = n => Number(n).toFixed(2);
 
 /* ---------- Datos ---------- */
 async function load(){ const k0 = S.inst;
-  if(!S.key){ return sim('Agrega tu API key en Ajustes para ver datos reales.'); }
+  if(!S.key && !BR.on){ return sim('Agrega tu API key en Ajustes o conecta el archivo de MT5.'); }
   setSrc('Cargando…','sim');
   try{
     const end = S.hist ? '&end_date=' + S.hist.toISOString().slice(0,19).replace('T',' ') : '';
@@ -253,7 +351,7 @@ async function load(){ const k0 = S.inst;
     const d = await (await fetch(url)).json(); if(k0 !== S.inst) return;
     if(d.status === 'error' || !Array.isArray(d.values) || d.values.length < 30) throw new Error(d.message || 'La respuesta no trajo velas suficientes');
     S.candles = d.values.slice().reverse().map(v => ({o:+v.open,h:+v.high,l:+v.low,c:+v.close,t:v.datetime}));
-    S.src = S.hist ? 'hist' : 'live'; await loadLTF(); analyze(); loadHB().then(() => { if(k0 === S.inst) analyze(); }); if(S.mtfOn) loadMTF();
+    S.src = S.hist ? 'hist' : BR.serving() ? 'mt5' : 'live'; await loadLTF(); analyze(); loadHB().then(() => { if(k0 === S.inst) analyze(); }); if(S.mtfOn) loadMTF();
   }catch(e){ if(k0 !== S.inst) return; sim('No se pudo cargar: ' + e.message); }
 }
 function sim(msg){
@@ -261,7 +359,7 @@ function sim(msg){
   for(let i=0;i<300;i++){ const c = p + ((Math.random()-.49)*4 + Math.sin(i/9)*1.2)*k; out.push({o:p,h:Math.max(p,c)+Math.random()*2*k,l:Math.min(p,c)-Math.random()*2*k,c,t:'simulada'}); p = c; }
   S.candles = out; S.ltf = []; S.src = 'sim'; S.msg = msg; analyze();
 }
-function setSrc(text, cls){ const el = $('src'); el.textContent = text; el.className = 'src ' + cls; }
+function setSrc(text, cls){ if(text==='Cargando…' && BR.serving()) return; const el = $('src'); el.textContent = text; el.className = 'src ' + cls; }
 
 /* ---------- Análisis ---------- */
 function atr(c, n=14){
@@ -336,6 +434,7 @@ function analyze(){
   else why = 'Aún no hay barrido de liquidez reciente.';
   S.a = {ctx,opp,lt,ltf:hasL,price,A,hi,lo,eq,bias,side,buy,mss,confirmed,entry,sl,tp1,tp2,risk,rr1,rr2,blocked,state,why,sw};
   render();
+  botTick();
 }
 
 /* ---------- UI ---------- */
@@ -346,7 +445,7 @@ function render(){
   const l0 = c[c.length-1], i0 = l0.dk != null ? c.findIndex(v => v.dk===l0.dk) : 0, base0 = c[Math.max(0,i0)].o, pct = (a.price - base0)/base0*100;
   $('delta').textContent = (pct>=0?'+':'') + pct.toFixed(2) + (l0.dk != null ? '% en el día de trading' : '% en el periodo');
   $('delta').className = 'delta ' + (pct>=0?'up':'down');
-  const srcTxt = {live:'En vivo',hist:'Histórico',sim:'Datos simulados'}[S.src];
+  const srcTxt = {live:'En vivo',mt5:'MT5 · Axi',hist:'Histórico',sim:'Datos simulados'}[S.src];
   setSrc(srcTxt, S.src); $('src').title = S.msg;
   chip('cBias', a.bias, a.bias==='Alcista'?'ok':a.bias==='Bajista'?'bad':'wait');
   const hb = S.hb; chip('cHb', hb ? `${hb.h4} · ${hb.d1}` : 'Cargando…', hb ? (hb.h4===hb.d1 && hb.h4!=='Rango' ? (hb.h4==='Alcista'?'ok':'bad') : 'wait') : '');
@@ -364,6 +463,7 @@ function render(){
 }
 function risk(){
   const a = S.a; if(!a) return;
+  if(brRisk(a)) return;
   const I = INSTR[S.inst], gold = S.inst==='XAU', rk = a.risk || 1;
   const bal = parseFloat($('bal').value)||0, pct = parseFloat($('riskPct').value)||0, usd = bal*pct/100;
   let qty, perQ, txt, ok;
@@ -415,6 +515,8 @@ function draw(){
     if(f){ f.name += ' · ' + name; if(w>f.w) Object.assign(f,{col,w,dash}); } else L.push({p,name,col,w,dash,y:Y(p)}); };
   if(showTrade){ add(a.sl,'SL','#E8705C',4,[]); add(a.entry,a.confirmed?'Entrada':'Entrada (límite)','#EDE6D3',3,[6,4]); add(a.tp1,'TP1','#56C2A3',2,[6,4]); add(a.tp2,'TP2','#56C2A3',2,[6,4]); }
   add(a.eq,'Equilibrio','#D2A94B',1,[6,4]); add(a.hi,'Máx. rango','#B8964A',.5,[2,4]); add(a.lo,'Mín. rango','#B8964A',.5,[2,4]);
+  if(BR.serving()) BR.posNow().forEach(q => { const b = q.type==='buy', col = b ? '#56C2A3' : '#E8705C';
+    add(q.price_open, (b?'Compra ':'Venta ') + q.volume + ' (real)', col, 3, []); if(q.sl) add(q.sl,'SL real','#E8705C',3,[3,3]); if(q.tp) add(q.tp,'TP real','#56C2A3',3,[3,3]); });
   const cur = inY(a.price) ? {cur:true,p:a.price,y:Y(a.price)} : null, axis = cur ? L.concat([cur]) : L.slice();
   spread(axis,'ay',17,H-PB-8); spread(L,'ny',17,H-PB-8);
 
@@ -512,21 +614,36 @@ function record(res){
   S.journal.unshift({ts:Date.now(), side:S.a.buy?'Compra':'Venta', res, r: res==='WIN' ? +S.a.rr1.toFixed(2) : -1});
   saveJ();
 }
+S.jSrc = store.get('aurum_jsrc','all');
 function renderJ(){
-  const j = S.journal, wins = j.filter(t=>t.res==='WIN'), gw = wins.reduce((s,t)=>s+t.r,0), gl = j.filter(t=>t.res==='LOSS').length;
-  const tot = j.reduce((s,t)=>s+t.r,0);
+  const f = S.jSrc || 'all', rows = S.journal.map((t,i) => ({t,i})).filter(({t}) => f==='all' || (f==='paper' ? t.paper!==undefined : t.paper===undefined)), j = rows.map(x => x.t);
+  const wins = j.filter(t=>t.res==='WIN'), gw = wins.reduce((s,t)=>s+t.r,0), gl = j.filter(t=>t.res==='LOSS').reduce((a,t)=>a+Math.abs(t.r),0), tot = j.reduce((s,t)=>s+t.r,0);
+  $('jSrc').value = f;
   $('jWR').textContent = j.length ? Math.round(wins.length/j.length*100)+'%' : '0%';
   $('jPF').textContent = !j.length ? '—' : gl ? (gw/gl).toFixed(2) : '∞';
   $('jR').textContent = (tot>=0?'+':'') + tot.toFixed(1) + 'R'; $('jN').textContent = j.length;
-  $('jTable').innerHTML = j.length ? '<table><thead><tr><th>Fecha</th><th>Lado</th><th>Resultado</th><th>R</th><th></th></tr></thead><tbody>' +
-    j.map((t,i)=>`<tr><td>${new Date(t.ts).toLocaleString([], {day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}</td>
+  const org = t => t.paper!==undefined ? 'Bot · ' + esc(t.strat||'') : t.mt5!==undefined ? 'MT5' : 'Manual';
+  $('jTable').innerHTML = j.length ? '<table><thead><tr><th>Fecha</th><th>Origen</th><th>Lado</th><th>Resultado</th><th>R</th><th></th></tr></thead><tbody>' +
+    rows.map(({t,i}) => `<tr><td>${new Date(t.ts).toLocaleString([], {day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}</td><td>${org(t)}</td>
     <td class="${t.side==='Compra'?'buy-c':'sell-c'}">${t.side}</td><td>${t.res==='WIN'?'Win':'Loss'}</td>
     <td class="${t.r>0?'up':'down'}">${t.r>0?'+':''}${t.r.toFixed(1)}R</td><td><button data-del="${i}" aria-label="Borrar operación">✕</button></td></tr>`).join('') + '</tbody></table>'
-    : '<p class="empty">Aún no registras operaciones. Usa los botones de arriba al cerrar cada trade.</p>';
+    : `<p class="empty">${S.journal.length ? 'No hay operaciones con este filtro.' : 'Aún no registras operaciones. Las del bot paper se añaden solas al cerrarse; las reales llegan de MT5 o con los botones de arriba.'}</p>`;
 }
-$('jTable').addEventListener('click', e => { const d = e.target.dataset.del; if(d!==undefined){ S.journal.splice(+d,1); saveJ(); } });
+/* Las operaciones cerradas del bot paper se copian a la bitácora (una vez cada una; si las borras aquí no vuelven) */
+function paperSync(B){
+  const un = (B.unsync || []).map(String), have = new Set(S.journal.filter(t => t.paper!==undefined).map(t => String(t.paper)));
+  const add = B.closed.filter(t => !have.has(String(t.id)) && !un.includes(String(t.id)));
+  if(!add.length) return;
+  add.forEach(t => S.journal.push({ts:t.t1, side:t.side==='buy'?'Compra':'Venta', res:t.r>0?'WIN':'LOSS', r:+t.r.toFixed(2), usd:t.usd, paper:String(t.id), strat:pname(t.prof)}));
+  S.journal.sort((x,y) => y.ts-x.ts); saveJ();
+}
+$('jTable').addEventListener('click', e => { const d = e.target.dataset.del; if(d===undefined) return; const t = S.journal[+d];
+  if(t && t.paper!==undefined){ const B = P(); B.unsync = (B.unsync||[]).concat(String(t.paper)); saveP(); }
+  S.journal.splice(+d,1); saveJ(); });
+$('jSrc').onchange = () => { S.jSrc = $('jSrc').value; store.set('aurum_jsrc', S.jSrc); renderJ(); };
 $('bWin').onclick = () => record('WIN'); $('bLoss').onclick = () => record('LOSS');
-$('bClear').onclick = () => { if(S.journal.length && confirm('¿Borrar toda la bitácora?')){ S.journal=[]; saveJ(); } };
+$('bClear').onclick = () => { if(S.journal.length && confirm('¿Borrar toda la bitácora?')){
+  const B = P(); B.unsync = (B.unsync||[]).concat(S.journal.filter(t => t.paper!==undefined).map(t => String(t.paper))); saveP(); S.journal = []; saveJ(); } };
 
 /* ---------- Controles ---------- */
 $('tfs').addEventListener('click', e => { const b=e.target.closest('button'); if(!b) return; S.tf=b.dataset.tf; S.vw.off=0; [...$('tfs').children].forEach(x=>x.classList.toggle('on',x===b)); load(); });
@@ -568,18 +685,85 @@ async function loadNews(force){
 }
 function setFF(arr){
   if(!Array.isArray(arr)) throw new Error('formato inesperado');
-  S.ff = arr; store.set('ff_cache', JSON.stringify({at:Date.now(), ev:arr})); renderNews(); if(S.a) analyze();
+  S.ff = arr; store.set('ff_cache', JSON.stringify({at:Date.now(), ev:arr})); renderNews(''); if(S.a) analyze();
 }
+/* ---------- Calendario económico: filtros, semana, país, línea de tiempo con AHORA ---------- */
+S.nf = Object.assign({imp:['High'], key:false, cur:['USD','EUR']}, JSON.parse(store.get('aurum_nf','null')) || {}); S.nf.day = null;
+S.nfOpen = new Set(); S.nfMsg = ''; S.nfErr = false;
+const CN = {USD:'Estados Unidos',EUR:'Zona euro',GBP:'Reino Unido',JPY:'Japón',CNY:'China',CAD:'Canadá',AUD:'Australia',NZD:'Nueva Zelanda',CHF:'Suiza'};
+const IMPL = {High:'ALTO',Medium:'MEDIO',Low:'BAJO'}, IORD = {High:0,Medium:1,Low:2};
+const ES_T = [[/Non-Farm Employment Change/i,'Nóminas no agrícolas (NFP)'],[/Unemployment Rate/i,'Tasa de desempleo'],[/Unemployment Claims/i,'Solicitudes de subsidio por desempleo'],
+  [/Core CPI/i,'IPC subyacente'],[/\bCPI\b/,'IPC (inflación)'],[/Core PCE/i,'PCE subyacente'],[/PCE Price/i,'Índice de precios PCE'],[/\bPPI\b/,'IPP (precios al productor)'],
+  [/FOMC Statement/i,'Comunicado del FOMC'],[/FOMC Meeting Minutes/i,'Minutas del FOMC'],[/Federal Funds Rate/i,'Tasa de fondos federales'],[/Retail Sales/i,'Ventas minoristas'],
+  [/Crude Oil Inventories/i,'Inventarios de petróleo'],[/Building Permits/i,'Permisos de construcción'],[/Housing Starts/i,'Inicios de vivienda'],[/\bGDP\b/,'PIB'],
+  [/ISM Manufacturing/i,'ISM manufacturero'],[/ISM Services/i,'ISM de servicios'],[/JOLTS/i,'Ofertas de empleo (JOLTS)'],[/ADP Non-Farm/i,'Empleo ADP'],
+  [/Consumer Confidence/i,'Confianza del consumidor'],[/Durable Goods/i,'Bienes duraderos'],[/Trade Balance/i,'Balanza comercial']];
+const es = t => { const m = ES_T.find(([r]) => r.test(t)), f = /\b(m\/m|q\/q|y\/y)\b/i.exec(t); return m ? m[1] + (f ? ' ' + f[1] : '') : t; };
+const dkey = d => d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+const tzName = t => (new Intl.DateTimeFormat('en-US',{timeZoneName:'short'}).formatToParts(t).find(p => p.type==='timeZoneName') || {}).value || '';
 function renderNews(msg, err){
-  const cur = $('nfCur').value, imp = $('nfImp').value, now = Date.now(), today = new Date().toDateString();
-  const day = S.ff.filter(e => new Date(e.date).toDateString()===today).sort((a,b) => new Date(a.date)-new Date(b.date));
-  const rows = day.filter(e => (cur==='ALL' || e.country===cur) && (imp==='all' || e.impact==='High' || e.impact==='Medium'));
-  const nx = day.find(e => e.impact==='High' && e.country==='USD' && new Date(e.date)>now);
-  $('nfNext').textContent = nx ? `Próxima de alto impacto en USD: ${nx.title}, en ${dur(new Date(nx.date)-now)}.` : (S.ff.length ? 'No quedan eventos USD de alto impacto hoy.' : '');
-  $('nfMsg').textContent = msg || ''; $('nfMsg').className = err ? 'warn' : 'note';
-  $('nfBody').innerHTML = rows.length ? rows.map(e => `<tr class="${new Date(e.date)<now?'past':''} ${e===nx?'nx':''}"><td>${new Date(e.date).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</td><td>${esc(e.country)}</td><td><span class="dot d-${esc(e.impact)}" title="${esc(e.impact)}"></span></td><td>${esc(e.title)}</td><td>${esc(e.forecast)||'—'}</td><td>${esc(e.previous)||'—'}</td></tr>`).join('')
-    : `<tr><td colspan="6" class="empty">${S.ff.length ? 'No hay eventos con esos filtros hoy.' : 'Aún no hay noticias cargadas.'}</td></tr>`;
+  if(msg !== undefined){ S.nfMsg = msg; S.nfErr = !!err; }
+  const F = S.nf, now = Date.now();
+  const all = S.ff.map(e => ({e, t:new Date(e.date), imp:e.impact==='Holiday'?'Low':e.impact, cur:e.country})).filter(x => !isNaN(x.t) && IORD[x.imp]!==undefined);
+  const days = [...new Set(all.map(x => dkey(x.t)))].sort(), today = dkey(new Date()), tom = dkey(new Date(now+864e5));
+  const day = days.includes(F.day) ? F.day : days.includes(today) ? today : days[0];
+  const currs = [...new Set(all.map(x => x.cur))].sort((a,b) => (a==='USD'?-1:b==='USD'?1:a==='EUR'?-1:b==='EUR'?1:a.localeCompare(b)));
+  const sel = F.cur.filter(c => currs.includes(c)), useCur = sel.length ? sel : currs;
+  const isKey = x => x.imp==='High' || (x.imp==='Medium' && x.cur==='USD'), impOk = x => F.key ? isKey(x) : F.imp.includes(x.imp);
+  const dayAll = all.filter(x => dkey(x.t)===day), base = dayAll.filter(x => useCur.includes(x.cur)), cnt = {High:0,Medium:0,Low:0};
+  base.forEach(x => cnt[x.imp]++);
+  const rows = base.filter(impOk).sort((a,b) => a.t-b.t), totalImp = dayAll.filter(impOk).length, shown = rows.length;
+
+  $('nfPills').innerHTML = ['High','Medium','Low'].map(k => `<button class="pill ${k} ${!F.key && F.imp.includes(k)?'on':''}" data-imp="${k}">${{High:'Alto',Medium:'Medio',Low:'Bajo'}[k]}<b>${cnt[k]}</b></button>`).join('')
+    + `<button class="pill ${!F.key && F.imp.length===3?'on':''}" data-imp="all">Todas</button>`
+    + `<button class="pill ${F.key?'on':''}" data-key="1" title="Alto impacto de cualquier país, más impacto medio de EE. UU.">★ Solo lo que mueve XAU y NQ</button>`;
+  $('nfDays').innerHTML = days.map(d => { const dd = new Date(d+'T12:00:00');
+    const dots = all.filter(x => dkey(x.t)===d && useCur.includes(x.cur)).sort((a,b) => IORD[a.imp]-IORD[b.imp]).slice(0,6).map(x => `<i class="d-${x.imp}"></i>`).join('');
+    const lab = d===today ? 'Hoy' : d===tom ? 'Mañana' : dd.toLocaleDateString('es',{weekday:'short'}).replace('.','');
+    return `<button class="dbtn ${d===day?'on':''}" data-day="${d}"><b>${lab}</b><small>${dd.toLocaleDateString('es',{day:'numeric',month:'short'}).replace('.','').toUpperCase()}</small><span class="dots">${dots}</span></button>`; }).join('');
+  $('nfCountry').innerHTML = `<span>Filtro por país: mostrando ${shown} de ${totalImp} noticias (${esc(useCur.map(c => CN[c]||c).join(', '))}).</span>`
+    + currs.map(c => `<button class="pill ${useCur.includes(c)?'on':''}" data-cur="${c}">${esc(c)}</button>`).join('')
+    + (useCur.length < currs.length ? '<button class="pill" data-clear="1">Quitar filtro</button>' : '');
+  $('nfDay').textContent = day ? (day===today ? 'Hoy, ' : '') + new Date(day+'T12:00:00').toLocaleDateString('es',{weekday:'long',day:'numeric',month:'long'}) + ` · ${shown} ${shown===1?'noticia':'noticias'}` : '';
+
+  const w2 = (S.news ? S.news.win : 15)*60000, auto = $('autoNews').checked, isToday = day===today, nowRow = '<div class="nnow"><span>AHORA</span><i></i></div>';
+  const groups = {}; rows.forEach(x => { const k = x.t.getTime() + '|' + x.cur; (groups[k] = groups[k] || []).push(x); });
+  let html = '', placed = false;
+  Object.values(groups).sort((a,b) => a[0].t-b[0].t).forEach(g => {
+    const t = g[0].t, tm = t.getTime();
+    if(isToday && !placed && tm>now){ html += nowRow; placed = true; }
+    const imp = g.map(x => x.imp).sort((a,b) => IORD[a]-IORD[b])[0], main = g.find(x => x.imp===imp), k = day + '|' + tm + '|' + main.cur;
+    const past = tm<now, rel = isToday ? (past ? 'hace ' : 'en ') + dur(Math.abs(tm-now)) : '', moves = main.cur==='USD' && imp==='High', blk = auto && moves && Math.abs(tm-now)<=w2;
+    html += `<div class="nrow ${past?'past':''}"><div class="ntime">${t.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}<small>${tzName(t)}</small></div>
+      <details class="ncard ${imp}" data-k="${esc(k)}" ${S.nfOpen.has(k)?'open':''}><summary>
+        <div class="tags"><span class="tag ${imp}">${IMPL[imp]}</span><span class="tag">${esc(CN[main.cur]||main.cur)}</span><span class="tag">${esc(main.cur)}</span>${moves?'<span class="tag gold">Mueve XAU · NQ</span>':''}${blk?'<span class="tag High">Ventana de bloqueo</span>':''}<span class="nrel">${rel}</span></div>
+        <div class="ntitle">${esc(es(main.e.title))}</div>
+        <div class="nsub">${g.length>1 ? g.length + ' datos · ' + esc(g.map(x => es(x.e.title)).join(' · ')) : 'Pronóstico ' + esc(main.e.forecast||'—') + ' · Previo ' + esc(main.e.previous||'—')}</div></summary>
+        <table class="ntab"><thead><tr><th>Evento</th><th>Pronóstico</th><th>Previo</th></tr></thead><tbody>${g.map(x => `<tr><td>${esc(es(x.e.title))}<br><small>${esc(x.e.title)}</small></td><td>${esc(x.e.forecast||'—')}</td><td>${esc(x.e.previous||'—')}</td></tr>`).join('')}</tbody></table></details></div>`;
+  });
+  if(isToday && !placed && rows.length) html += nowRow;
+  const other = dayAll.length - shown;
+  $('nfList').innerHTML = html || `<p class="empty">${S.ff.length ? 'No hay noticias que cumplan estos filtros.' + (other>0 ? ` Hay ${other} más con otros filtros.` : '') : 'Aún no hay noticias cargadas.'}</p>`;
+
+  const nx = all.filter(x => x.imp==='High' && x.t.getTime()>now).sort((a,b) => (useCur.includes(b.cur)-useCur.includes(a.cur)) || (a.t-b.t))[0];
+  $('nfFeat').innerHTML = nx ? `<small>Próxima de alto impacto</small><b>${esc(es(nx.e.title))}</b><div>${esc(CN[nx.cur]||nx.cur)} · ${nx.t.toLocaleDateString('es',{weekday:'long',day:'numeric',month:'long'})} · ${nx.t.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})} ${tzName(nx.t)}</div><div class="frel">en ${dur(nx.t-now)}</div><div>Pronóstico ${esc(nx.e.forecast||'—')} · Previo ${esc(nx.e.previous||'—')}</div>`
+    : `<small>Próxima de alto impacto</small><div>${S.ff.length ? 'No quedan eventos de alto impacto esta semana.' : 'Sin datos de noticias.'}</div>`;
+  const un = all.filter(x => x.imp==='High' && x.cur==='USD' && dkey(x.t)===today && x.t.getTime()>now).sort((a,b) => a.t-b.t)[0];
+  $('nfNext').textContent = un ? `Próxima de alto impacto en USD hoy: ${es(un.e.title)}, en ${dur(un.t-now)}.` : (S.ff.length ? 'No quedan eventos USD de alto impacto hoy.' : '');
+  $('nfMsg').textContent = S.nfMsg; $('nfMsg').className = S.nfErr ? 'warn' : 'note';
 }
+$('newsCard').addEventListener('click', e => {
+  const b = e.target.closest('button'); if(!b) return; const d = b.dataset, F = S.nf;
+  if(d.imp){ if(d.imp==='all') F.imp = ['High','Medium','Low']; else { F.imp = F.imp.includes(d.imp) ? F.imp.filter(x => x!==d.imp) : F.imp.concat(d.imp); if(!F.imp.length) F.imp = [d.imp]; } F.key = false; }
+  else if(d.key) F.key = !F.key;
+  else if(d.day) F.day = d.day;
+  else if(d.cur){ F.cur = F.cur.includes(d.cur) ? F.cur.filter(x => x!==d.cur) : F.cur.concat(d.cur); if(!F.cur.length) F.cur = [d.cur]; }
+  else if(d.clear) F.cur = [...new Set(S.ff.map(x => x.country))];
+  else return;
+  store.set('aurum_nf', JSON.stringify({imp:F.imp, key:F.key, cur:F.cur})); renderNews();
+});
+$('newsCard').addEventListener('toggle', e => { const k = e.target.dataset && e.target.dataset.k; if(k){ if(e.target.open) S.nfOpen.add(k); else S.nfOpen.delete(k); } }, true);
+setInterval(() => { if(!document.hidden) renderNews(); }, 60000);
 
 /* ---------- COT (CFTC) por instrumento ---------- */
 const pick = (r,re) => { const k = Object.keys(r).find(x => re.test(x)); return k ? +r[k] : NaN; };
@@ -663,7 +847,7 @@ function renderMacro(){
 }
 
 /* ---------- Eventos de las nuevas secciones ---------- */
-$('nfCur').onchange = $('nfImp').onchange = () => renderNews();
+
 $('nfRef').onclick = () => loadNews(true);
 $('refNow').onclick = () => { load(); loadMacro(); };
 $('autoNews').onchange = () => { if(S.a) analyze(); };
@@ -705,7 +889,7 @@ function switchInst(k){
   S.inst = k;
   const sv = S.store[k], def = {candles:[],ltf:[],a:null,src:'sim',msg:'',cot:null,macro:null,vw:{n:90,off:0},hover:-1,hb:null,mtf:null,journal:JSON.parse(store.get(jkey(),'[]'))};
   KEEP.forEach(f => S[f] = sv ? sv[f] : def[f]);
-  applyInstUI(); renderJ(); drawMulti();
+  applyInstUI(); renderJ(); drawMulti(); botRender(true);
   if(S.a) render(); else clearPanels();
   if(S.cot) renderCOT(); else { $('cotBody').innerHTML = ''; $('cotTxt').textContent = ''; $('cotMsg').textContent = ''; const cc = $('cotCv'); cc.getContext('2d').clearRect(0,0,cc.width,cc.height); }
   if(S.macro) renderMacro(); else { $('macBody').innerHTML = ''; $('macTxt').textContent = ''; $('macMsg').textContent = ''; }
@@ -792,7 +976,7 @@ async function fetchC(iv, size){
 }
 async function loadHB(){
   const k0 = S.inst, hk = S.hist ? S.hist.getTime() : 0;
-  if(!S.key || S.src==='sim') return;
+  if((!S.key && !BR.on) || S.src==='sim') return;
   if(S.hb && S.hb.hk===hk && Date.now()-S.hb.at < 1800000) return;
   try{
     const c4 = await fetchC('4h',150), d1 = await fetchC('1day',80);
@@ -802,7 +986,7 @@ async function loadHB(){
 }
 async function loadMTF(){
   const k0 = S.inst;
-  if(!S.key || S.src==='sim'){ drawMulti(); return; }
+  if((!S.key && !BR.on) || S.src==='sim'){ drawMulti(); return; }
   try{
     S.mtf = S.mtf || {};
     const c15 = S.tf==='15min' ? S.candles : await fetchC('15min',150);
@@ -839,10 +1023,339 @@ $('layers').addEventListener('click', e => { const b = e.target.closest('button'
   S.layers[k] = !S.layers[k]; store.set('aurum_layers', JSON.stringify(S.layers)); syncLayers(); if(k==='hb' && S.a) analyze(); else redraw(); });
 syncLayers();
 
+/* ---------- Puente MT5 (Axi): lee el JSON que exporta el EA AurumBridge ---------- */
+const BR = { on:false, stale:false, data:null, handle:null, saved:null, last:0, lastLoad:0, busy:false, err:'', balSynced:false,
+  map: JSON.parse(store.get('br_map','{"XAU":"XAUUSD","NQ":"NAS100"}')),
+  sym(){ const n = this.map[S.inst], x = this.data && this.data.symbols && this.data.symbols[n]; return x ? Object.assign({name:n}, x) : null; },
+  serving(){ return this.on && !this.stale && !S.hist && !!this.sym(); },
+  posNow(){ const n = this.map[S.inst]; return ((this.data && this.data.positions) || []).filter(q => q.symbol===n); },
+  series(iv, n){
+    const si = this.sym(), k = {'1min':'M1','5min':'M5','15min':'M15','1h':'H1','4h':'H4','1day':'D1'}[iv];
+    if(!si || !k || !si.c || !si.c[k] || !si.c[k].length) return null;
+    return si.c[k].slice(-n).reverse().map(r => ({datetime:new Date(r[0]*1000).toISOString().slice(0,19).replace('T',' '), open:r[1], high:r[2], low:r[3], close:r[4]}));
+  }
+};
+/* Las peticiones de velas del instrumento activo se atienden con los datos de MT5; el resto sigue yendo a Twelve Data */
+const _fetch = (window.fetch || globalThis.fetch).bind(window);
+window.fetch = (input, init) => {
+  try{
+    const u = typeof input === 'string' ? input : input.url;
+    if(BR.serving() && u.startsWith('https://api.twelvedata.com/time_series')){
+      const q = new URL(u).searchParams;
+      if(q.get('symbol') === sym()){
+        const out = BR.series(q.get('interval'), +q.get('outputsize') || 100);
+        if(out) return Promise.resolve(new Response(JSON.stringify({status:'ok', values:out}), {status:200, headers:{'Content-Type':'application/json'}}));
+      }
+    }
+  }catch(e){}
+  return _fetch(input, init);
+};
+const idb = () => new Promise((res,rej) => { const r = indexedDB.open('aurum',1); r.onupgradeneeded = () => r.result.createObjectStore('kv'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+const idbSet = async v => { const db = await idb(); return new Promise((res,rej) => { const t = db.transaction('kv','readwrite'); t.objectStore('kv').put(v,'handle'); t.oncomplete = res; t.onerror = () => rej(t.error); }); };
+const idbGet = async () => { const db = await idb(); return new Promise((res,rej) => { const q = db.transaction('kv').objectStore('kv').get('handle'); q.onsuccess = () => res(q.result); q.onerror = () => rej(q.error); }); };
+
+function brMsg(){
+  const el = $('brMsg'); if(!el) return;
+  if(!BR.on){ el.textContent = BR.err || 'Sin conectar.'; return; }
+  const age = Math.round(Date.now()/1000 - BR.data.ts);
+  el.textContent = BR.stale ? `El EA no actualiza desde hace ${age} s. ¿MT5 está abierto con AurumBridge activo?`
+    : !BR.sym() ? `No encuentro "${BR.map[S.inst]}" en el archivo. Disponibles: ${Object.keys(BR.data.symbols||{}).join(', ') || 'ninguno'}.`
+    : `Conectado · ${BR.handle ? BR.handle.name : 'archivo'} · hace ${age} s`;
+}
+function brUI(){
+  const d = BR.data; if(!d) return;
+  $('brCard').hidden = false;
+  const a = d.account || {}, si = BR.sym(), ps = d.positions || [], fl = ps.reduce((t,q) => t + q.profit, 0);
+  const row = (k,v,c) => `<div class="field"><span>${k}</span><b class="${c||''}">${v}</b></div>`;
+  $('brAcc').innerHTML = row('Balance','$'+fmt(a.balance)) + row('Equity','$'+fmt(a.equity)) + row('P/L flotante',(fl>=0?'+':'')+'$'+fmt(fl),fl>=0?'up':'down')
+    + row('Margen libre','$'+fmt(a.free_margin)) + (si ? row('Spread ' + si.name, fmt(si.ask-si.bid)) : '');
+  $('brPos').innerHTML = ps.length ? '<div class="mrow h" style="grid-template-columns:1fr 70px"><span>Posiciones abiertas</span><span>P/L</span></div>' +
+    ps.map(q => `<div class="mrow" style="grid-template-columns:1fr 70px"><span>${esc(q.symbol)} ${q.type==='buy'?'compra':'venta'} ${q.volume} @ ${q.price_open}</span><span class="${q.profit>=0?'up':'down'}">${fmt(q.profit)}</span></div>`).join('')
+    : '<p class="note">Sin posiciones abiertas.</p>';
+  if(!BR.balSynced && a.balance){ $('bal').value = a.balance.toFixed(2); BR.balSynced = true; }
+  brMsg();
+}
+/* Lotaje con las especificaciones reales del símbolo en tu cuenta (valor del tick, lote mínimo y paso) */
+function brRisk(a){
+  const si = BR.serving() ? BR.sym() : null;
+  if(!si || !(si.tval>0) || !(si.tsize>0)) return false;
+  const per = si.tval/si.tsize, step = si.vstep || 0.01, vmin = si.vmin || step;
+  const bal = parseFloat($('bal').value)||0, pct = parseFloat($('riskPct').value)||0, usd = bal*pct/100, rk = a.risk || 1;
+  const qty = Math.floor(usd/(rk*per)/step + 1e-9)*step, ok = qty >= vmin - 1e-9, dec = Math.max(0, (String(step).split('.')[1]||'').length);
+  $('riskUsd').textContent = '$'+fmt(usd); $('slDist').textContent = fmt(a.risk)+' pts';
+  $('sizeLbl').textContent = 'Lotes MT5 · ' + si.name; $('lots').textContent = qty.toFixed(dec); $('lots').style.fontSize = '28px';
+  $('pl').textContent = ok ? '$'+fmt(qty*per*Math.abs(a.tp1-a.entry))+' / $'+fmt(qty*per*Math.abs(a.tp2-a.entry)) : '—';
+  const w = $('lotWarn'); w.hidden = ok; w.textContent = `Con ese riesgo el SL pide menos del lote mínimo (${vmin}) de ${si.name}. Sube el riesgo o el balance, o espera un SL más corto.`;
+  return true;
+}
+/* Operaciones cerradas en MT5 -> bitácora (sin duplicar). R real si el EA encontró el SL inicial; si no, estimado con tu % de riesgo */
+function brImport(){
+  const d = BR.data, si = BR.sym(); if(!d || !d.closed || !si || !(si.tsize>0)) return;
+  const n = BR.map[S.inst], per = si.tval/si.tsize, bal = parseFloat($('bal').value)||0, pct = parseFloat($('riskPct').value)||1; let added = 0;
+  d.closed.filter(c => c.symbol===n && !S.journal.some(t => t.mt5===c.id)).forEach(c => {
+    const rk = c.sl>0 ? c.volume*Math.abs(c.open_price-c.sl)*per : bal*pct/100;
+    S.journal.push({ts:c.close_time*1000, side:c.type==='buy'?'Compra':'Venta', res:c.net>0?'WIN':'LOSS', r:+(c.net/(rk||1)).toFixed(2), usd:c.net, mt5:c.id, est:!(c.sl>0)}); added++; });
+  if(added){ S.journal.sort((x,y) => y.ts-x.ts); saveJ(); }
+}
+function brRefresh(force){
+  if(S.hist) return; const now = Date.now();
+  if(BR.busy || (!force && now-BR.lastLoad < 4000)) return;
+  BR.lastLoad = now; BR.busy = true; Promise.resolve(load()).finally(() => { BR.busy = false; });
+}
+function brApply(d){ BR.data = d; BR.on = true; BR.err = ''; BR.stale = (Date.now()/1000 - d.ts) > 60; brUI(); brImport(); brRefresh(); }
+async function brRead(){
+  if(!BR.handle) return;
+  try{
+    const f = await BR.handle.getFile();
+    if(f.lastModified !== BR.last){ BR.last = f.lastModified; brApply(JSON.parse(await f.text())); }
+    const st = !!BR.data && (Date.now()/1000 - BR.data.ts) > 60;
+    if(st !== BR.stale){ BR.stale = st; brRefresh(true); }
+    brMsg();
+  }catch(e){ BR.err = 'No pude leer el archivo: ' + e.message; brMsg(); }
+}
+function brStart(){ if(!BR.timer) BR.timer = setInterval(brRead, 2000); }
+$('brConnect').onclick = async () => {
+  if(!window.showOpenFilePicker){ $('brMsg').textContent = 'Este navegador no permite leer el archivo en vivo. Usa Chrome o Edge de escritorio.'; return; }
+  try{
+    if(BR.saved){ try{ if(await BR.saved.requestPermission({mode:'read'}) === 'granted'){ BR.handle = BR.saved; BR.last = 0; await brRead(); brStart(); return; } }catch(e){} }
+    const [h] = await window.showOpenFilePicker({types:[{description:'JSON del EA', accept:{'application/json':['.json']}}]});
+    BR.handle = h; BR.saved = h; BR.last = 0; try{ await idbSet(h); }catch(e){}
+    await brRead(); brStart();
+  }catch(e){ if(e.name !== 'AbortError') $('brMsg').textContent = 'No se pudo abrir: ' + e.message; }
+};
+$('brOff').onclick = () => { BR.on = false; BR.stale = false; BR.handle = null; BR.data = null; BR.balSynced = false; $('brCard').hidden = true; applyInstUI(); brMsg(); load(); };
+$('brSymXAU').value = BR.map.XAU; $('brSymNQ').value = BR.map.NQ;
+$('brSaveSym').onclick = () => { BR.map = {XAU:$('brSymXAU').value.trim()||'XAUUSD', NQ:$('brSymNQ').value.trim()||'NAS100'}; store.set('br_map', JSON.stringify(BR.map)); if(BR.on){ brUI(); brImport(); brRefresh(true); } };
+idbGet().then(h => { if(h){ BR.saved = h; $('brConnect').textContent = 'Reconectar MT5'; } }).catch(() => {});
+/* ---------- Bot de paper trading: abre, gestiona y registra operaciones simuladas por estrategia ---------- */
+S.paper = {}; S.pSnap = new Set(); S.botT = 0; S.pGroup = 'prof'; const BH = {};
+const IVMS = {'5min':3e5,'15min':9e5,'1h':36e5,'4h':144e5};
+const ptT = t => Date.parse(t.length<=10 ? t+'T00:00:00Z' : t.replace(' ','T')+'Z');
+const PROFS = [
+  {id:'base', name:'Base · barrido + MSS', test:() => true},
+  {id:'htf',  name:'Con sesgo 4H a favor', test:a => !!(S.hb && S.hb.h4 === (a.buy ? 'Alcista' : 'Bajista'))},
+  {id:'kz',   name:'Killzone (Londres / NY AM)', test:(a,ses) => ses==='Londres' || ses==='NY AM'},
+  {id:'conf', name:'Confluencia OB/FVG', test:a => !!(a.ctx && [...a.ctx.fvg, ...a.ctx.ob].some(z => z.dir===(a.buy?'bull':'bear') && a.price>=z.lo && a.price<=z.hi))}
+];
+const pname = id => (PROFS.find(p => p.id===id) || {name:id}).name;
+function P(){
+  const k = S.inst;
+  if(!S.paper[k]){
+    let o = null; try{ o = JSON.parse(store.get('aurum_paper_'+k,'null')); }catch(e){}
+    const B = Object.assign({on:false, open:[], closed:[], seen:[], skips:[], unsync:[]}, o || {});
+    B.cfg = Object.assign({bal0:10000, riskPct:1, maxDay:2, lossDay:2, cost:k==='XAU'?0.3:1.5, part:true}, (o && o.cfg) || {});
+    B.cfg.profs = Object.assign({base:true, htf:true, kz:true, conf:true}, B.cfg.profs || {});
+    S.paper[k] = B;
+  }
+  return S.paper[k];
+}
+const saveP = () => { const B = P();
+  B.closed.forEach((t,i) => { if(i>=60 && t.snap){ t.snap.h = null; t.snap.g = null; t.snap.z = null; } });   /* las velas solo se guardan para las 60 más recientes; el texto se conserva siempre */
+  store.set('aurum_paper_'+S.inst, JSON.stringify({on:B.on, cfg:B.cfg, open:B.open, closed:B.closed, seen:B.seen, skips:B.skips, unsync:B.unsync})); };
+function openTrade(B, pf, a, ses, snap){
+  const risk = Math.abs(a.price - a.sl); if(!(risk>0)) return;
+  const bal = B.cfg.bal0 + B.closed.reduce((t,x) => t + x.usd, 0), si = (typeof BR!=='undefined' && BR.serving()) ? BR.sym() : null;
+  B.open.push({id:Date.now()+pf.id, prof:pf.id, side:a.buy?'buy':'sell', t0:Date.now(), entry:a.price, sl:a.sl, slNow:a.sl, tp1:a.tp1, tp2:a.tp2, risk,
+    rr1:Math.abs(a.tp1-a.price)/risk, rr2:Math.abs(a.tp2-a.price)/risk, riskUsd:bal*B.cfg.riskPct/100, cost: si ? Math.abs(si.ask-si.bid) : B.cfg.cost,
+    state:'open', rem:1, realized:0, mfe:0, mae:0, lastCheck:Date.now(), ses, b4:(S.hb && S.hb.h4) || '', conf:PROFS[3].test(a), note:'', snap:snap||null});
+}
+function closeTrade(B, tr, reason, px, tms){
+  const sg = tr.side==='buy' ? 1 : -1, R = tr.realized + tr.rem*sg*(px-tr.entry)/tr.risk - tr.cost/tr.risk;
+  B.open = B.open.filter(x => x!==tr);
+  B.closed.unshift({id:tr.id, prof:tr.prof, side:tr.side, t0:tr.t0, t1:tms, entry:tr.entry, exit:px, sl:tr.sl, tp1:tr.tp1, tp2:tr.tp2, r:+R.toFixed(2), usd:+(R*tr.riskUsd).toFixed(2),
+    reason, mfe:+tr.mfe.toFixed(2), mae:+tr.mae.toFixed(2), ses:tr.ses, b4:tr.b4, conf:tr.conf, note:tr.note||'', snap:tr.snap||null});
+  if(B.closed.length>500) B.closed.pop();
+}
+/* Recorre las velas posteriores a la entrada; la 1m si cubre el periodo, si no la del timeframe elegido */
+function manage(B){
+  const now = Date.now();
+  B.open.slice().forEach(tr => {
+    const useL = S.ltf.length && ptT(S.ltf[0].t) <= tr.lastCheck, src = useL ? S.ltf : S.candles, iv = useL ? 6e4 : (IVMS[S.tf] || 9e5), sg = tr.side==='buy' ? 1 : -1;
+    let lastClosed = tr.lastCheck, done = false;
+    for(const c of src){
+      const st = ptT(c.t); if(!(st > tr.lastCheck)) continue;
+      const fav = sg>0 ? c.h : c.l, adv = sg>0 ? c.l : c.h;
+      tr.mfe = Math.max(tr.mfe, sg*(fav-tr.entry)/tr.risk); tr.mae = Math.min(tr.mae, sg*(adv-tr.entry)/tr.risk);
+      const hit = p => sg>0 ? c.h>=p : c.l<=p, stop = p => sg>0 ? c.l<=p : c.h>=p;
+      if(stop(tr.slNow)){ closeTrade(B, tr, tr.state==='tp1' ? 'TP1 + BE' : 'SL', tr.slNow, st+iv); done = true; break; }
+      if(B.cfg.part){
+        if(tr.state==='open' && hit(tr.tp1)){
+          tr.realized += .5*tr.rr1; tr.rem = .5; tr.slNow = tr.entry; tr.state = 'tp1'; tr.p1 = st;
+          if(stop(tr.entry)){ closeTrade(B, tr, 'TP1 + BE', tr.entry, st+iv); done = true; break; }
+        } else if(tr.state==='tp1' && tr.p1!==st && hit(tr.tp2)){ closeTrade(B, tr, 'TP2', tr.tp2, st+iv); done = true; break; }
+      } else if(hit(tr.tp2)){ closeTrade(B, tr, 'TP2', tr.tp2, st+iv); done = true; break; }
+      if(st+iv <= now) lastClosed = st;
+    }
+    if(!done) tr.lastCheck = Math.max(tr.lastCheck, lastClosed);
+  });
+}
+/* Fotografía del momento de la entrada: texto de lo que vio el bot y las velas con sus niveles */
+function captureSnap(a, ses){
+  const c = S.candles, L = S.ltf, f = v => fmt(v), r2 = v => +(+v).toFixed(2), x = a.ctx, lines = [];
+  const hm = t => t && t.length>10 ? new Date(ptT(t)).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : '';
+  lines.push(`Precio ${f(a.price)} en ${a.buy?'descuento':'premium'} del rango reciente (equilibrio ${f(a.eq)}; mínimo ${f(a.lo)}, máximo ${f(a.hi)}). Buscaba ${a.buy?'compra':'venta'}.`);
+  const useL = !!(a.ltf && a.lt), m = useL ? a.lt : a.mss, arr = useL ? L : c, tf = useL ? '1m' : S.tf;
+  if(m && arr[m.swept]){
+    lines.push(`Barrido ${a.buy?'del mínimo':'del máximo'} ${f(m.ref.p)} en ${tf}${hm(arr[m.swept].t) ? ' (' + hm(arr[m.swept].t) + ')' : ''}: la mecha lo superó y la vela cerró de vuelta dentro.`);
+    if(m.broke!=null && arr[m.broke]) lines.push(`MSS: cierre ${a.buy?'por encima':'por debajo'} de ${f(m.lvl)}${hm(arr[m.broke].t) ? ' a las ' + hm(arr[m.broke].t) : ''} (${tf}), que confirmó el giro.`);
+  }
+  lines.push(`Estructura en ${S.tf}: ${a.bias}.` + (S.hb ? ` 4H: ${S.hb.h4}; diario: ${S.hb.d1}.` : '') + ` Sesión: ${ses}.`);
+  if(x){
+    const want = a.buy ? 'bull' : 'bear', zs = x.ob.concat(x.fvg), inz = zs.filter(z => z.dir===want && a.price>=z.lo && a.price<=z.hi);
+    lines.push(inz.length ? `Dentro de ${inz.map(z => `${x.ob.includes(z)?'OB':'FVG'} ${a.buy?'alcista':'bajista'} ${f(z.lo)}–${f(z.hi)}`).join(' y ')}.` : 'No estaba dentro de ningún OB/FVG a favor.');
+    const near = x.lv.filter(l => Math.abs(l.p-a.price) <= 1.5*a.A).sort((p,q) => Math.abs(p.p-a.price)-Math.abs(q.p-a.price)).slice(0,4);
+    if(near.length) lines.push('Liquidez cercana: ' + near.map(l => `${l.name} ${f(l.p)} (${l.taken?'ya barrido':'sin barrer'}, a ${f(Math.abs(l.p-a.price))} pts)`).join('; ') + '.');
+    const eqs = x.eq.filter(q => Math.abs(q.p-a.price) <= 2*a.A);
+    if(eqs.length) lines.push('Liquidez igual cercana: ' + eqs.map(q => `${q.name} ${f(q.p)}`).join(', ') + '.');
+  }
+  const now = Date.now(), nx = (S.ff || []).filter(e => e.impact==='High' && e.country==='USD' && new Date(e.date)>now).sort((p,q) => new Date(p.date)-new Date(q.date))[0];
+  lines.push(nx ? `Noticias: sin bloqueo; la próxima de alto impacto en USD es ${es(nx.title)}, en ${dur(new Date(nx.date)-now)}.` : 'Noticias: sin eventos USD de alto impacto pendientes.');
+  lines.push(`Plan: entrada ${f(a.price)}, SL ${f(a.sl)} (${f(Math.abs(a.price-a.sl))} pts), TP1 ${f(a.tp1)} (R:R ${fmt(a.rr1)}), TP2 ${f(a.tp2)} (R:R ${fmt(a.rr2)}).`);
+  const cut = (ar, n) => { const o = Math.max(0, ar.length-n); return {o, d:ar.slice(o).map(v => [r2(v.o), r2(v.h), r2(v.l), r2(v.c)])}; };
+  const h = cut(c, 60), g = L.length>30 ? cut(L, 50) : null, mk = (ct, q) => q ? {sw:q.swept-ct.o, br:q.broke!=null ? q.broke-ct.o : null, lvl:r2(q.lvl)} : null;
+  return {lines, tf:S.tf, h, g, hm:mk(h, a.mss), gm:g ? mk(g, a.lt) : null, lv:{e:r2(a.price), sl:r2(a.sl), t1:r2(a.tp1), t2:r2(a.tp2), eq:r2(a.eq)},
+    z:x ? x.ob.concat(x.fvg).map(z => ({lo:r2(z.lo), hi:r2(z.hi), dir:z.dir, i:z.i-h.o})) : []};
+}
+function signal(B, a){
+  if(a.state!=='ok' || !a.confirmed) return;
+  const bc = a.ltf && a.lt && S.ltf[a.lt.broke] ? S.ltf[a.lt.broke] : (a.mss && a.mss.broke!=null ? S.candles[a.mss.broke] : null);
+  if(!bc) return;
+  const key = S.inst + '|' + (a.buy?'B':'S') + '|' + bc.t; if(B.seen.includes(key)) return;
+  const em = S.candles[S.candles.length-1].em, today = dkey(new Date());
+  const ses = em===undefined ? 'N/D' : em>=1200 ? 'Asia' : (em>=120 && em<300) ? 'Londres' : (em>=570 && em<690) ? 'NY AM' : 'Otra';
+  const snap = captureSnap(a, ses), h4 = (S.hb && S.hb.h4) || 'N/D';
+  const NO = {htf:() => `El sesgo de 4H es ${h4} y la señal es de ${a.buy?'compra':'venta'}.`, kz:() => `La señal salió en la sesión ${ses}, fuera de la killzone.`, conf:() => 'El precio no estaba dentro de un OB/FVG a favor.'};
+  const YES = {base:'solo exige barrido + MSS confirmados.', htf:`el sesgo de 4H (${h4}) va a favor.`, kz:`la señal salió en ${ses}, dentro de la killzone.`, conf:'el precio estaba dentro de un OB/FVG a favor.'};
+  const skip = (pf, why) => { B.skips.unshift({t:Date.now(), prof:pf.id, side:a.buy?'buy':'sell', price:a.price, why}); };
+  PROFS.forEach(pf => {
+    if(!B.cfg.profs[pf.id]) return;
+    if(B.open.some(t => t.prof===pf.id)) return skip(pf, 'Ya había una operación abierta de esta estrategia.');
+    if(!pf.test(a, ses)) return skip(pf, (NO[pf.id] || (() => 'No cumple el filtro.'))());
+    const day = B.closed.filter(t => t.prof===pf.id && dkey(new Date(t.t0))===today);
+    if(day.length >= B.cfg.maxDay) return skip(pf, `Límite de ${B.cfg.maxDay} operaciones diarias alcanzado.`);
+    if(day.reduce((t,x) => t + x.r, 0) <= -B.cfg.lossDay) return skip(pf, `Pérdida diaria de ${B.cfg.lossDay}R alcanzada.`);
+    openTrade(B, pf, a, ses, Object.assign({}, snap, {lines:snap.lines.concat([`Estrategia ${pf.name}: ${YES[pf.id]}`])}));
+  });
+  B.skips = B.skips.slice(0,100); B.seen.push(key); B.seen = B.seen.slice(-60);
+}
+function botTick(){
+  const B = P(), a = S.a; if(!a || S.src==='sim' || S.hist){ botRender(); return; }
+  const n0 = B.open.length + B.closed.length;
+  manage(B); if(B.on) signal(B, a);
+  if(B.open.length + B.closed.length !== n0 || B.open.length) saveP();
+  botRender(B.open.length + B.closed.length !== n0);
+}
+function statsOf(arr){
+  const n = arr.length, w = arr.filter(t => t.r>0), gw = w.reduce((s,t) => s+t.r, 0), gl = arr.filter(t => t.r<=0).reduce((s,t) => s-t.r, 0), sum = arr.reduce((s,t) => s+t.r, 0);
+  let cum = 0, pk = 0, dd = 0; arr.slice().reverse().forEach(t => { cum += t.r; pk = Math.max(pk,cum); dd = Math.max(dd, pk-cum); });
+  return {n, wr:n ? w.length/n*100 : 0, avg:n ? sum/n : 0, sum, pf: gl>0 ? gw/gl : (gw>0 ? Infinity : 0), dd, usd:arr.reduce((s,t) => s+t.usd, 0)};
+}
+const setH = (id, h) => { if(BH[id] !== h){ BH[id] = h; $(id).innerHTML = h; } };
+const f1 = x => x===Infinity ? '∞' : x.toFixed(2), sR = x => (x>=0?'+':'') + x.toFixed(2) + 'R', cls = x => x>0 ? 'up' : x<0 ? 'down' : '';
+function botRender(force){
+  const now = Date.now(); if(!force && now-S.botT < 1200) return; S.botT = now;
+  const B = P(), c = B.cfg, I = INSTR[S.inst], act = document.activeElement, st = statsOf(B.closed), sim = S.src==='sim' || !!S.hist;
+  $('botTitle').textContent = 'Bot de paper trading · ' + I.tick; paperSync(B);
+  chip('cBot', !B.on ? 'Apagado' : sim ? 'Pausado' : 'Activo · ' + B.open.length + ' abiertas', !B.on ? '' : sim ? 'wait' : 'ok');
+  [['pBal','bal0'],['pRisk','riskPct'],['pMax','maxDay'],['pLoss','lossDay'],['pCost','cost']].forEach(([id,k]) => { if(act !== $(id)) $(id).value = c[k]; });
+  $('pPart').checked = c.part; $('botOn').checked = B.on; $('pGroup').value = S.pGroup;
+  $('botState').textContent = !B.on ? 'Apagado' : sim ? 'Pausado' : 'Activo';
+  $('botMsg').textContent = sim ? (S.hist ? 'Pausado: modo histórico.' : 'Pausado: el bot necesita datos reales (API key o MT5), no simulados.')
+    : B.on ? `Vigilando ${I.tick}. Solo opera mientras esta página esté abierta y esta pestaña esté seleccionada.` : 'Enciéndelo para que abra operaciones paper cuando el setup sea válido.';
+  setH('pProfs', PROFS.map(pf => { const s2 = statsOf(B.closed.filter(t => t.prof===pf.id));
+    return `<label class="chk"><input type="checkbox" data-pf="${pf.id}" ${c.profs[pf.id]?'checked':''}> ${esc(pf.name)} <small>${s2.n} ops · ${sR(s2.sum)}</small></label>`; }).join(''));
+  const bal = c.bal0 + st.usd, box = (l,v,k) => `<div class="stat"><small>${l}</small><b class="${k||''}">${v}</b></div>`;
+  setH('pStats', box('Balance paper','$'+fmt(bal)) + box('P/L', (st.usd>=0?'+':'')+'$'+fmt(st.usd), cls(st.usd)) + box('R acumulado', sR(st.sum), cls(st.sum)) + box('Operaciones', st.n)
+    + box('Win rate', st.n ? st.wr.toFixed(0)+'%' : '—') + box('Profit factor', st.n ? f1(st.pf) : '—') + box('Expectativa', st.n ? sR(st.avg)+'/op' : '—', cls(st.avg)) + box('Drawdown máx.', st.n ? '-'+st.dd.toFixed(2)+'R' : '—'));
+  const px = S.a ? S.a.price : null;
+  setH('pOpen', B.open.length ? '<table><thead><tr><th>Estrategia</th><th>Lado</th><th>Entrada</th><th>SL actual</th><th>TP1 / TP2</th><th>R flotante</th><th>Estado</th><th></th></tr></thead><tbody>' + B.open.map(t => {
+    const sg = t.side==='buy' ? 1 : -1, fl = px===null ? 0 : t.realized + t.rem*sg*(px-t.entry)/t.risk;
+    return `<tr><td>${esc(pname(t.prof))}</td><td class="${t.side==='buy'?'buy-c':'sell-c'}">${t.side==='buy'?'Compra':'Venta'}</td><td>${fmt(t.entry)}</td><td>${fmt(t.slNow)}</td><td>${fmt(t.tp1)} / ${fmt(t.tp2)}</td><td class="${cls(fl)}">${sR(fl)}</td><td>${t.state==='tp1'?'TP1 tomado, SL en BE':'Abierta'}</td><td><button class="ghost" data-close="${esc(t.id)}">Cerrar</button></td></tr>`; }).join('') + '</tbody></table>'
+    : '<p class="empty">Sin posiciones abiertas.</p>');
+  const dow = ['dom','lun','mar','mié','jue','vie','sáb'], gk = {prof:t => pname(t.prof), ses:t => t.ses||'N/D', side:t => t.side==='buy'?'Compra':'Venta', dow:t => dow[new Date(t.t0).getDay()],
+    b4:t => t.b4 || 'N/D', conf:t => t.conf ? 'Con confluencia' : 'Sin confluencia', reason:t => t.reason}[S.pGroup], gr = {};
+  B.closed.forEach(t => { (gr[gk(t)] = gr[gk(t)] || []).push(t); });
+  setH('pBreak', B.closed.length ? '<table><thead><tr><th>Grupo</th><th>Ops</th><th>Win rate</th><th>R medio</th><th>R total</th><th>Profit factor</th></tr></thead><tbody>' +
+    Object.entries(gr).map(([k,v]) => [k, statsOf(v)]).sort((x,y) => y[1].sum-x[1].sum).map(([k,s2]) => `<tr><td>${esc(k)}</td><td>${s2.n}</td><td>${s2.wr.toFixed(0)}%</td><td class="${cls(s2.avg)}">${sR(s2.avg)}</td><td class="${cls(s2.sum)}">${sR(s2.sum)}</td><td>${f1(s2.pf)}</td></tr>`).join('') + '</tbody></table>'
+    : '<p class="empty">Aún no hay operaciones cerradas para comparar.</p>');
+  const jd = ms => new Date(ms).toLocaleString([], {day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+  const jr = (t, open) => { const sg = t.side==='buy' ? 1 : -1, fl = open ? (px===null ? 0 : t.realized + t.rem*sg*(px-t.entry)/t.risk) : t.r, k = String(t.id), on = S.pSnap.has(k);
+    return `<tr><td>${jd(t.t0)}</td><td>${esc(pname(t.prof))}</td><td class="${t.side==='buy'?'buy-c':'sell-c'}">${t.side==='buy'?'Compra':'Venta'}</td><td>${esc(t.ses||'N/D')}</td>
+      <td>${open ? (t.state==='tp1' ? 'En curso · TP1 tomado' : 'En curso') : esc(t.reason)}</td><td class="${cls(fl)}">${sR(fl)}</td><td>+${t.mfe.toFixed(1)} / ${t.mae.toFixed(1)}R</td>
+      <td>${dur(Math.max(0, (open ? Date.now() : t.t1) - t.t0))}</td><td><button class="ghost" data-note="${esc(t.id)}" title="${esc(t.note||'Añadir nota')}">${t.note ? '✎ ' + esc(t.note.slice(0,18)) : '✎'}</button></td>
+      <td><button class="ghost" data-snap="${esc(k)}">${on?'Ocultar':'Ver'}</button></td></tr>` + (on ? `<tr class="snaprow"><td colspan="10">${snapHtml(t, open)}</td></tr>` : ''); };
+  const jrows = B.open.map(t => jr(t, true)).join('') + B.closed.slice(0,60).map(t => jr(t, false)).join('');
+  setH('pJournal', jrows ? '<table><thead><tr><th>Fecha</th><th>Estrategia</th><th>Lado</th><th>Sesión</th><th>Salida</th><th>R</th><th>MFE / MAE</th><th>Duración</th><th>Nota</th><th>Qué vio</th></tr></thead><tbody>' + jrows + '</tbody></table>'
+    : '<p class="empty">El diario se llena solo: cada entrada que toma el bot queda registrada con lo que vio en el gráfico.</p>');
+  $('pSkipsS').textContent = `Señales no tomadas · ${B.skips.length}`;
+  setH('pSkips', B.skips.length ? '<table><thead><tr><th>Fecha</th><th>Estrategia</th><th>Lado</th><th>Precio</th><th>Motivo</th></tr></thead><tbody>' + B.skips.slice(0,60).map(q =>
+    `<tr><td>${jd(q.t)}</td><td>${esc(pname(q.prof))}</td><td class="${q.side==='buy'?'buy-c':'sell-c'}">${q.side==='buy'?'Compra':'Venta'}</td><td>${fmt(q.price)}</td><td>${esc(q.why)}</td></tr>`).join('') + '</tbody></table>'
+    : '<p class="empty">Aún no se ha descartado ninguna señal.</p>');
+  const cv = $('pCv'), dpr = window.devicePixelRatio||1, W = cv.clientWidth, H = cv.clientHeight; cv.width = W*dpr; cv.height = H*dpr;
+  const x = cv.getContext('2d'); x.scale(dpr,dpr); x.clearRect(0,0,W,H);
+  let b = c.bal0; const pts = [b]; B.closed.slice().reverse().forEach(t => { b += t.usd; pts.push(b); });
+  if(pts.length>1){ const mn = Math.min(...pts, c.bal0), mx = Math.max(...pts, c.bal0), Y = v => H-6-(v-mn)/((mx-mn)||1)*(H-12);
+    x.strokeStyle = '#24393D'; x.setLineDash([4,4]); x.beginPath(); x.moveTo(0,Y(c.bal0)); x.lineTo(W,Y(c.bal0)); x.stroke(); x.setLineDash([]);
+    x.strokeStyle = pts[pts.length-1]>=c.bal0 ? '#56C2A3' : '#E8705C'; x.lineWidth = 1.8; x.beginPath(); pts.forEach((v,i) => { const px2 = i/(pts.length-1)*W; i ? x.lineTo(px2,Y(v)) : x.moveTo(px2,Y(v)); }); x.stroke(); }
+  else { x.fillStyle = '#8FA0A0'; x.font = '12px IBM Plex Sans'; x.fillText('La curva de capital aparece con la primera operación cerrada.', 8, 20); }
+  drawSnaps(B);
+}
+function snapHtml(t, open){
+  const sn = t.snap, id = esc(String(t.id));
+  if(!sn) return '<p class="note">Esta operación es anterior a la captura automática: no hay registro de lo que vio el bot.</p>';
+  const res = open ? '' : `<p class="note" style="margin-top:8px"><b>Resultado:</b> ${esc(t.reason)} · ${sR(t.r)} (${t.usd>=0?'+':''}$${fmt(t.usd)}) tras ${dur(Math.max(0,t.t1-t.t0))}; llegó a +${t.mfe.toFixed(1)}R a favor y ${t.mae.toFixed(1)}R en contra.</p>`;
+  return `<div class="snapgrid"><div><b>Qué vio el bot al entrar</b><ul class="snapul">${sn.lines.map(l => `<li>${esc(l)}</li>`).join('')}</ul>${res}</div>
+    <div class="snapcvs"><div><small>${esc(sn.tf)} · contexto</small><canvas class="snapcv" data-id="${id}" data-w="h"></canvas></div>${sn.g ? `<div><small>1m · gatillo</small><canvas class="snapcv" data-id="${id}" data-w="g"></canvas></div>` : ''}</div></div>`;
+}
+function drawSnaps(B){
+  const root = $('pJournal'); if(!root || !root.querySelectorAll) return;
+  root.querySelectorAll('canvas.snapcv').forEach(cv => {
+    const t = B.open.concat(B.closed).find(q => String(q.id)===cv.dataset.id), sn = t && t.snap, w = cv.dataset.w, ch = sn && sn[w];
+    const dpr = window.devicePixelRatio||1, W = cv.clientWidth, H = cv.clientHeight; cv.width = W*dpr; cv.height = H*dpr;
+    const x = cv.getContext('2d'); x.scale(dpr,dpr); x.clearRect(0,0,W,H); x.font = '10px IBM Plex Sans'; x.textBaseline = 'middle';
+    if(!ch || !ch.d.length){ x.fillStyle = '#8FA0A0'; x.fillText('Velas no guardadas para esta operación', 8, 16); return; }
+    const v = ch.d, L = sn.lv, mk = w==='h' ? sn.hm : sn.gm, PR = 46, buy = t.side==='buy';
+    let mn = Math.min(...v.map(q => q[2]), L.e, L.sl, L.t1), mx = Math.max(...v.map(q => q[1]), L.e, L.sl, L.t1); const pd = (mx-mn)*.06; mn -= pd; mx += pd;
+    const n = v.length + 6, cw = (W-PR)/n, X = i => i*cw + cw/2, Y = p => 8 + (mx-p)/(mx-mn)*(H-16), inY = p => p>=mn && p<=mx;
+    if(w==='h') (sn.z || []).forEach(z => { if(z.i<0 || z.hi<mn || z.lo>mx) return; x.fillStyle = z.dir==='bull' ? 'rgba(86,194,163,.16)' : 'rgba(232,112,92,.16)'; const y1 = Y(Math.min(z.hi,mx)), y2 = Y(Math.max(z.lo,mn)); x.fillRect(X(z.i), y1, W-PR-X(z.i), y2-y1); });
+    const lv = []; [[L.sl,'SL','#E8705C'],[L.e,'Entrada','#EDE6D3'],[L.t1,'TP1','#56C2A3'],[L.t2,'TP2','#56C2A3']].concat(t.exit!==undefined ? [[t.exit,'Salida','#9CB8FF']] : []).forEach(([p,nm,col]) => {
+      if(!inY(p)) return; const q = lv.find(o => Math.abs(o.p-p) < (mx-mn)*.015); if(q) q.nm += '·' + nm; else lv.push({p,nm,col}); });
+    lv.forEach(o => { x.strokeStyle = o.col; x.lineWidth = 1; x.setLineDash([4,3]); x.beginPath(); x.moveTo(0,Y(o.p)); x.lineTo(W-PR,Y(o.p)); x.stroke(); x.setLineDash([]); x.fillStyle = o.col; x.fillText(o.nm, W-PR+3, Y(o.p)); });
+    v.forEach((q,i) => { const col = q[3]>=q[0] ? '#56C2A3' : '#E8705C'; x.strokeStyle = x.fillStyle = col; x.beginPath(); x.moveTo(X(i),Y(q[1])); x.lineTo(X(i),Y(q[2])); x.stroke();
+      const b = Math.max(1.5, cw*.62); x.fillRect(X(i)-b/2, Math.min(Y(q[0]),Y(q[3])), b, Math.max(1, Math.abs(Y(q[0])-Y(q[3])))); });
+    if(mk && v[mk.sw]){ x.fillStyle = '#E3B341'; x.beginPath(); x.arc(X(mk.sw), buy ? Y(v[mk.sw][2])+8 : Y(v[mk.sw][1])-8, 3.5, 0, 7); x.fill(); x.fillText('Barrido', X(mk.sw)+6, buy ? Y(v[mk.sw][2])+8 : Y(v[mk.sw][1])-8);
+      if(inY(mk.lvl)){ x.strokeStyle = '#E3B341'; x.setLineDash([3,3]); x.beginPath(); x.moveTo(X(mk.sw), Y(mk.lvl)); x.lineTo(X(mk.br ?? v.length-1), Y(mk.lvl)); x.stroke(); x.setLineDash([]); if(mk.br!=null){ x.fillText('MSS', X(mk.br), Y(mk.lvl)-8); } } }
+    const ex = X(v.length-1), ey = Y(L.e); x.fillStyle = '#EDE6D3'; x.beginPath(); x.moveTo(ex, ey + (buy?-1:1)*2); x.lineTo(ex-5, ey + (buy?12:-12)); x.lineTo(ex+5, ey + (buy?12:-12)); x.closePath(); x.fill();
+  });
+}
+function csvPaper(B){
+  const rows = [['fecha','estrategia','lado','sesion','sesgo4h','confluencia','entrada','sl','tp1','tp2','salida','motivo','R','usd','mfe_R','mae_R','duracion_min','que_vio','nota']];
+  B.closed.slice().reverse().forEach(t => rows.push([new Date(t.t0).toISOString(), pname(t.prof), t.side, t.ses, t.b4, t.conf?'si':'no', t.entry, t.sl, t.tp1, t.tp2, t.exit, t.reason, t.r, t.usd, t.mfe, t.mae, Math.round((t.t1-t.t0)/6e4), ((t.snap && t.snap.lines) || []).join(' | ').replace(/"/g,'""'), (t.note||'').replace(/"/g,'""')]));
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([rows.map(r => r.map(v => '"'+v+'"').join(',')).join('\n')], {type:'text/csv'})); a.download = 'aurum-paper-' + S.inst + '.csv'; a.click();
+}
+$('botCard').addEventListener('change', e => {
+  const t = e.target, B = P(), c = B.cfg, num = {pBal:'bal0', pRisk:'riskPct', pMax:'maxDay', pLoss:'lossDay', pCost:'cost'};
+  if(t.id==='botOn') B.on = t.checked; else if(t.id==='pPart') c.part = t.checked; else if(t.dataset && t.dataset.pf) c.profs[t.dataset.pf] = t.checked;
+  else if(t.id==='pGroup'){ S.pGroup = t.value; botRender(true); return; }
+  else if(num[t.id]){ const v = parseFloat(t.value); if(!(v>=0)) return; c[num[t.id]] = v; } else return;
+  saveP(); botRender(true);
+});
+$('botCard').addEventListener('click', e => {
+  const b = e.target.closest('button'); if(!b) return; const B = P(), d = b.dataset;
+  if(d.close){ const tr = B.open.find(x => String(x.id)===d.close); if(tr && S.a) closeTrade(B, tr, 'Manual', S.a.price, Date.now()); }
+  else if(d.snap){ if(S.pSnap.has(d.snap)) S.pSnap.delete(d.snap); else S.pSnap.add(d.snap); }
+  else if(d.note){ const tr = B.closed.find(x => String(x.id)===d.note) || B.open.find(x => String(x.id)===d.note); if(tr){ const v = prompt('Nota para esta operación:', tr.note || ''); if(v!==null) tr.note = v.trim(); } }
+  else if(b.id==='pCsv'){ csvPaper(B); return; }
+  else if(b.id==='pReset'){ if(!confirm('¿Reiniciar el bot de este instrumento? Se borran sus posiciones abiertas y su diario paper.')) return; B.open = []; B.closed = []; B.seen = []; B.skips = []; }
+  else return;
+  saveP(); botRender(true);
+});
+window.addEventListener('resize', () => botRender(true));
+$('cBot').onclick = () => { $('botCard').scrollIntoView({behavior:'smooth'}); setTimeout(() => $('botOn').focus(), 450); };
 $('apiKey').value = S.key;
 if(S.news){ $('newsAt').value = S.news.at; $('newsWin').value = S.news.win; }
 renderJ(); load(); loadNews(); loadCOT(); loadMacro();
-setInterval(() => { if(!S.hist && S.key && !document.hidden) load(); }, REFRESH_MS);
+setInterval(() => { if(!S.hist && (S.key || BR.on) && !document.hidden) load(); }, REFRESH_MS);
 </script>
 </body>
 </html>
