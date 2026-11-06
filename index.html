@@ -214,6 +214,10 @@ canvas#cv{touch-action:pan-y;cursor:grab}
     <label>Símbolos en MT5 (Oro / NQ)
       <span class="row"><input id="brSymXAU" style="width:90px" placeholder="XAUUSD"><input id="brSymNQ" style="width:90px" placeholder="NAS100"><button class="prim" id="brSaveSym">Guardar</button></span>
     </label>
+    <label>Respaldo de datos (bot y bitácora)
+      <span class="row"><button class="prim" id="dkConnect">Conectar archivo de respaldo</button><button class="ghost" id="dkExport">Exportar</button><button class="ghost" id="dkImportBtn">Importar</button><input type="file" id="dkImport" accept=".json,application/json" hidden></span>
+      <small id="dkMsg" style="max-width:360px"></small>
+    </label>
     <label>Ver el mercado en una fecha (hora local)
       <span class="row"><input type="datetime-local" id="histDate"><button class="prim" id="goHist">Ir</button><button class="ghost" id="goLive">Volver a vivo</button></span>
     </label>
@@ -304,6 +308,7 @@ canvas#cv{touch-action:pan-y;cursor:grab}
       <span><select id="pGroup" aria-label="Agrupar por"><option value="prof">Estrategia</option><option value="ses">Sesión</option><option value="side">Lado</option><option value="dow">Día de la semana</option><option value="b4">Sesgo 4H</option><option value="conf">Confluencia OB/FVG</option><option value="reason">Tipo de salida</option></select></span></div>
     <div class="tscroll" id="pBreak"></div>
     <div class="sbar"><h3>Diario del bot</h3><span style="display:flex;gap:8px"><button class="ghost" id="pCsv">Exportar CSV</button><button class="ghost" id="pReset">Reiniciar</button></span></div>
+    <p class="note" id="dkNote"></p>
     <div class="tscroll" id="pJournal"></div>
     <details style="margin-top:10px"><summary id="pSkipsS" style="cursor:pointer;color:var(--mute)">Señales no tomadas</summary><div class="tscroll" id="pSkips"></div></details>
     <p class="note">Simulación con datos reales, sin dinero. Las operaciones se evalúan con velas: si una vela toca el SL y un objetivo, se asume que primero tocó el SL. No modela deslizamiento en noticias ni el redondeo de lotes.</p>
@@ -333,7 +338,7 @@ const $ = id => document.getElementById(id);
 const MIN_RR = 1.8, RANGE_N = 40, OZ = 100, REFRESH_MS = 240000;
 const store = {
   get(k, d){ try{ const v = localStorage.getItem(k); return v === null ? d : v; }catch(e){ return d; } },
-  set(k, v){ try{ localStorage.setItem(k, v); }catch(e){} },
+  set(k, v){ try{ localStorage.setItem(k, v); }catch(e){ store.err = e.message; if(store.onerr) store.onerr(e); return false; } store.err = ''; if(store.onset) store.onset(k); return true; },
   del(k){ try{ localStorage.removeItem(k); }catch(e){} }
 };
 const S = { key: store.get('td_key',''), tf:'15min', hist:null, candles:[], src:'sim', msg:'', a:null,
@@ -1240,10 +1245,11 @@ function signal(B, a){
 }
 function botTick(){
   const B = P(), a = S.a; if(!a || S.src==='sim' || S.hist){ botRender(); return; }
-  const n0 = B.open.length + B.closed.length;
+  const n0 = B.open.length + ':' + B.closed.length;   /* "abiertas:cerradas": una operación que pasa de abierta a cerrada cambia la cuenta aunque la suma sea igual */
   manage(B); if(B.on) signal(B, a);
-  if(B.open.length + B.closed.length !== n0 || B.open.length) saveP();
-  botRender(B.open.length + B.closed.length !== n0);
+  const ch = (B.open.length + ':' + B.closed.length) !== n0;
+  if(ch || B.open.length) saveP();
+  botRender(ch);
 }
 function statsOf(arr){
   const n = arr.length, w = arr.filter(t => t.r>0), gw = w.reduce((s,t) => s+t.r, 0), gl = arr.filter(t => t.r<=0).reduce((s,t) => s-t.r, 0), sum = arr.reduce((s,t) => s+t.r, 0);
@@ -1351,6 +1357,88 @@ $('botCard').addEventListener('click', e => {
   saveP(); botRender(true);
 });
 window.addEventListener('resize', () => botRender(true));
+/* ---------- Respaldo de datos: archivo en disco (autoguardado), exportar/importar y almacenamiento persistente ---------- */
+const DK = {h:null, saved:null, on:false, t:null, last:0, err:'', persist:null};
+const dkOK = k => /^(aurum_|sym_|br_map)/.test(k);
+const dkKeys = () => { const o = {}; try{ for(let i=0;i<localStorage.length;i++){ const k = localStorage.key(i); if(dkOK(k)) o[k] = localStorage.getItem(k); } }catch(e){} return o; };
+const dkSnapshot = () => JSON.stringify({v:1, savedAt:Date.now(), data:dkKeys()});
+const jparse = (t, d) => { try{ return JSON.parse(t); }catch(e){ return d; } };
+const dbPut = async (k, v) => { const db = await idb(); return new Promise((res,rej) => { const t = db.transaction('kv','readwrite'); t.objectStore('kv').put(v,k); t.oncomplete = res; t.onerror = () => rej(t.error); }); };
+const dbGet = async k => { const db = await idb(); return new Promise((res,rej) => { const q = db.transaction('kv').objectStore('kv').get(k); q.onsuccess = () => res(q.result); q.onerror = () => rej(q.error); }); };
+/* Combina lo local con lo del archivo sin perder nada: une operaciones por id; para lo demás manda lo local */
+function mergeKey(k, a, b){
+  if(a === undefined || a === null) return b; if(a === b) return a;
+  const uni = (x, y, key) => { const m = new Map(); (y||[]).concat(x||[]).forEach(t => m.set(String(key(t)), t)); return [...m.values()]; };
+  if(/^aurum_paper_/.test(k)){
+    const A = jparse(a,null), R = jparse(b,null); if(!A || !R) return a;
+    const out = Object.assign({}, R, A);
+    out.closed = uni(A.closed, R.closed, t => t.id).sort((p,q) => q.t1-p.t1);
+    out.open = uni(A.open, R.open, t => t.id).filter(t => !out.closed.some(c => String(c.id)===String(t.id)));
+    out.skips = uni(A.skips, R.skips, t => t.t + '|' + t.prof).sort((p,q) => q.t-p.t).slice(0,100);
+    out.seen = [...new Set((R.seen||[]).concat(A.seen||[]))].slice(-60);
+    out.unsync = [...new Set((R.unsync||[]).concat(A.unsync||[]))];
+    return JSON.stringify(out);
+  }
+  if(/^aurum_journal/.test(k)){
+    const id = t => t.paper!==undefined ? 'p'+t.paper : t.mt5!==undefined ? 'm'+t.mt5 : t.ts+'|'+t.side+'|'+t.r;
+    return JSON.stringify(uni(jparse(a,[]), jparse(b,[]), id).sort((p,q) => q.ts-p.ts));
+  }
+  return a;
+}
+function dkApply(text){
+  const d = jparse(text,null); if(!d || !d.data || typeof d.data !== 'object') throw new Error('formato inesperado');
+  let changed = false;
+  Object.keys(d.data).filter(dkOK).forEach(k => { const loc = localStorage.getItem(k), m = mergeKey(k, loc, String(d.data[k])); if(m !== loc){ localStorage.setItem(k, m); changed = true; } });
+  ['XAU','NQ'].forEach(i => {   /* lo que borraste de la bitácora no debe volver por el respaldo */
+    const pk = 'aurum_paper_' + i, jk = i==='XAU' ? 'aurum_journal' : 'aurum_journal_' + i, pp = jparse(localStorage.getItem(pk),null), jj = jparse(localStorage.getItem(jk),null);
+    if(pp && jj && pp.unsync && pp.unsync.length){ const un = pp.unsync.map(String), keep = jj.filter(t => t.paper===undefined || !un.includes(String(t.paper))); if(keep.length !== jj.length){ localStorage.setItem(jk, JSON.stringify(keep)); changed = true; } }
+  });
+  return changed;
+}
+function dkUI(){
+  const hh = t => new Date(t).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+  let msg, bad = false;
+  if(store.err){ msg = 'El navegador no pudo guardar tus datos (' + store.err + '). Exporta un respaldo ahora y libera espacio.'; bad = true; }
+  else if(DK.err){ msg = DK.err; bad = true; }
+  else if(DK.on && DK.h) msg = `Respaldo activo en ${DK.h.name}` + (DK.last ? ` · último guardado ${hh(DK.last)}` : '') + '. Se guarda solo en cada cambio.';
+  else if(DK.saved) { msg = 'El archivo de respaldo está desconectado: pulsa "Reconectar respaldo" para seguir guardando.'; bad = true; }
+  else { msg = 'Tus operaciones se guardan solo en este navegador y se pierden si borras sus datos. Conecta un archivo de respaldo en Ajustes.'; bad = true; }
+  if(DK.persist !== null && !DK.on) msg += DK.persist ? ' (Almacenamiento del navegador protegido.)' : '';
+  [$('dkMsg'), $('dkNote')].forEach(el => { if(el){ el.textContent = msg; if(el.id==='dkNote') el.className = bad ? 'warn' : 'note'; } });
+  $('dkConnect').textContent = DK.on ? 'Respaldo conectado ✓' : DK.saved ? 'Reconectar respaldo' : 'Conectar archivo de respaldo';
+}
+async function dkWrite(){
+  if(!DK.h || !DK.on) return;
+  try{ const w = await DK.h.createWritable(); await w.write(dkSnapshot()); await w.close(); DK.last = Date.now(); DK.err = ''; }
+  catch(e){ DK.err = 'No se pudo escribir el respaldo: ' + e.message; DK.on = false; }
+  dkUI();
+}
+function dkQueue(){ clearTimeout(DK.t); DK.t = setTimeout(dkWrite, 1500); }
+async function dkRestore(){
+  try{ const t = await (await DK.h.getFile()).text(); if(t.trim() && dkApply(t)) location.reload(); }catch(e){ DK.err = 'No pude leer el respaldo: ' + e.message; }
+}
+async function dkConnect(){
+  if(!window.showSaveFilePicker){ DK.err = 'Este navegador no permite escribir archivos. Usa Chrome o Edge, o el botón Exportar.'; dkUI(); return; }
+  try{
+    let h = DK.saved;
+    if(h){ try{ if(await h.requestPermission({mode:'readwrite'}) !== 'granted') h = null; }catch(e){ h = null; } }
+    if(!h) h = await window.showSaveFilePicker({suggestedName:'aurum-respaldo.json', types:[{description:'Respaldo AURUM', accept:{'application/json':['.json']}}]});
+    DK.h = DK.saved = h; DK.on = true; DK.err = ''; await dbPut('backup', h);
+    await dkRestore(); await dkWrite();
+  }catch(e){ if(e.name !== 'AbortError') DK.err = 'No se pudo conectar el respaldo: ' + e.message; dkUI(); }
+}
+store.onset = k => { if(DK.on && dkOK(k)) dkQueue(); };
+store.onerr = () => dkUI();
+$('dkConnect').onclick = dkConnect;
+$('dkExport').onclick = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([dkSnapshot()], {type:'application/json'})); a.download = 'aurum-respaldo-' + dkey(new Date()) + '.json';
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 3000); };
+$('dkImportBtn').onclick = () => $('dkImport').click();
+$('dkImport').onchange = async e => { const f = e.target.files[0]; if(!f) return;
+  try{ if(dkApply(await f.text())) location.reload(); else { DK.err = 'El archivo no trae nada nuevo.'; dkUI(); } }catch(err){ DK.err = 'Archivo inválido: ' + err.message; dkUI(); } };
+(async () => { try{ const h = await dbGet('backup'); if(h){ DK.saved = h; if(await h.queryPermission({mode:'readwrite'}) === 'granted'){ DK.h = h; DK.on = true; await dkRestore(); await dkWrite(); } } }catch(e){}
+  try{ if(navigator.storage && navigator.storage.persist) DK.persist = await navigator.storage.persist(); }catch(e){}
+  dkUI(); })();
+dkUI();
 $('cBot').onclick = () => { $('botCard').scrollIntoView({behavior:'smooth'}); setTimeout(() => $('botOn').focus(), 450); };
 $('apiKey').value = S.key;
 if(S.news){ $('newsAt').value = S.news.at; $('newsWin').value = S.news.win; }
