@@ -162,6 +162,22 @@ canvas#cv{touch-action:pan-y;cursor:grab}
 .snapul{margin:6px 0 0 18px;font-size:13px;display:grid;gap:4px}
 .snapcvs{display:grid;grid-template-columns:1fr 1fr;gap:8px}.snapcvs small{color:var(--mute);font-size:11px}
 .snapcv{width:100%;height:190px;display:block;background:var(--panel);border:1px solid var(--line);border-radius:8px}
+.calhead{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:6px 0 10px}.calhead b{font:600 18px 'Fraunces',serif;min-width:150px;text-align:center;text-transform:capitalize}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr)) 84px;gap:6px}
+.cal .dh{color:var(--mute);font-size:12px;text-align:center}
+.cday{min-height:66px;border:1px solid var(--line);border-radius:10px;padding:6px 8px;background:var(--bg);cursor:pointer;display:flex;flex-direction:column;justify-content:space-between;text-align:left;color:inherit}
+.cday.out{opacity:.35}.cday.today{border-color:var(--mute)}.cday.sel{border-color:var(--brass);box-shadow:0 0 0 1px var(--brass)}
+.cday .dn{font-size:12px;color:var(--mute)}.cday .rv{font-weight:600;font-size:14px}
+.cwk{display:flex;flex-direction:column;justify-content:center;align-items:center;border-radius:10px;background:var(--bg);font-weight:600;font-size:13px}.cwk small{color:var(--mute);font-weight:400;font-size:11px}
+@media(max-width:700px){.cal{gap:3px;grid-template-columns:repeat(7,minmax(0,1fr)) 56px}.cday{min-height:52px;padding:4px}.cday .rv{font-size:11px}}
+.hl{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:14px 0}
+.hl div{background:var(--bg);border-radius:10px;padding:10px 12px}.hl small{display:block;color:var(--mute);font-size:12px}.hl b{font:700 17px 'Fraunces',serif}.hl span{display:block;color:var(--mute);font-size:12px}
+.an{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;margin-top:14px}
+.anbox{background:var(--bg);border-radius:12px;padding:12px 14px}.anbox h3{font:600 14px 'IBM Plex Sans';margin-bottom:8px}
+.arow{display:grid;grid-template-columns:minmax(70px,1.3fr) 34px 44px minmax(40px,1fr) 62px;gap:8px;align-items:center;padding:4px 0;font-size:13px}.arow.h{color:var(--mute);font-size:11px}.arow.thin{opacity:.55}
+.abar{height:6px;background:var(--panel);border-radius:4px;overflow:hidden}.abar i{display:block;height:100%}.abar i.pos{background:var(--buy)}.abar i.neg{background:var(--sell)}
+#anCv{height:150px;margin-top:6px}
+.cdet{margin-top:10px;background:var(--bg);border-radius:10px;padding:10px 12px;font-size:13px}.cdet div{display:flex;gap:12px;flex-wrap:wrap;padding:3px 0}
 </style>
 </head>
 <body>
@@ -224,6 +240,7 @@ canvas#cv{touch-action:pan-y;cursor:grab}
     <label>Noticia de alto impacto (hora local)
       <span class="row"><input type="datetime-local" id="newsAt"><input type="number" id="newsWin" value="15" min="1" style="width:70px" title="Minutos antes y después"><button class="prim" id="saveNews">Bloquear</button><button class="ghost" id="clearNews">Quitar</button></span></label>
     <label style="flex-direction:row;display:flex;gap:6px;align-items:center"><input type="checkbox" id="autoNews" checked> Bloquear con noticias USD de alto impacto</label>
+    <label style="flex-direction:row;display:flex;gap:6px;align-items:center"><input type="checkbox" id="botNeedNews" checked> El bot no opera si el calendario de noticias está desactualizado</label>
     <label>Proxy CORS para ForexFactory (opcional)<span class="row"><input id="proxy" placeholder="https://…?url=" style="width:220px"><button class="prim" id="saveProxy">Guardar</button><button class="ghost" id="pasteFF">Pegar JSON</button></span>
     </label>
   </section>
@@ -278,7 +295,7 @@ canvas#cv{touch-action:pan-y;cursor:grab}
       <div class="legend"><span style="color:var(--sell)">● Alto: puede mover fuerte el precio</span><span style="color:var(--warn)">● Medio: puede moverlo</span><span style="color:#8FB3E8">● Bajo: casi nunca lo mueve</span></div>
       <div class="cfilter" id="nfCountry"></div>
       <div class="nday" id="nfDay"></div>
-      <p class="note" id="nfNext"></p><p class="note" id="nfMsg"></p>
+      <p class="note" id="nfNext"></p><p class="note" id="nfMsg"></p><div class="pills" id="nfActions"></div>
       <div class="ntl" id="nfList"></div>
       <p class="note">El feed público trae pronóstico y previo, pero no el dato ya publicado ni titulares de última hora.</p>
     </section>
@@ -330,6 +347,21 @@ canvas#cv{touch-action:pan-y;cursor:grab}
     <div style="margin-bottom:8px;color:var(--mute);font-size:13px">Mostrar
       <select id="jSrc" style="background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:5px 8px;color:var(--text);margin-left:6px"><option value="all">Todas</option><option value="real">Reales (MT5 y manuales)</option><option value="paper">Bot paper</option></select></div>
     <div id="jTable"></div>
+  </section>
+  <section class="card" id="anSec">
+    <div class="nhead"><h2>Calendario y análisis de operaciones</h2>
+      <span class="nctl">
+        <select id="anInst" aria-label="Instrumento"><option value="cur">Instrumento actual</option><option value="XAU">Oro</option><option value="NQ">NQ</option><option value="both">Ambos</option></select>
+        <select id="anSrc" aria-label="Origen"><option value="all">Todas</option><option value="real">Reales (MT5 y manuales)</option><option value="paper">Bot paper</option></select>
+        <select id="anRng" aria-label="Periodo"><option value="all">Todo el historial</option><option value="month">Mes del calendario</option><option value="30">Últimos 30 días</option></select>
+      </span></div>
+    <p class="note" id="anNote"></p>
+    <div class="calhead"><button class="ghost" data-cal="prev" aria-label="Mes anterior">◀</button><b id="calTitle"></b><button class="ghost" data-cal="next" aria-label="Mes siguiente">▶</button><button class="ghost" data-cal="today">Hoy</button><span class="note" id="anMonth" style="margin:0"></span></div>
+    <div class="cal" id="anCal"></div>
+    <div id="calDetail"></div>
+    <div class="hl" id="anHL"></div>
+    <canvas id="anCv"></canvas>
+    <div class="an" id="anBoxes"></div>
   </section>
 </div>
 
@@ -456,7 +488,8 @@ function render(){
   const hb = S.hb; chip('cHb', hb ? `${hb.h4} · ${hb.d1}` : 'Cargando…', hb ? (hb.h4===hb.d1 && hb.h4!=='Rango' ? (hb.h4==='Alcista'?'ok':'bad') : 'wait') : '');
   const tfl = a.ltf?'1m':S.tf, sw1 = a.ltf?a.lt:a.mss;
   chip('cMss', a.confirmed?`MSS ${tfl} confirmado`:sw1?`Barrido ${tfl}, falta MSS`:`Sin barrido ${tfl}`, a.confirmed?'ok':sw1?'wait':'');
-  chip('cNews', a.blocked?'Bloqueado':S.news?'Programada':'Sin bloqueo', a.blocked?'bad':'ok');
+  chip('cNews', !newsFresh() ? 'Calendario desactualizado' : a.blocked?'Bloqueado':S.news?'Programada':'Sin bloqueo', a.blocked?'bad':'ok');
+  if(!newsFresh()) $('cNews').className = 'chip wait';
   chip('cSetup', a.state==='ok'?'Válido':a.state==='wait'?'En espera':'No operar', a.state);
   const t = $('ticket'); t.className = 'card ticket ' + (a.buy?'':'sell ') + (a.state==='bad'?'off':'');
   $('tkSide').textContent = a.buy ? 'Compra' : 'Venta'; $('tkSide').className = 'tk-side ' + (a.buy?'buy-c':'sell-c');
@@ -621,25 +654,34 @@ function record(res){
 }
 S.jSrc = store.get('aurum_jsrc','all');
 function renderJ(){
-  const f = S.jSrc || 'all', rows = S.journal.map((t,i) => ({t,i})).filter(({t}) => f==='all' || (f==='paper' ? t.paper!==undefined : t.paper===undefined)), j = rows.map(x => x.t);
+  const f = S.jSrc || 'all', all = S.journal.map((t,i) => ({t,i})), base = pname('base');
+  /* Una misma señal puede abrirla varias estrategias del bot: las estadísticas cuentan cada señal una sola vez (referencia: Base) */
+  const sk = t => t.side + '|' + (t.t0 ? Math.floor(t.t0/60000) : 'c' + Math.floor(t.ts/60000)), ref = new Map();
+  all.forEach(({t}) => { if(t.paper===undefined) return; const k = sk(t), c = ref.get(k); if(!c || (t.strat===base && c.strat!==base)) ref.set(k, t); });
+  const isDup = t => t.paper!==undefined && ref.get(sk(t)) !== t;
+  const rows = all.filter(({t}) => f==='all' || (f==='paper' ? t.paper!==undefined : t.paper===undefined)), j = rows.map(x => x.t).filter(t => !isDup(t)), dups = rows.length - j.length;
   const wins = j.filter(t=>t.res==='WIN'), gw = wins.reduce((s,t)=>s+t.r,0), gl = j.filter(t=>t.res==='LOSS').reduce((a,t)=>a+Math.abs(t.r),0), tot = j.reduce((s,t)=>s+t.r,0);
   $('jSrc').value = f;
   $('jWR').textContent = j.length ? Math.round(wins.length/j.length*100)+'%' : '0%';
   $('jPF').textContent = !j.length ? '—' : gl ? (gw/gl).toFixed(2) : '∞';
   $('jR').textContent = (tot>=0?'+':'') + tot.toFixed(1) + 'R'; $('jN').textContent = j.length;
-  const org = t => t.paper!==undefined ? 'Bot · ' + esc(t.strat||'') : t.mt5!==undefined ? 'MT5' : 'Manual';
-  $('jTable').innerHTML = j.length ? '<table><thead><tr><th>Fecha</th><th>Origen</th><th>Lado</th><th>Resultado</th><th>R</th><th></th></tr></thead><tbody>' +
-    rows.map(({t,i}) => `<tr><td>${new Date(t.ts).toLocaleString([], {day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}</td><td>${org(t)}</td>
+  const org = t => t.paper!==undefined ? 'Bot · ' + esc(t.strat||'') + (isDup(t) ? ' <small style="color:var(--mute)">(misma señal)</small>' : '') : t.mt5!==undefined ? 'MT5' : 'Manual';
+  $('jTable').innerHTML = j.length || rows.length ? (dups ? `<p class="note" style="margin:0 0 8px">${dups} fila${dups>1?'s son':' es'} la misma señal tomada por otra estrategia: se muestra${dups>1?'n':''} atenuada${dups>1?'s':''} y no suma${dups>1?'n':''} a las estadísticas. El rendimiento por estrategia está en la tarjeta del bot.</p>` : '') +
+    '<table><thead><tr><th>Cierre</th><th>Origen</th><th>Lado</th><th>Resultado</th><th>R</th><th></th></tr></thead><tbody>' +
+    rows.map(({t,i}) => `<tr style="${isDup(t)?'opacity:.5':''}"><td>${new Date(t.ts).toLocaleString([], {day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}</td><td>${org(t)}</td>
     <td class="${t.side==='Compra'?'buy-c':'sell-c'}">${t.side}</td><td>${t.res==='WIN'?'Win':'Loss'}</td>
     <td class="${t.r>0?'up':'down'}">${t.r>0?'+':''}${t.r.toFixed(1)}R</td><td><button data-del="${i}" aria-label="Borrar operación">✕</button></td></tr>`).join('') + '</tbody></table>'
     : `<p class="empty">${S.journal.length ? 'No hay operaciones con este filtro.' : 'Aún no registras operaciones. Las del bot paper se añaden solas al cerrarse; las reales llegan de MT5 o con los botones de arriba.'}</p>`;
+  renderAn();
 }
 /* Las operaciones cerradas del bot paper se copian a la bitácora (una vez cada una; si las borras aquí no vuelven) */
 function paperSync(B){
   const un = (B.unsync || []).map(String), have = new Set(S.journal.filter(t => t.paper!==undefined).map(t => String(t.paper)));
+  let changed = false;
+  S.journal.forEach(t => { if(t.paper!==undefined && t.t0===undefined){ const c = B.closed.find(x => String(x.id)===String(t.paper)); if(c){ t.t0 = c.t0; t.prof = c.prof; changed = true; } } });   /* completa entradas antiguas */
   const add = B.closed.filter(t => !have.has(String(t.id)) && !un.includes(String(t.id)));
-  if(!add.length) return;
-  add.forEach(t => S.journal.push({ts:t.t1, side:t.side==='buy'?'Compra':'Venta', res:t.r>0?'WIN':'LOSS', r:+t.r.toFixed(2), usd:t.usd, paper:String(t.id), strat:pname(t.prof)}));
+  add.forEach(t => { S.journal.push({ts:t.t1, t0:t.t0, side:t.side==='buy'?'Compra':'Venta', res:t.r>0?'WIN':'LOSS', r:+t.r.toFixed(2), usd:t.usd, paper:String(t.id), prof:t.prof, strat:pname(t.prof)}); changed = true; });
+  if(!changed) return;
   S.journal.sort((x,y) => y.ts-x.ts); saveJ();
 }
 $('jTable').addEventListener('click', e => { const d = e.target.dataset.del; if(d===undefined) return; const t = S.journal[+d];
@@ -755,7 +797,10 @@ function renderNews(msg, err){
     : `<small>Próxima de alto impacto</small><div>${S.ff.length ? 'No quedan eventos de alto impacto esta semana.' : 'Sin datos de noticias.'}</div>`;
   const un = all.filter(x => x.imp==='High' && x.cur==='USD' && dkey(x.t)===today && x.t.getTime()>now).sort((a,b) => a.t-b.t)[0];
   $('nfNext').textContent = un ? `Próxima de alto impacto en USD hoy: ${es(un.e.title)}, en ${dur(un.t-now)}.` : (S.ff.length ? 'No quedan eventos USD de alto impacto hoy.' : '');
-  $('nfMsg').textContent = S.nfMsg; $('nfMsg').className = S.nfErr ? 'warn' : 'note';
+  const fresh = newsFresh(), last = all.length ? new Date(Math.max(...all.map(x => x.t))) : null;
+  const stale = !fresh ? (last ? `⚠ Estas noticias son de una semana anterior (hasta el ${last.toLocaleDateString('es',{day:'numeric',month:'long'})}) y hoy no hay calendario cargado: el filtro de noticias no está protegiendo tus setups.` : '⚠ No hay calendario cargado: el filtro de noticias no está protegiendo tus setups.') : '';
+  $('nfActions').innerHTML = (!fresh || S.nfErr) ? `<button class="pill on" data-nf="paste">Pegar del portapapeles</button><button class="pill" data-nf="open">Abrir el feed en otra pestaña</button>` : '';
+  $('nfMsg').textContent = [stale, S.nfMsg].filter(Boolean).join(' '); $('nfMsg').className = (S.nfErr || !fresh) ? 'warn' : 'note';
 }
 $('newsCard').addEventListener('click', e => {
   const b = e.target.closest('button'); if(!b) return; const d = b.dataset, F = S.nf;
@@ -763,6 +808,8 @@ $('newsCard').addEventListener('click', e => {
   else if(d.key) F.key = !F.key;
   else if(d.day) F.day = d.day;
   else if(d.cur){ F.cur = F.cur.includes(d.cur) ? F.cur.filter(x => x!==d.cur) : F.cur.concat(d.cur); if(!F.cur.length) F.cur = [d.cur]; }
+  else if(d.nf==='open'){ window.open(FF_URL, '_blank'); return; }
+  else if(d.nf==='paste'){ nfPaste(); return; }
   else if(d.clear) F.cur = [...new Set(S.ff.map(x => x.country))];
   else return;
   store.set('aurum_nf', JSON.stringify({imp:F.imp, key:F.key, cur:F.cur})); renderNews();
@@ -1097,10 +1144,11 @@ function brRisk(a){
 function brImport(){
   const d = BR.data, si = BR.sym(); if(!d || !d.closed || !si || !(si.tsize>0)) return;
   const n = BR.map[S.inst], per = si.tval/si.tsize, bal = parseFloat($('bal').value)||0, pct = parseFloat($('riskPct').value)||1; let added = 0;
+  let bf = false; S.journal.forEach(t => { if(t.mt5!==undefined && t.t0===undefined){ const c = d.closed.find(x => x.id===t.mt5); if(c){ t.t0 = (c.open_time||c.close_time)*1000; bf = true; } } });
   d.closed.filter(c => c.symbol===n && !S.journal.some(t => t.mt5===c.id)).forEach(c => {
     const rk = c.sl>0 ? c.volume*Math.abs(c.open_price-c.sl)*per : bal*pct/100;
-    S.journal.push({ts:c.close_time*1000, side:c.type==='buy'?'Compra':'Venta', res:c.net>0?'WIN':'LOSS', r:+(c.net/(rk||1)).toFixed(2), usd:c.net, mt5:c.id, est:!(c.sl>0)}); added++; });
-  if(added){ S.journal.sort((x,y) => y.ts-x.ts); saveJ(); }
+    S.journal.push({ts:c.close_time*1000, t0:(c.open_time||c.close_time)*1000, side:c.type==='buy'?'Compra':'Venta', res:c.net>0?'WIN':'LOSS', r:+(c.net/(rk||1)).toFixed(2), usd:c.net, mt5:c.id, est:!(c.sl>0)}); added++; });
+  if(added || bf){ S.journal.sort((x,y) => y.ts-x.ts); saveJ(); }
 }
 function brRefresh(force){
   if(S.hist) return; const now = Date.now();
@@ -1234,6 +1282,7 @@ function signal(B, a){
   const skip = (pf, why) => { B.skips.unshift({t:Date.now(), prof:pf.id, side:a.buy?'buy':'sell', price:a.price, why}); };
   PROFS.forEach(pf => {
     if(!B.cfg.profs[pf.id]) return;
+    if($('botNeedNews').checked && !newsFresh()) return skip(pf, 'El calendario de noticias está desactualizado: el bot no opera sin él (puedes cambiarlo en Ajustes).');
     if(B.open.some(t => t.prof===pf.id)) return skip(pf, 'Ya había una operación abierta de esta estrategia.');
     if(!pf.test(a, ses)) return skip(pf, (NO[pf.id] || (() => 'No cumple el filtro.'))());
     const day = B.closed.filter(t => t.prof===pf.id && dkey(new Date(t.t0))===today);
@@ -1439,6 +1488,118 @@ $('dkImport').onchange = async e => { const f = e.target.files[0]; if(!f) return
   try{ if(navigator.storage && navigator.storage.persist) DK.persist = await navigator.storage.persist(); }catch(e){}
   dkUI(); })();
 dkUI();
+/* Un calendario está vigente si aún tiene eventos de hoy en adelante (en fin de semana se tolera el de la semana que acaba de terminar) */
+function newsFresh(){
+  if(!S.ff || !S.ff.length) return false;
+  const d = new Date(), grace = d.getDay()===6 ? 1 : d.getDay()===0 ? 2 : 0; d.setHours(0,0,0,0);
+  const cut = d.getTime() - grace*864e5; return S.ff.some(e => new Date(e.date).getTime() >= cut);
+}
+async function nfPaste(){
+  try{
+    const t = await navigator.clipboard.readText(); if(!t.trim()) throw new Error('el portapapeles está vacío');
+    setFF(JSON.parse(t)); S.nfErr = false;
+  }catch(e){ renderNews('No pude leer el portapapeles (' + e.message + '). Abre el feed, selecciona todo (Ctrl+A), copia (Ctrl+C) y vuelve a pulsar el botón.', true); }
+}
+$('botNeedNews').checked = store.get('aurum_neednews','1') === '1';
+$('botNeedNews').onchange = () => store.set('aurum_neednews', $('botNeedNews').checked ? '1' : '0');
+/* ---------- Calendario y análisis de operaciones ---------- */
+S.cal = (() => { const d = new Date(); return {y:d.getFullYear(), m:d.getMonth(), sel:null}; })();
+S.an = {inst:store.get('aurum_an_inst','cur'), src:store.get('aurum_an_src','all'), rng:store.get('aurum_an_rng','all')};
+const anEt = new Intl.DateTimeFormat('en-US', {timeZone:'America/New_York', hourCycle:'h23', hour:'2-digit', minute:'2-digit'});
+const SESL = {Asia:'Asia (20:00–02:00 ET)', Londres:'Londres (02:00–05:00 ET)', 'Pre-NY':'Pre-NY (05:00–09:30 ET)', 'NY AM':'NY AM (09:30–11:30 ET)', 'NY PM':'NY PM (11:30–16:00 ET)', Cierre:'Cierre (16:00–20:00 ET)'};
+function sesOf(ms){
+  const p = anEt.formatToParts(ms), em = +p.find(x => x.type==='hour').value*60 + +p.find(x => x.type==='minute').value;
+  return em>=1200 || em<120 ? 'Asia' : em<300 ? 'Londres' : em<570 ? 'Pre-NY' : em<690 ? 'NY AM' : em<960 ? 'NY PM' : 'Cierre';
+}
+/* Operaciones según los filtros. Cada señal del bot cuenta una vez (referencia: Base); "strat" conserva todas para comparar estrategias */
+function anTrades(){
+  const A = S.an, insts = A.inst==='cur' ? [S.inst] : A.inst==='both' ? ['XAU','NQ'] : [A.inst];
+  let raw = [];
+  insts.forEach(i => { const j = i===S.inst ? S.journal : jparse(store.get(i==='XAU' ? 'aurum_journal' : 'aurum_journal_' + i, '[]'), []); j.forEach(t => raw.push(Object.assign({inst:i, at:t.t0 || t.ts}, t))); });
+  const base = pname('base'), sk = t => t.inst + '|' + t.side + '|' + (t.t0 ? Math.floor(t.t0/60000) : 'c' + Math.floor(t.ts/60000)), ref = new Map();
+  raw.forEach(t => { if(t.paper===undefined) return; const k = sk(t), c = ref.get(k); if(!c || (t.strat===base && c.strat!==base)) ref.set(k, t); });
+  const now = Date.now(), inR = t => A.rng==='all' || (A.rng==='30' ? t.at >= now - 30*864e5 : (() => { const d = new Date(t.at); return d.getFullYear()===S.cal.y && d.getMonth()===S.cal.m; })());
+  raw = raw.filter(t => (A.src==='all' || (A.src==='paper' ? t.paper!==undefined : t.paper===undefined)) && inR(t));
+  return {all: raw.filter(t => t.paper===undefined || ref.get(sk(t))===t), strat: raw.filter(t => t.paper!==undefined)};
+}
+function renderAn(){
+  if(!S.an || !$('anCal')) return;
+  const A = S.an, C = S.cal, {all, strat} = anTrades(), rs = a => a.reduce((s,t) => s + t.r, 0), sg = v => (v>=0?'+':'') + v.toFixed(1) + 'R', hhmm = ms => new Date(ms).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+  ['anInst','anSrc','anRng'].forEach(id => { $(id).value = A[id.slice(2).toLowerCase()]; });
+  $('anNote').textContent = 'Cada señal del bot cuenta una sola vez (en "Por estrategia" se muestran todas). Las sesiones están en hora de Nueva York. Los grupos con menos de 5 operaciones aparecen atenuados: no son concluyentes.';
+
+  /* calendario del mes: se muestra siempre con las operaciones de ese mes, sin importar el periodo del análisis */
+  const monthTr = anCal(), byDay = {}; monthTr.forEach(t => { const k = dkey(new Date(t.at)); (byDay[k] = byDay[k] || []).push(t); });
+  const first = new Date(C.y, C.m, 1), start = new Date(first); start.setDate(1 - (first.getDay()+6)%7);
+  $('calTitle').textContent = first.toLocaleDateString('es', {month:'long', year:'numeric'});
+  let h = ['L','M','X','J','V','S','D'].map(x => `<div class="dh">${x}</div>`).join('') + '<div class="dh">Semana</div>', mr = 0, mn = 0, mw = 0;
+  const todayK = dkey(new Date());
+  for(let w=0; w<6; w++){
+    const rowStart = new Date(start); rowStart.setDate(start.getDate() + w*7); if(w>=4 && rowStart.getMonth()!==C.m) break;
+    let wr = 0, wn = 0, cells = '';
+    for(let d=0; d<7; d++){
+      const dt = new Date(rowStart); dt.setDate(rowStart.getDate() + d); const k = dkey(dt), arr = byDay[k] || [], r = rs(arr), inM = dt.getMonth()===C.m;
+      if(inM){ wr += r; wn += arr.length; mr += r; mn += arr.length; mw += arr.filter(t => t.res==='WIN').length; }
+      const al = Math.min(.5, .14 + Math.abs(r)/6*.36), bg = arr.length ? `background:${r>=0 ? `rgba(86,194,163,${al})` : `rgba(232,112,92,${al})`}` : '';
+      cells += `<button class="cday ${inM?'':'out'} ${k===todayK?'today':''} ${C.sel===k?'sel':''}" data-day="${k}" style="${bg}" title="${arr.length} operaciones"><span class="dn">${dt.getDate()}</span>` +
+        (arr.length ? `<span class="rv ${r>=0?'up':'down'}">${sg(r)}</span><span class="dn">${arr.length} op.</span>` : '<span></span>') + '</button>';
+    }
+    h += cells + `<div class="cwk ${wr>=0?'up':'down'}">${wn ? sg(wr) + `<small>${wn} op.</small>` : '<small>—</small>'}</div>`;
+  }
+  $('anCal').innerHTML = h;
+  $('anMonth').textContent = mn ? `Mes: ${mn} op. · ${sg(mr)} · win rate ${Math.round(mw/mn*100)}%` : 'Sin operaciones este mes.';
+  const sel = C.sel && byDay[C.sel];
+  $('calDetail').innerHTML = sel ? `<div class="cdet"><b>${new Date(C.sel + 'T12:00:00').toLocaleDateString('es', {weekday:'long', day:'numeric', month:'long'})}</b>` +
+    sel.slice().sort((a,b) => a.at-b.at).map(t => `<div><span>${hhmm(t.at)}</span><span>${esc(t.paper!==undefined ? 'Bot · ' + (t.strat||'') : t.mt5!==undefined ? 'MT5' : 'Manual')}${A.inst==='both' ? ' · ' + t.inst : ''}</span><span class="${t.side==='Compra'?'buy-c':'sell-c'}">${t.side}</span><span>${SESL[sesOf(t.at)].split(' (')[0]}</span><span class="${t.r>=0?'up':'down'}">${sg(t.r)}</span></div>`).join('') + '</div>' : '';
+
+  /* análisis sobre el periodo elegido */
+  const L = all, LS = strat;
+  if(!L.length){ $('anHL').innerHTML = '<p class="empty">Aún no hay operaciones con estos filtros.</p>'; $('anBoxes').innerHTML = ''; const c0 = $('anCv'); c0.getContext('2d').clearRect(0,0,c0.width,c0.height); return; }
+  const grp = (list, keyf, order) => { const m = new Map(); list.forEach(t => { const k = keyf(t); if(!m.has(k)) m.set(k, []); m.get(k).push(t); });
+    const rows = [...m.entries()].map(([k,a]) => ({k, n:a.length, w:a.filter(t => t.res==='WIN').length, r:rs(a)}));
+    return order ? rows.sort((p,q) => order.indexOf(p.k) - order.indexOf(q.k)) : rows.sort((p,q) => q.r - p.r); };
+  const dow = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'], DOWL = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+  const gDay = grp(L, t => dkey(new Date(t.at))), gDow = grp(L, t => dow[(new Date(t.at).getDay()+6)%7], dow), gSes = grp(L, t => sesOf(t.at), Object.keys(SESL));
+  const gHr = grp(L, t => new Date(t.at).getHours()).sort((p,q) => p.k-q.k), gSide = grp(L, t => t.side), gStr = grp(LS, t => t.strat), gInst = A.inst==='both' ? grp(L, t => t.inst) : [];
+  const top = (rows, f) => rows.reduce((b,x) => !b || f(x,b) ? x : b, null);
+  const best = rows => top(rows, (x,b) => x.r>b.r), worst = rows => top(rows, (x,b) => x.r<b.r);
+  const chrono = L.slice().sort((a,b) => a.at-b.at); let cum = 0, peak = 0, dd = 0, ws = 0, ls = 0, mws = 0, mls = 0; const eq = [0];
+  chrono.forEach(t => { cum += t.r; eq.push(cum); peak = Math.max(peak, cum); dd = Math.min(dd, cum - peak); if(t.res==='WIN'){ ws++; ls = 0; } else { ls++; ws = 0; } mws = Math.max(mws, ws); mls = Math.max(mls, ls); });
+  const gw = L.filter(t => t.r>0).reduce((s,t) => s + t.r, 0), gl = Math.abs(L.filter(t => t.r<0).reduce((s,t) => s + t.r, 0));
+  const dl = k => new Date(k + 'T12:00:00').toLocaleDateString('es', {day:'numeric', month:'short'});
+  const card = (t, v, sub, cls) => `<div><small>${t}</small><b class="${typeof cls==='number' ? (cls>=0?'up':'down') : (cls||'')}">${v}</b><span>${sub}</span></div>`;
+  const bD = best(gDay), wD = worst(gDay), bS = best(gSes), wS = worst(gSes), bW = best(gDow), wW = worst(gDow);
+  $('anHL').innerHTML = card('Resultado total', sg(cum), `${L.length} operaciones · expectativa ${sg(cum/L.length)}/op.`, cum>=0?'up':'down') +
+    card('Win rate · Profit factor', Math.round(L.filter(t => t.res==='WIN').length/L.length*100) + '% · ' + (gl ? (gw/gl).toFixed(2) : '∞'), 'sobre las operaciones del periodo') +
+    card('Mejor día', dl(bD.k), `${sg(bD.r)} · ${bD.n} op.`, bD.r) + card('Peor día', dl(wD.k), `${sg(wD.r)} · ${wD.n} op.`, wD.r) +
+    card('Mejor sesión', SESL[bS.k].split(' (')[0], `${sg(bS.r)} · ${bS.n} op.`, bS.r) + card('Peor sesión', SESL[wS.k].split(' (')[0], `${sg(wS.r)} · ${wS.n} op.`, wS.r) +
+    card('Mejor día de la semana', DOWL[dow.indexOf(bW.k)], `${sg(bW.r)} · ${bW.n} op.`, bW.r) + card('Peor día de la semana', DOWL[dow.indexOf(wW.k)], `${sg(wW.r)} · ${wW.n} op.`, wW.r) +
+    card('Rachas', `${mws} ganadas · ${mls} perdidas`, 'las más largas seguidas') + card('Caída máxima', sg(dd), 'desde un máximo de R acumulado', dd<0?'down':'');
+  const box = (title, rows, lab) => { const mx = Math.max(.001, ...rows.map(x => Math.abs(x.r)));
+    return `<div class="anbox"><h3>${title}</h3><div class="arow h"><span></span><span>Ops</span><span>Win</span><span></span><span>R</span></div>` + (rows.length ? rows.map(x =>
+      `<div class="arow ${x.n<5?'thin':''}"><span>${lab ? lab(x.k) : esc(x.k)}</span><span>${x.n}</span><span>${Math.round(x.w/x.n*100)}%</span><span class="abar"><i class="${x.r>=0?'pos':'neg'}" style="width:${Math.abs(x.r)/mx*100}%"></i></span><b class="${x.r>=0?'up':'down'}">${sg(x.r)}</b></div>`).join('') : '<p class="empty">Sin datos.</p>') + '</div>'; };
+  $('anBoxes').innerHTML = box('Por día de la semana', gDow, k => DOWL[dow.indexOf(k)]) + box('Por sesión', gSes, k => SESL[k]) + box('Por hora de entrada (tu hora local)', gHr, k => k + ':00') +
+    box('Por lado', gSide) + (gStr.length ? box('Por estrategia del bot (todas las operaciones)', gStr) : '') + (gInst.length ? box('Por instrumento', gInst) : '');
+  /* curva de R acumulado */
+  const cv = $('anCv'), dpr = window.devicePixelRatio||1, W = cv.clientWidth, H = cv.clientHeight; cv.width = W*dpr; cv.height = H*dpr;
+  const x = cv.getContext('2d'); x.scale(dpr,dpr); x.clearRect(0,0,W,H); x.font = '11px IBM Plex Sans'; x.textBaseline = 'middle';
+  const mn2 = Math.min(0, ...eq), mx2 = Math.max(0, ...eq), pd = (mx2-mn2)*.1 || 1, Y = v => 8 + (mx2+pd-v)/((mx2-mn2)+2*pd)*(H-16), X = i => 36 + i/Math.max(1,eq.length-1)*(W-48);
+  x.strokeStyle = '#24393D'; x.beginPath(); x.moveTo(36,Y(0)); x.lineTo(W-12,Y(0)); x.stroke(); x.fillStyle = '#8FA0A0'; x.fillText('0R', 4, Y(0)); x.fillText(sg(cum), 4, Y(cum)+(cum>=0?-10:10));
+  x.strokeStyle = cum>=0 ? '#56C2A3' : '#E8705C'; x.lineWidth = 1.8; x.beginPath(); eq.forEach((v,i) => i ? x.lineTo(X(i),Y(v)) : x.moveTo(X(i),Y(v))); x.stroke();
+}
+/* operaciones del mes del calendario (con el mismo origen e instrumento elegidos, sin el filtro de periodo) */
+function anCal(){ const keep = S.an.rng; S.an.rng = 'month'; const r = anTrades().all; S.an.rng = keep; return r; }
+$('anSec').addEventListener('click', e => {
+  const b = e.target.closest('button'); if(!b) return; const d = b.dataset, C = S.cal;
+  if(d.cal==='prev'){ C.m--; if(C.m<0){ C.m = 11; C.y--; } C.sel = null; }
+  else if(d.cal==='next'){ C.m++; if(C.m>11){ C.m = 0; C.y++; } C.sel = null; }
+  else if(d.cal==='today'){ const n = new Date(); C.y = n.getFullYear(); C.m = n.getMonth(); C.sel = null; }
+  else if(d.day){ C.sel = C.sel===d.day ? null : d.day; }
+  else return;
+  renderAn();
+});
+['anInst','anSrc','anRng'].forEach(id => { $(id).onchange = () => { S.an[id.slice(2).toLowerCase()] = $(id).value; store.set('aurum_an_' + id.slice(2).toLowerCase(), $(id).value); renderAn(); }; });
+window.addEventListener('resize', () => renderAn());
 $('cBot').onclick = () => { $('botCard').scrollIntoView({behavior:'smooth'}); setTimeout(() => $('botOn').focus(), 450); };
 $('apiKey').value = S.key;
 if(S.news){ $('newsAt').value = S.news.at; $('newsWin').value = S.news.win; }
