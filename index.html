@@ -196,6 +196,7 @@ canvas#cv{touch-action:pan-y;cursor:grab}
     <div class="chips">
       <div class="chip" id="cBias"><small>Sesgo de estructura</small><b>—</b></div>
       <div class="chip" id="cHb"><small>Sesgo 4H · Diario</small><b>—</b></div>
+      <div class="chip" id="cSent" title="Sentimiento del mercado (ver detalle en Contexto macro)"><small>Sentimiento</small><b>—</b></div>
       <div class="chip" id="cMss"><small>Barrido + MSS</small><b>—</b></div>
       <div class="chip" id="cNews"><small>Noticias</small><b>—</b></div>
       <div class="chip" id="cSetup"><small>Setup</small><b>—</b></div>
@@ -241,6 +242,7 @@ canvas#cv{touch-action:pan-y;cursor:grab}
       <span class="row"><input type="datetime-local" id="newsAt"><input type="number" id="newsWin" value="15" min="1" style="width:70px" title="Minutos antes y después"><button class="prim" id="saveNews">Bloquear</button><button class="ghost" id="clearNews">Quitar</button></span></label>
     <label style="flex-direction:row;display:flex;gap:6px;align-items:center"><input type="checkbox" id="autoNews" checked> Bloquear con noticias USD de alto impacto</label>
     <label style="flex-direction:row;display:flex;gap:6px;align-items:center"><input type="checkbox" id="botNeedNews" checked> El bot no opera si el calendario de noticias está desactualizado</label>
+    <label style="flex-direction:row;display:flex;gap:6px;align-items:center"><input type="checkbox" id="botNeedSent" checked> El bot solo opera a favor del sesgo de 4H y del sentimiento</label>
     <label>Proxy CORS para ForexFactory (opcional)<span class="row"><input id="proxy" placeholder="https://…?url=" style="width:220px"><button class="prim" id="saveProxy">Guardar</button><button class="ghost" id="pasteFF">Pegar JSON</button></span>
     </label>
   </section>
@@ -301,7 +303,8 @@ canvas#cv{touch-action:pan-y;cursor:grab}
     </section>
     <div class="side">
       <section class="card"><h2 id="cotTitle">Posicionamiento COT del oro (COMEX)</h2><div id="cotBody"></div><canvas id="cotCv"></canvas><p class="note" id="cotTxt"></p><p class="warn" id="cotMsg"></p></section>
-      <section class="card"><h2>Contexto macro</h2><div id="macBody"></div><p class="note" id="macTxt"></p><p class="warn" id="macMsg"></p></section>
+      <section class="card"><h2>Contexto macro</h2><div id="sentBox"></div>
+      <div id="macBody"></div><p class="note" id="macTxt"></p><p class="warn" id="macMsg"></p></section>
     </div>
   </div>
 
@@ -497,7 +500,7 @@ function render(){
   $('tkEntry').textContent = INSTR[S.inst].pre + fmt(a.entry) + (a.confirmed?'':' (límite)');
   $('tkSL').textContent = INSTR[S.inst].pre+fmt(a.sl); $('tkTP1').textContent = INSTR[S.inst].pre+fmt(a.tp1); $('tkTP2').textContent = INSTR[S.inst].pre+fmt(a.tp2);
   $('tkNote').textContent = a.why + (a.ctx.conf ? ' ' + a.ctx.conf : '') + (S.src==='sim' && S.msg ? ' ' + S.msg : '');
-  risk(); draw(); drawMulti();
+  risk(); draw(); drawMulti(); renderSent();
 }
 function risk(){
   const a = S.a; if(!a) return;
@@ -895,7 +898,7 @@ function renderMacro(){
   let h = `<div class="mrow h"><span></span><span>1 día</span><span>5 días</span><span>Corr. ${C.refName}</span></div>`;
   C.syms.forEach(([s,n]) => { const a = M[s], d1 = pc(a,1), d5 = pc(a,5), c = s===C.ref ? 1 : corr(ret(a).slice(-20), g);
     h += `<div class="mrow"><span>${n}</span><span class="${d1>=0?'up':'down'}">${d1.toFixed(2)}%</span><span class="${d5>=0?'up':'down'}">${d5.toFixed(2)}%</span><span>${c.toFixed(2)}</span></div>`; });
-  $('macBody').innerHTML = h; $('macTxt').textContent = C.verdict(pc, M); $('macMsg').textContent = '';
+  $('macBody').innerHTML = h; $('macTxt').textContent = C.verdict(pc, M); $('macMsg').textContent = ''; renderSent();
 }
 
 /* ---------- Eventos de las nuevas secciones ---------- */
@@ -1188,7 +1191,8 @@ const PROFS = [
   {id:'base', name:'Base · barrido + MSS', test:() => true},
   {id:'htf',  name:'Con sesgo 4H a favor', test:a => !!(S.hb && S.hb.h4 === (a.buy ? 'Alcista' : 'Bajista'))},
   {id:'kz',   name:'Killzone (Londres / NY AM)', test:(a,ses) => ses==='Londres' || ses==='NY AM'},
-  {id:'conf', name:'Confluencia OB/FVG', test:a => !!(a.ctx && [...a.ctx.fvg, ...a.ctx.ob].some(z => z.dir===(a.buy?'bull':'bear') && a.price>=z.lo && a.price<=z.hi))}
+  {id:'conf', name:'Confluencia OB/FVG', test:a => !!(a.ctx && [...a.ctx.fvg, ...a.ctx.ob].some(z => z.dir===(a.buy?'bull':'bear') && a.price>=z.lo && a.price<=z.hi))},
+  {id:'cont', name:'Continuación (a favor de la tendencia)', test:() => false}   /* tiene su propia lógica en contSignal */
 ];
 const pname = id => (PROFS.find(p => p.id===id) || {name:id}).name;
 function P(){
@@ -1197,7 +1201,7 @@ function P(){
     let o = null; try{ o = JSON.parse(store.get('aurum_paper_'+k,'null')); }catch(e){}
     const B = Object.assign({on:false, open:[], closed:[], seen:[], skips:[], unsync:[]}, o || {});
     B.cfg = Object.assign({bal0:10000, riskPct:1, maxDay:2, lossDay:2, cost:k==='XAU'?0.3:1.5, part:true}, (o && o.cfg) || {});
-    B.cfg.profs = Object.assign({base:true, htf:true, kz:true, conf:true}, B.cfg.profs || {});
+    B.cfg.profs = Object.assign({base:true, htf:true, kz:true, conf:true, cont:true}, B.cfg.profs || {});
     S.paper[k] = B;
   }
   return S.paper[k];
@@ -1246,13 +1250,14 @@ function manage(B){
 function captureSnap(a, ses){
   const c = S.candles, L = S.ltf, f = v => fmt(v), r2 = v => +(+v).toFixed(2), x = a.ctx, lines = [];
   const hm = t => t && t.length>10 ? new Date(ptT(t)).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : '';
-  lines.push(`Precio ${f(a.price)} en ${a.buy?'descuento':'premium'} del rango reciente (equilibrio ${f(a.eq)}; mínimo ${f(a.lo)}, máximo ${f(a.hi)}). Buscaba ${a.buy?'compra':'venta'}.`);
+  lines.push(a.cont ? `Continuación a favor de la tendencia (${a.cont}): ${a.buy?'compra':'venta'} con el precio en ${f(a.price)}; rango reciente ${f(a.lo)}–${f(a.hi)}.` : `Precio ${f(a.price)} en ${a.buy?'descuento':'premium'} del rango reciente (equilibrio ${f(a.eq)}; mínimo ${f(a.lo)}, máximo ${f(a.hi)}). Buscaba ${a.buy?'compra':'venta'}.`);
   const useL = !!(a.ltf && a.lt), m = useL ? a.lt : a.mss, arr = useL ? L : c, tf = useL ? '1m' : S.tf;
   if(m && arr[m.swept]){
     lines.push(`Barrido ${a.buy?'del mínimo':'del máximo'} ${f(m.ref.p)} en ${tf}${hm(arr[m.swept].t) ? ' (' + hm(arr[m.swept].t) + ')' : ''}: la mecha lo superó y la vela cerró de vuelta dentro.`);
     if(m.broke!=null && arr[m.broke]) lines.push(`MSS: cierre ${a.buy?'por encima':'por debajo'} de ${f(m.lvl)}${hm(arr[m.broke].t) ? ' a las ' + hm(arr[m.broke].t) : ''} (${tf}), que confirmó el giro.`);
   }
   lines.push(`Estructura en ${S.tf}: ${a.bias}.` + (S.hb ? ` 4H: ${S.hb.h4}; diario: ${S.hb.d1}.` : '') + ` Sesión: ${ses}.`);
+  { const se = sentiment(); lines.push(`Sentimiento: ${se.label} (${se.score>0?'+':''}${se.score}). ` + se.f.map(q => `${q.k}: ${q.t} (${q.v>0?'+':''}${+q.v.toFixed(1)})`).join('; ') + '.'); }
   if(x){
     const want = a.buy ? 'bull' : 'bear', zs = x.ob.concat(x.fvg), inz = zs.filter(z => z.dir===want && a.price>=z.lo && a.price<=z.hi);
     lines.push(inz.length ? `Dentro de ${inz.map(z => `${x.ob.includes(z)?'OB':'FVG'} ${a.buy?'alcista':'bajista'} ${f(z.lo)}–${f(z.hi)}`).join(' y ')}.` : 'No estaba dentro de ningún OB/FVG a favor.');
@@ -1280,8 +1285,10 @@ function signal(B, a){
   const NO = {htf:() => `El sesgo de 4H es ${h4} y la señal es de ${a.buy?'compra':'venta'}.`, kz:() => `La señal salió en la sesión ${ses}, fuera de la killzone.`, conf:() => 'El precio no estaba dentro de un OB/FVG a favor.'};
   const YES = {base:'solo exige barrido + MSS confirmados.', htf:`el sesgo de 4H (${h4}) va a favor.`, kz:`la señal salió en ${ses}, dentro de la killzone.`, conf:'el precio estaba dentro de un OB/FVG a favor.'};
   const skip = (pf, why) => { B.skips.unshift({t:Date.now(), prof:pf.id, side:a.buy?'buy':'sell', price:a.price, why}); };
+  const gate = sentGate(a);
   PROFS.forEach(pf => {
-    if(!B.cfg.profs[pf.id]) return;
+    if(!B.cfg.profs[pf.id] || pf.id==='cont') return;
+    if(!gate.ok) return skip(pf, gate.why);
     if($('botNeedNews').checked && !newsFresh()) return skip(pf, 'El calendario de noticias está desactualizado: el bot no opera sin él (puedes cambiarlo en Ajustes).');
     if(B.open.some(t => t.prof===pf.id)) return skip(pf, 'Ya había una operación abierta de esta estrategia.');
     if(!pf.test(a, ses)) return skip(pf, (NO[pf.id] || (() => 'No cumple el filtro.'))());
@@ -1295,7 +1302,7 @@ function signal(B, a){
 function botTick(){
   const B = P(), a = S.a; if(!a || S.src==='sim' || S.hist){ botRender(); return; }
   const n0 = B.open.length + ':' + B.closed.length;   /* "abiertas:cerradas": una operación que pasa de abierta a cerrada cambia la cuenta aunque la suma sea igual */
-  manage(B); if(B.on) signal(B, a);
+  manage(B); if(B.on){ signal(B, a); contSignal(B, a); }
   const ch = (B.open.length + ':' + B.closed.length) !== n0;
   if(ch || B.open.length) saveP();
   botRender(ch);
@@ -1408,7 +1415,7 @@ $('botCard').addEventListener('click', e => {
 window.addEventListener('resize', () => botRender(true));
 /* ---------- Respaldo de datos: archivo en disco (autoguardado), exportar/importar y almacenamiento persistente ---------- */
 const DK = {h:null, saved:null, on:false, t:null, last:0, err:'', persist:null};
-const dkOK = k => /^(aurum_|sym_|br_map)/.test(k);
+const dkOK = k => /^(aurum_|sym_|br_map)/.test(k) && !/key|token|secret|pass/i.test(k);   /* nunca se respaldan ni se importan credenciales */
 const dkKeys = () => { const o = {}; try{ for(let i=0;i<localStorage.length;i++){ const k = localStorage.key(i); if(dkOK(k)) o[k] = localStorage.getItem(k); } }catch(e){} return o; };
 const dkSnapshot = () => JSON.stringify({v:1, savedAt:Date.now(), data:dkKeys()});
 const jparse = (t, d) => { try{ return JSON.parse(t); }catch(e){ return d; } };
@@ -1600,6 +1607,70 @@ $('anSec').addEventListener('click', e => {
 });
 ['anInst','anSrc','anRng'].forEach(id => { $(id).onchange = () => { S.an[id.slice(2).toLowerCase()] = $(id).value; store.set('aurum_an_' + id.slice(2).toLowerCase(), $(id).value); renderAn(); }; });
 window.addEventListener('resize', () => renderAn());
+/* ---------- Estrategia de continuación: opera a favor del 4H/sentimiento tras barrer un extremo menor y romper la estructura en 1m ---------- */
+function contSignal(B, a){
+  const pf = PROFS.find(p => p.id==='cont'); if(!pf || !B.cfg.profs.cont) return;
+  const L = S.ltf; if(!L || L.length<40) return;
+  const se = sentiment(), h4 = se.h4;
+  const dir = h4==='Bajista' ? 'sell' : h4==='Alcista' ? 'buy' : se.label==='Bajista' ? 'sell' : se.label==='Alcista' ? 'buy' : null;
+  if(!dir) return;
+  const m = findMSS(L, swings(L,3), dir); if(!m || m.broke==null || L.length-1-m.broke > 8) return;   /* solo gatillos recientes */
+  const bc = L[m.broke], key = 'cont|' + S.inst + '|' + dir + '|' + bc.t; if(B.seen.includes(key)) return;
+  B.seen.push(key); B.seen = B.seen.slice(-60);
+  const buy = dir==='buy', price = L[L.length-1].c, A1 = atr(L), seg = L.slice(m.ref.i, m.broke+1);
+  const ext = buy ? Math.min(...seg.map(x => x.l)) : Math.max(...seg.map(x => x.h)), sl = buy ? ext - .3*A1 : ext + .3*A1, risk = Math.abs(price - sl);
+  const em = S.candles[S.candles.length-1].em, ses = em===undefined ? 'N/D' : em>=1200 ? 'Asia' : (em>=120 && em<300) ? 'Londres' : (em>=570 && em<690) ? 'NY AM' : 'Otra';
+  const skip = why => { B.skips.unshift({t:Date.now(), prof:'cont', side:buy?'buy':'sell', price, why}); B.skips = B.skips.slice(0,100); };
+  const gate = sentGate({buy}); if(!gate.ok) return skip(gate.why);
+  if($('botNeedNews').checked && !newsFresh()) return skip('El calendario de noticias está desactualizado: el bot no opera sin él (puedes cambiarlo en Ajustes).');
+  if(newsBlocked()) return skip('Hay una noticia de alto impacto dentro de la ventana de bloqueo.');
+  if(B.open.some(t => t.prof==='cont')) return skip('Ya había una operación abierta de esta estrategia.');
+  const day = B.closed.filter(t => t.prof==='cont' && dkey(new Date(t.t0))===dkey(new Date()));
+  if(day.length >= B.cfg.maxDay) return skip(`Límite de ${B.cfg.maxDay} operaciones diarias alcanzado.`);
+  if(day.reduce((t,x) => t + x.r, 0) <= -B.cfg.lossDay) return skip(`Pérdida diaria de ${B.cfg.lossDay}R alcanzada.`);
+  if(risk < .5*A1) return skip('El stop quedaría demasiado ajustado respecto a la volatilidad de 1m (puro ruido).');
+  if(risk > 3*a.A) return skip('El stop quedaría a más de 3 ATR del timeframe: demasiado lejos.');
+  const liqD = buy ? a.hi - price : price - a.lo, liq = liqD >= 2.5*risk, tp1d = 1.8*risk, tp2d = liq ? liqD : 3*risk;
+  const a2 = {buy, price, sl, tp1:buy ? price + tp1d : price - tp1d, tp2:buy ? price + tp2d : price - tp2d, eq:a.eq, hi:a.hi, lo:a.lo, A:a.A, bias:a.bias, ltf:true, lt:m, mss:null,
+    ctx:a.ctx, rr1:1.8, rr2:tp2d/risk, why:'', cont:(h4 && h4!=='Rango') ? '4H ' + h4 : 'sentimiento ' + se.label, state:'ok', confirmed:true};
+  const snap = captureSnap(a2, ses);
+  openTrade(B, pf, a2, ses, Object.assign({}, snap, {lines:snap.lines.concat([`Estrategia ${pf.name}: entra a favor de la tendencia tras barrer ${buy?'un mínimo':'un máximo'} menor y romper la estructura en 1m. SL ${buy?'bajo':'sobre'} el extremo del barrido (${fmt(sl)}); TP1 a 1.8R y TP2 ${liq ? 'en la liquidez del rango' : 'a 3R'}.`])}));
+}
+/* ---------- Sentimiento del mercado: puntaje compuesto que el bot consulta antes de entrar ---------- */
+function sentiment(){
+  const f = [], H = S.hb, sgn = b => b==='Alcista' ? 1 : b==='Bajista' ? -1 : 0, pcs = (a,n) => (a[a.length-1]/a[a.length-1-n]-1)*100;
+  let max = 0;
+  if(H){ f.push({k:'Estructura 4H', v:sgn(H.h4)*2, t:H.h4}); f.push({k:'Estructura diaria', v:sgn(H.d1), t:H.d1}); max += 3; }
+  const m4 = S.mtf && S.mtf['4h'];
+  if(m4 && m4.length>8){ const ch = (m4[m4.length-1].c / m4[m4.length-7].c - 1)*100; f.push({k:'Momentum 24 h', v:ch>.15 ? 1 : ch<-.15 ? -1 : 0, t:(ch>=0?'+':'') + ch.toFixed(2) + '%'}); max += 1; }
+  if(S.macro){ const M = S.macro; let v = null, t = '';
+    try{ if(S.inst==='XAU'){ const u = pcs(M.UUP,5), b = pcs(M.TLT,5); v = ((u<0?1:-1) + (b>0?1:-1))/2; t = `dólar ${u<0?'↓':'↑'}, bonos ${b>0?'↑':'↓'}`; }
+      else { const b = pcs(M.TLT,5), u = pcs(M.UUP,5), sp = pcs(M.SPY,5); v = ((b>0?1:-1) + (u<0?1:-1) + (sp>0?1:-1))/3; t = `bonos ${b>0?'↑':'↓'}, dólar ${u<0?'↓':'↑'}, S&P ${sp>0?'↑':'↓'}`; } }catch(e){ v = null; }
+    if(v!==null){ f.push({k:'Macro (5 sesiones)', v, t}); max += 1; } }
+  if(S.cot && S.cot.length>1){ const k = COTCFG[S.inst].main, L = S.cot[S.cot.length-1], P = S.cot[S.cot.length-2], ch = L[k] - P[k];
+    f.push({k:'COT: grupo principal', v:ch>0 ? 1 : ch<0 ? -1 : 0, t:(ch>=0?'compra':'venta') + ' neta ' + (ch>=0?'aumenta':'disminuye')}); max += 1; }
+  const tot = f.reduce((a,x) => a + x.v, 0), score = max ? Math.round(tot/max*100) : 0;
+  return {f, score, label:score>=34 ? 'Alcista' : score<=-34 ? 'Bajista' : 'Neutral', h4:H ? H.h4 : null, have:!!H};
+}
+/* El bot no toma compras si el 4H o el sentimiento son bajistas, ni ventas si son alcistas */
+function sentGate(a){
+  if(!$('botNeedSent') || !$('botNeedSent').checked) return {ok:true};
+  const se = sentiment(), side = a.buy ? 'compra' : 'venta';
+  if(!se.have) return {ok:false, why:'Sin datos del sesgo de 4H: el bot no opera sin leer el sentimiento (puedes cambiarlo en Ajustes).'};
+  if((a.buy && se.h4==='Bajista') || (!a.buy && se.h4==='Alcista')) return {ok:false, why:`El sesgo de 4H es ${se.h4} y la señal es de ${side}.`};
+  if((a.buy && se.label==='Bajista') || (!a.buy && se.label==='Alcista')) return {ok:false, why:`El sentimiento es ${se.label} (${se.score>0?'+':''}${se.score}) y la señal es de ${side}.`};
+  return {ok:true};
+}
+function renderSent(){
+  if(!$('sentBox')) return;
+  const se = sentiment(), cls = se.label==='Alcista' ? 'ok' : se.label==='Bajista' ? 'bad' : 'wait';
+  chip('cSent', se.have || se.f.length ? `${se.label} ${se.score>0?'+':''}${se.score}` : 'Sin datos', se.f.length ? cls : '');
+  $('sentBox').innerHTML = se.f.length ? `<h2 style="margin-top:4px">Sentimiento para el bot: <span class="${se.score>0?'up':se.score<0?'down':''}">${se.label} (${se.score>0?'+':''}${se.score})</span></h2>` +
+    se.f.map(q => `<div class="mrow" style="grid-template-columns:1fr 1fr 40px"><span>${q.k}</span><span>${esc(q.t)}</span><span class="${q.v>0?'up':q.v<0?'down':''}">${q.v>0?'+':''}${+q.v.toFixed(1)}</span></div>`).join('') +
+    '<p class="note" style="margin-top:6px">Puntaje de −100 a +100. El bot no compra con 4H bajista ni con sentimiento bajista, y no vende con 4H alcista ni con sentimiento alcista. Neutral permite ambos lados.</p>' : '';
+}
+$('botNeedSent').checked = store.get('aurum_needsent','1') === '1';
+$('botNeedSent').onchange = () => store.set('aurum_needsent', $('botNeedSent').checked ? '1' : '0');
 $('cBot').onclick = () => { $('botCard').scrollIntoView({behavior:'smooth'}); setTimeout(() => $('botOn').focus(), 450); };
 $('apiKey').value = S.key;
 if(S.news){ $('newsAt').value = S.news.at; $('newsWin').value = S.news.win; }
